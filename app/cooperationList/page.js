@@ -27,16 +27,16 @@ export default function GalleryList() {
         <img src="/images/cooperation2.png" alt="cooperation" className="w-1/2 h-auto object-cover" />
       </div>
       <div className="w-[90vw] flex justify-center items-center mt-4">
-        <Input variant="bordered" label="이름" placeholder="이름" className="w-full" />
+        <Input  label="이름" placeholder="이름" className="w-full" />
       </div>
       <div className="w-[90vw] flex justify-center items-center mt-4">
-        <Input variant="bordered" label="이메일" placeholder="이메일" className="w-full" />
+        <Input  label="이메일" placeholder="이메일" className="w-full" />
       </div>
       <div className="w-[90vw] flex justify-center items-center mt-4">
-        <Input variant="bordered" label="연락처" placeholder="연락처" className="w-full" />
+        <Input  label="연락처" placeholder="연락처" className="w-full" />
       </div>
       <div className="w-[90vw] flex justify-center items-center mt-4">
-        <Textarea variant="bordered" label="문의내용" placeholder="문의내용" className="w-full" />
+        <Textarea  label="문의내용" placeholder="문의내용" className="w-full" />
       </div>
       <div className="w-[90vw] flex justify-center items-center mt-4 mb-24">
         <Button variant="solid" color="primary" className="w-full">문의접수</Button>
