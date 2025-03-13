@@ -48,7 +48,7 @@ export default function App() {
       <div className="p-4">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold">전국 최대 갤러리</h1>
+            <h1 className="text-2xl font-bold">김광석 초대전 전시회</h1>
             <div className="flex items-center gap-2 mt-1">
               <div className="flex items-center">
                 <Icon icon="lucide:star" className="text-yellow-400" />

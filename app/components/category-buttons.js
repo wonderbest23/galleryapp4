@@ -21,39 +21,47 @@ import {
   Users,                 // 제휴, 협력, 커뮤니티
   PanelLeft
 } from 'lucide-react';
+import Link from "next/link";
 export function CategoryButtons() {
   return (
     <div className="grid grid-cols-5 gap-2 px-4 w-full">
-      <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
-        {/* <MdOutlineImage size={20} /> */}
-        <Palette size={20} className="text-gray-500"/> 
+      <Link href="/exhibitionList">
+        <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
+          {/* <MdOutlineImage size={20} /> */}
+          <Palette size={20} className="text-gray-500" />
 
-        <span>전시회</span>
-      </div>
-
-      <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
-        {/* <IoImagesOutline size={20} /> */}
-        <GalleryHorizontalEnd size={20} className="text-gray-500"/>
-        <span>갤러리</span>
-      </div>
-
-      <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
-        {/* <BiBookOpen size={20} /> */}
-        <Newspaper size={20} className="text-gray-500"/>
-        <span>매거진</span>
-      </div>
-
+          <span>전시회</span>
+        </div>
+      </Link>
+      <Link href="/galleryList">
+        <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
+          {/* <IoImagesOutline size={20} /> */}
+          <GalleryHorizontalEnd size={20} className="text-gray-500" />
+          <span>갤러리</span>
+        </div>
+      </Link>
+      <Link href="/magazineList">
+        <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
+          {/* <BiBookOpen size={20} /> */}
+          <Newspaper size={20} className="text-gray-500" />
+          <span>매거진</span>
+        </div>
+      </Link>
+      <Link href="/eventList">
       <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
         {/* <FiGift size={20} /> */}
         <CalendarDays size={20} className="text-gray-500"/>
         <span>이벤트</span>
       </div>
+      </Link>
+      <Link href="/cooperationList">
+        <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
+          {/* <TbHandshake size={20} /> */}
+          <Handshake size={20} className="text-gray-500" />
+          <span>제휴</span>
+        </div>
+      </Link>
 
-      <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
-        {/* <TbHandshake size={20} /> */}
-        <Handshake size={20} className="text-gray-500"/>
-        <span>제휴</span>
-      </div>
     </div>
   );
 }

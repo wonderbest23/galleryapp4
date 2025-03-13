@@ -44,7 +44,7 @@ export default function RootLayout({
           <HeroUIProvider>
             <main className="w-full h-full">
               <div className="flex justify-center items-center gap-x-4 h-6 mt-6 mb-2 mx-4">
-                <div className="rounded-2xl w-8 h-8 bg-gray-200"></div>
+                <img src="/logo/logo.png" alt="logo" className="w-16 h-10" />
 
                 <Input
                   placeholder="둘러보기"

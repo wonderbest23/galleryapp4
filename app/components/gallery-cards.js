@@ -7,12 +7,11 @@ import { FaRegStar } from "react-icons/fa";
 import { FaRegBookmark } from "react-icons/fa6";
 import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
-
-export function ExhibitionCards() {
+export default function GalleryCards() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const exhibitions = Array(5).fill({
     title: "수원 갤러리",
-    subtitle: "김광석 초대전 전시회",
+    subtitle: "전국 최대 규모 갤러리",
     date: "2024.03.15 - 2024.04.15",
     location: "서울 강남구",
     review: "4.0(225)",
@@ -24,7 +23,7 @@ export function ExhibitionCards() {
         <div className="grid gap-4 w-full justify-center items-center">
           {exhibitions.map((exhibition, index) => (
             <Card key={index} className="w-[90vw]">
-              <Link href={`/exhibition/${index + 1}`}>
+              <Link href={`/gallery/${index + 1}`}>
                 <CardBody className="flex gap-4 flex-row">
                   <img
                     src={`https://picsum.photos/200/200?random=${index}`}
@@ -79,13 +78,8 @@ export function ExhibitionCards() {
             />
           ))}
         </div> */}
-        {/* <button
-          className="mt-4 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
-          onClick={() => console.log("플러스 버튼 클릭")}
-        >
-          +
-        </button> */}
         <FaPlusCircle className="text-red-500 text-2xl font-bold hover:cursor-pointer" />
+
       </div>
     </>
   );

@@ -64,7 +64,7 @@ export function MagazineCarousel() {
                 <button
                   key={index}
                   className={`w-2 h-2 rounded-full ${
-                    currentSlide === index ? "bg-red-500" : "bg-gray-400"
+                    currentSlide === index ? "bg-red-500" : "bg-white border border-gray-300"
                   }`}
                   onClick={() => setCurrentSlide(index)}
                 />

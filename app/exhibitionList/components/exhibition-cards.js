@@ -24,7 +24,7 @@ export function ExhibitionCards() {
         <div className="grid gap-4 w-full justify-center items-center">
           {exhibitions.map((exhibition, index) => (
             <Card key={index} className="w-[90vw]">
-              <Link href={`/exhibition/${index + 1}`}>
+              <Link href={`/gallery/${index + 1}`}>
                 <CardBody className="flex gap-4 flex-row">
                   <img
                     src={`https://picsum.photos/200/200?random=${index}`}
@@ -68,24 +68,8 @@ export function ExhibitionCards() {
             </Card>
           ))}
         </div>
-        {/* <div className="flex gap-2 mt-4">
-          {exhibitions.map((_, index) => (
-            <button
-              key={index}
-              className={`w-2 h-2 rounded-full ${
-                currentIndex === index ? "bg-red-500" : "bg-gray-300"
-              }`}
-              onClick={() => setCurrentIndex(index)}
-            />
-          ))}
-        </div> */}
-        {/* <button
-          className="mt-4 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
-          onClick={() => console.log("플러스 버튼 클릭")}
-        >
-          +
-        </button> */}
-        <FaPlusCircle className="text-red-500 text-2xl font-bold hover:cursor-pointer" />
+        
+        <FaPlusCircle className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-24" />
       </div>
     </>
   );
