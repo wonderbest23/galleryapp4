@@ -90,90 +90,87 @@ export default function GalleryCards({ selectedTab }) {
   });
 
   return (
-    <>
-      <div className="flex flex-col items-center gap-4 w-full justify-center">
-        <div className="grid gap-4 w-full max-w-[900px] mx-auto justify-items-center">
-          {loading && page === 1
-            ? // 처음 로딩 중 스켈레톤 UI 표시
-              Array(PAGE_SIZE)
-                .fill()
-                .map((_, index) => (
-                  <div
-                    key={index}
-                    className="w-full max-w-[600px] flex items-center gap-3 justify-center mx-auto"
-                  >
-                    <div>
-                      <Skeleton className="flex rounded-full w-12 h-12" />
-                    </div>
-                    <div className="w-full flex flex-col gap-2">
-                      <Skeleton className="h-3 w-36 rounded-lg" />
-                      <Skeleton className="h-3 w-24 rounded-lg" />
-                    </div>
+    <div className="flex flex-col items-center gap-4 w-full justify-center">
+      <div className="grid gap-4 w-full max-w-[900px] mx-auto justify-items-center">
+        {loading && page === 1
+          ? // 처음 로딩 중 스켈레톤 UI 표시
+            Array(PAGE_SIZE)
+              .fill()
+              .map((_, index) => (
+                <div
+                  key={index}
+                  className="w-full max-w-[600px] flex items-center gap-3 justify-center mx-auto"
+                >
+                  <div>
+                    <Skeleton className="flex rounded-full w-12 h-12" />
                   </div>
-                ))
-            : // 데이터 로드 완료 후 실제 갤러리 목록 표시
-              gallerys.map((gallery, index) => (
-                <Card key={index} className="w-full max-w-[600px] mx-auto">
-                  <Link href={`/gallery/${gallery.id || index + 1}`} className="w-full">
-                    <CardBody className="flex gap-4 flex-row w-full h-full">
-                      <img
-                        src={
-                         gallery.thumbnail||"/images/noimage.jpg"
-                        }
-                        alt={gallery.title || "갤러리 이미지"}
-                        className="w-24 h-24 object-cover rounded"
-                      />
-                      <div className="flex flex-col w-full">
-                        <div className="flex flex-row justify-between items-start">
-                          <div className="flex flex-col">
-                            
-                            <div className="text-lg font-bold">
-                              {gallery.title || ""}
-                            </div>
-                          </div>
-                          
-                        </div>
-
-                        <Divider
-                          orientation="horizontal"
-                          className=" bg-gray-300"
-                        />
-                        <div className="text-xs flex flex-col my-2">
-                          
-                          <div className="flex flex-row gap-1">
-                            <IoMdPin />
-                            {gallery.address || "서울 강남구"}
-                          </div>
-                          <div className="flex flex-row gap-1">
-                            <FaRegStar />
-                            {gallery.visitor_rating || "없음"}({gallery.blog_review_count || "없음"})
+                  <div className="w-full flex flex-col gap-2">
+                    <Skeleton className="h-3 w-36 rounded-lg" />
+                    <Skeleton className="h-3 w-24 rounded-lg" />
+                  </div>
+                </div>
+              ))
+          : // 데이터 로드 완료 후 실제 갤러리 목록 표시
+            gallerys.map((gallery, index) => (
+              <Card key={index} className="w-full max-w-[600px] mx-auto">
+                <Link
+                  href={`/gallery/${gallery.id || index + 1}`}
+                  className="w-full"
+                >
+                  <CardBody className="flex gap-4 flex-row w-full h-full">
+                    <img
+                      src={gallery.thumbnail || "/images/noimage.jpg"}
+                      alt={gallery.title || "갤러리 이미지"}
+                      className="w-24 h-24 object-cover rounded"
+                    />
+                    <div className="flex flex-col w-full">
+                      <div className="flex flex-row justify-between items-start">
+                        <div className="flex flex-col">
+                          <div className="text-lg font-bold">
+                            {gallery.title || ""}
                           </div>
                         </div>
                       </div>
-                    </CardBody>
-                  </Link>
-                </Card>
-              ))}
 
-          {/* 추가 데이터 로딩 중 표시 */}
-          {loading && page > 1 && (
-            <div className="flex justify-center w-full py-4">
-              <Spinner variant="wave" size="lg" color="danger" />
-            </div>
-          )}
-        </div>
+                      <Divider
+                        orientation="horizontal"
+                        className=" bg-gray-300"
+                      />
+                      <div className="text-xs flex flex-col my-2">
+                        <div className="flex flex-row gap-1">
+                          <IoMdPin />
+                          {gallery.address || "서울 강남구"}
+                        </div>
+                        <div className="flex flex-row gap-1">
+                          <FaRegStar />
+                          {gallery.visitor_rating || "없음"}(
+                          {gallery.blog_review_count || "없음"})
+                        </div>
+                      </div>
+                    </div>
+                  </CardBody>
+                </Link>
+              </Card>
+            ))}
 
-        {hasMore ? (
-          <FaPlusCircle
-            className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-8"
-            onClick={loadMore}
-          />
-        ) : (
-          <div className="text-gray-500 text-sm mb-8">
-            모든 갤러리를 불러왔습니다
+        {/* 추가 데이터 로딩 중 표시 */}
+        {loading && page > 1 && (
+          <div className="flex justify-center w-full py-4">
+            <Spinner variant="wave" size="lg" color="danger" />
           </div>
         )}
       </div>
-    </>
+
+      {hasMore ? (
+        <FaPlusCircle
+          className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-8"
+          onClick={loadMore}
+        />
+      ) : (
+        <div className="text-gray-500 text-sm mb-8">
+          모든 갤러리를 불러왔습니다
+        </div>
+      )}
+    </div>
   );
 }

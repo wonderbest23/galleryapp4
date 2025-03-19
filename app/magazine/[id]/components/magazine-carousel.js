@@ -2,11 +2,12 @@
 import React, { useState } from "react";
 import { Card, CardBody } from "@heroui/react";
 import Link from "next/link";
-export default function MagazineCarousel() {
+export default function MagazineCarousel({magazine}) {
   const [currentSlide, setCurrentSlide] = React.useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
-  const slides = [1, 2, 3, 4, 5];
+  // magazine.photo 배열에서 슬라이드 생성
+  const slides = magazine?.photo || [];
 
   const handleTouchStart = (e) => {
     setTouchStart(e.touches[0].clientX);
@@ -36,17 +37,29 @@ export default function MagazineCarousel() {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <Card className="w-full">
-        <CardBody className="p-0">
-          <Link href={`/gallery/${currentSlide + 1}`}>
+      {slides.length > 0 ? (
+        <Card className="w-full">
+          <CardBody className="p-0">
+            <Link href={`/gallery/${magazine?.id || currentSlide + 1}`}>
+              <img
+                src={slides[currentSlide]?.url || `https://picsum.photos/800/400?random=${currentSlide}`}
+                alt={`${magazine?.title || ''} - 이미지 ${currentSlide + 1}`}
+                className="w-full h-48 object-cover"
+              />
+            </Link>
+          </CardBody>
+        </Card>
+      ) : (
+        <Card className="w-full">
+          <CardBody className="p-0">
             <img
-              src={`https://picsum.photos/800/400?random=${currentSlide}`}
-              alt={`Slide ${currentSlide + 1}`}
+              src={`https://picsum.photos/800/400?random=1`}
+              alt="기본 이미지"
               className="w-full h-48 object-cover"
             />
-          </Link>
-        </CardBody>
-      </Card>
+          </CardBody>
+        </Card>
+      )}
       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex space-x-2">
         {slides.map((_, index) => (
           <button

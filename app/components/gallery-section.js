@@ -12,7 +12,7 @@ export function GallerySection() {
   
   console.log(selectedTab);
   return (
-    <Tabs aria-label="Gallery options" variant="underlined" selectedKey={selectedTab} onSelectionChange={setSelectedTab}>
+    <Tabs className="w-full flex justify-center items-center" aria-label="Gallery options" variant="underlined" selectedKey={selectedTab} onSelectionChange={setSelectedTab}>
       <Tab key="recommended" title="추천갤러리">
         <GalleryCards selectedTab={selectedTab} />
       </Tab>

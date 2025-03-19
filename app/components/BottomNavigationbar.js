@@ -7,7 +7,7 @@ export default function BottomNavigation() {
   const pathname = usePathname();
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50">
       <div className="flex justify-around items-center h-16">
         <Link href="/" className={`flex flex-col items-center justify-center w-1/4 h-full ${pathname === '/' ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}>
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

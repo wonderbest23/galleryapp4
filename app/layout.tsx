@@ -18,7 +18,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "자재곡 - 전시회 갤러리 앱",
+  title: "미슐미술랭",
   description: "갤러리 전시회 정보를 손쉽게 찾아보세요",
 };
 
@@ -49,7 +49,7 @@ export default function RootLayout({
             
             {/* 앱 제목과 설명 */}
             <div className="absolute top-1/4 left-[15%] transform -translate-y-1/2">
-              <h1 className="text-4xl font-bold mb-2 text-gray-800">전시회&갤러리 앱</h1>
+              <h1 className="text-4xl font-bold mb-2 text-gray-800">미술미슐랭</h1>
               <p className="text-xl text-gray-600">당신의 모든 전시회&갤러리 정보를 한눈에</p>
             </div>
             
@@ -58,7 +58,7 @@ export default function RootLayout({
               {/* 앱 내용 */}
               <div className="flex-1 overflow-y-auto h-full">
                 <HeroUIProvider>
-                  <main className="w-full h-full">
+                  <main className="w-full h-full pb-16">
                     <div className="flex justify-center items-center gap-x-4 h-6 mt-6 mb-2 mx-4">
                       <img src="/logo/logo.png" alt="logo" className="w-16 h-10" />
 
@@ -86,7 +86,7 @@ export default function RootLayout({
           {/* 모바일에서 표시되는 화면 */}
           <div className="lg:hidden block h-screen w-full">
             <HeroUIProvider>
-              <main className="w-full h-full">
+              <main className="w-full h-full pb-16">
                 <div className="flex justify-center items-center gap-x-4 h-6 mt-6 mb-2 mx-4">
                   <img src="/logo/logo.png" alt="logo" className="w-16 h-10" />
 
