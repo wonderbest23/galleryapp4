@@ -1,15 +1,87 @@
 "use client";
-import React, { useState } from "react";
-import { Card, CardBody, Divider } from "@heroui/react";
+import { Card, CardBody, Divider, Skeleton, Spinner } from "@heroui/react";
 import { FaRegCalendar } from "react-icons/fa";
 import { IoMdPin } from "react-icons/io";
 import { FaRegStar } from "react-icons/fa";
 import { FaRegBookmark } from "react-icons/fa6";
 import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
-export default function GalleryCards() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const exhibitions = Array(5).fill({
+import { useEffect, useState, useCallback } from "react";
+import { createClient } from "@/utils/supabase/client";
+
+export default function GalleryCards({ selectedTab }) {
+  const [gallerys, setGallerys] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 5;
+  const supabase = createClient();
+
+  const getGallerys = useCallback(
+    async (pageNum = 1, append = false) => {
+      try {
+        setLoading(true);
+
+        // 페이지네이션을 위한 범위 계산
+        const from = (pageNum - 1) * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+
+        // 기본 쿼리 시작
+        let query = supabase.from("gallery").select("*", { count: "exact" });
+
+        // selectedTab에 따라 쿼리 조건 추가
+        if (selectedTab === "recommended") {
+          query = query.eq("isRecommend", true);
+        } else if (selectedTab === "new") {
+          query = query.eq("isNew", true);
+        } else if (selectedTab === "now") {
+          query = query.eq("isNow", true);
+        }
+
+        // 페이지네이션 적용
+        const { data, error, count } = await query.range(from, to);
+
+        if (error) {
+          console.log(
+            "갤러리 데이터를 불러오는 중 오류가 발생했습니다:",
+            error
+          );
+          return;
+        }
+
+        // 더 불러올 데이터가 있는지 확인
+        setHasMore(count > from + data.length);
+
+        // 데이터 설정 (추가 또는 덮어쓰기)
+        if (append) {
+          setGallerys((prev) => [...prev, ...(data || [])]);
+        } else {
+          setGallerys(data || []);
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [selectedTab, supabase, PAGE_SIZE]
+  );
+
+  // 더 많은 데이터 로드하는 함수
+  const loadMore = useCallback(() => {
+    if (loading || !hasMore) return;
+
+    const nextPage = page + 1;
+    setPage(nextPage);
+    getGallerys(nextPage, true);
+  }, [loading, hasMore, page, getGallerys]);
+
+  useEffect(() => {
+    // 탭이 변경되면 페이지를 1로 리셋하고 데이터를 다시 불러옵니다
+    setPage(1);
+    getGallerys(1);
+  }, [getGallerys]);
+
+  // 실제 데이터가 없을 경우 대비 기본 데이터 (실제 데이터가 있으면 사용하지 않음)
+  const defaultExhibitions = Array(5).fill({
     title: "수원 갤러리",
     subtitle: "전국 최대 규모 갤러리",
     date: "2024.03.15 - 2024.04.15",
@@ -21,65 +93,86 @@ export default function GalleryCards() {
     <>
       <div className="flex flex-col items-center gap-4">
         <div className="grid gap-4 w-full justify-center items-center">
-          {exhibitions.map((exhibition, index) => (
-            <Card key={index} className="w-[90vw]">
-              <Link href={`/gallery/${index + 1}`}>
-                <CardBody className="flex gap-4 flex-row">
-                  <img
-                    src={`https://picsum.photos/200/200?random=${index}`}
-                    alt={exhibition.title}
-                    className="w-24 h-24 object-cover rounded"
-                  />
-                  <div className="flex flex-col w-full">
-                    <div className="flex flex-row justify-between items-start">
-                      <div className="flex flex-col">
-                        <div className="text-xs ">{exhibition.title}</div>
-                        <div className="text-lg font-bold">
-                          {exhibition.subtitle}
-                        </div>
-                      </div>
-                      <div>
-                        <FaRegBookmark className="text-gray-500 text-medium" />
-                      </div>
+          {loading && page === 1
+            ? // 처음 로딩 중 스켈레톤 UI 표시
+              Array(PAGE_SIZE)
+                .fill()
+                .map((_, index) => (
+                  <div
+                    key={index}
+                    className="max-w-[300px] w-full flex items-center gap-3"
+                  >
+                    <div>
+                      <Skeleton className="flex rounded-full w-12 h-12" />
                     </div>
-
-                    <Divider
-                      orientation="horizontal"
-                      className=" bg-gray-300"
-                    />
-                    <div className="text-xs flex flex-col my-2">
-                      <div className="flex flex-row gap-1">
-                        <FaRegCalendar />
-                        {exhibition.date}
-                      </div>
-                      <div className="flex flex-row gap-1">
-                        <IoMdPin />
-                        {exhibition.location}
-                      </div>
-                      <div className="flex flex-row gap-1">
-                        <FaRegStar />
-                        {exhibition.review}
-                      </div>
+                    <div className="w-full flex flex-col gap-2">
+                      <Skeleton className="h-3 w-36 rounded-lg" />
+                      <Skeleton className="h-3 w-24 rounded-lg" />
                     </div>
                   </div>
-                </CardBody>
-              </Link>
-            </Card>
-          ))}
-        </div>
-        {/* <div className="flex gap-2 mt-4">
-          {exhibitions.map((_, index) => (
-            <button
-              key={index}
-              className={`w-2 h-2 rounded-full ${
-                currentIndex === index ? "bg-red-500" : "bg-gray-300"
-              }`}
-              onClick={() => setCurrentIndex(index)}
-            />
-          ))}
-        </div> */}
-        <FaPlusCircle className="text-red-500 text-2xl font-bold hover:cursor-pointer" />
+                ))
+            : // 데이터 로드 완료 후 실제 갤러리 목록 표시
+              gallerys.map((gallery, index) => (
+                <Card key={index} className="w-[90vw]">
+                  <Link href={`/gallery/${gallery.id || index + 1}`}>
+                    <CardBody className="flex gap-4 flex-row">
+                      <img
+                        src={
+                         gallery.thumbnail||"/images/noimage.jpg"
+                        }
+                        alt={gallery.title || "갤러리 이미지"}
+                        className="w-24 h-24 object-cover rounded"
+                      />
+                      <div className="flex flex-col w-full">
+                        <div className="flex flex-row justify-between items-start">
+                          <div className="flex flex-col">
+                            
+                            <div className="text-lg font-bold">
+                              {gallery.title || ""}
+                            </div>
+                          </div>
+                          
+                        </div>
 
+                        <Divider
+                          orientation="horizontal"
+                          className=" bg-gray-300"
+                        />
+                        <div className="text-xs flex flex-col my-2">
+                          
+                          <div className="flex flex-row gap-1">
+                            <IoMdPin />
+                            {gallery.address || "서울 강남구"}
+                          </div>
+                          <div className="flex flex-row gap-1">
+                            <FaRegStar />
+                            {gallery.visitor_rating || "없음"}({gallery.blog_review_count || "없음"})
+                          </div>
+                        </div>
+                      </div>
+                    </CardBody>
+                  </Link>
+                </Card>
+              ))}
+
+          {/* 추가 데이터 로딩 중 표시 */}
+          {loading && page > 1 && (
+            <div className="flex justify-center w-full py-4">
+              <Spinner variant="wave" size="lg" color="danger" />
+            </div>
+          )}
+        </div>
+
+        {hasMore ? (
+          <FaPlusCircle
+            className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-8"
+            onClick={loadMore}
+          />
+        ) : (
+          <div className="text-gray-500 text-sm mb-8">
+            모든 갤러리를 불러왔습니다
+          </div>
+        )}
       </div>
     </>
   );
