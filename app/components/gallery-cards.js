@@ -91,8 +91,8 @@ export default function GalleryCards({ selectedTab }) {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-4">
-        <div className="grid gap-4 w-full justify-center items-center">
+      <div className="flex flex-col items-center gap-4 w-full justify-center">
+        <div className="grid gap-4 w-full max-w-[900px] mx-auto justify-items-center">
           {loading && page === 1
             ? // 처음 로딩 중 스켈레톤 UI 표시
               Array(PAGE_SIZE)
@@ -100,7 +100,7 @@ export default function GalleryCards({ selectedTab }) {
                 .map((_, index) => (
                   <div
                     key={index}
-                    className="max-w-[300px] w-full flex items-center gap-3"
+                    className="w-full max-w-[600px] flex items-center gap-3 justify-center mx-auto"
                   >
                     <div>
                       <Skeleton className="flex rounded-full w-12 h-12" />
@@ -113,9 +113,9 @@ export default function GalleryCards({ selectedTab }) {
                 ))
             : // 데이터 로드 완료 후 실제 갤러리 목록 표시
               gallerys.map((gallery, index) => (
-                <Card key={index} className="w-[90vw]">
-                  <Link href={`/gallery/${gallery.id || index + 1}`}>
-                    <CardBody className="flex gap-4 flex-row">
+                <Card key={index} className="w-full max-w-[600px] mx-auto">
+                  <Link href={`/gallery/${gallery.id || index + 1}`} className="w-full">
+                    <CardBody className="flex gap-4 flex-row w-full h-full">
                       <img
                         src={
                          gallery.thumbnail||"/images/noimage.jpg"

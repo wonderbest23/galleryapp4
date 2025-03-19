@@ -79,14 +79,14 @@ export function ExhibitionCards({ exhibitionCategory }) {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-4">
-        <div className="grid gap-4 w-full justify-center items-center">
+      <div className="flex flex-col items-center gap-4 w-full justify-center">
+        <div className="grid gap-4 w-full max-w-[900px] mx-auto justify-items-center">
           {loading && page === 1
             ? // 처음 로딩 중 스켈레톤 UI 표시
               Array(5)
                 .fill()
                 .map((_, index) => (
-                  <div key={index} className="max-w-[300px] w-full flex items-center gap-3">
+                  <div key={index} className="w-full max-w-[600px] flex items-center gap-3 justify-center mx-auto">
                     <div>
                       <Skeleton className="flex rounded-full w-12 h-12" />
                     </div>
@@ -98,8 +98,8 @@ export function ExhibitionCards({ exhibitionCategory }) {
                 ))
             : // 데이터 로드 완료 후 실제 전시회 목록 표시
               exhibitions.map((exhibition, index) => (
-                <Card key={index} className="w-[90vw]">
-                  <Link href={`/exhibition/${index + 1}`}>
+                <Card key={index} className="w-full max-w-[600px] mx-auto">
+                  <Link href={`/exhibition/${index + 1}`} className="w-full">
                     <CardBody className="flex gap-4 flex-row w-full h-full">
                       <div className="flex w-1/2 aspect-square overflow-hidden rounded justify-center items-center">
                         <img
@@ -109,7 +109,7 @@ export function ExhibitionCards({ exhibitionCategory }) {
                         />
                       </div>
                       <div className="flex flex-col w-full justify-center items-center h-auto">
-                        <div className="flex flex-row justify-between items-start">
+                        <div className="flex flex-row justify-between items-start w-full">
                           <div className="flex flex-col">
                             <div className="text-xs ">{exhibition.name}</div>
                             <div className="text-medium font-bold">
@@ -125,7 +125,7 @@ export function ExhibitionCards({ exhibitionCategory }) {
                           orientation="horizontal"
                           className=" bg-gray-300"
                         />
-                        <div className="text-xs flex flex-col my-2">
+                        <div className="text-xs flex flex-col my-2 w-full">
                           <div className="flex flex-row gap-1">
                             <FaRegCalendar />
                             {exhibition.date}

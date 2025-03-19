@@ -76,13 +76,13 @@ export function ExhibitionCarousel() {
               </div>
             </Card>
           ) : banners.length > 0 && (
-            <Link href={`/gallery/${banners[currentSlide]?.id || currentSlide + 1}`}>
+            
               <img
                 src={banners[currentSlide]?.url || `https://picsum.photos/800/400?random=${currentSlide}`}
                 alt={banners[currentSlide]?.title || `Slide ${currentSlide + 1}`}
                 className="w-[90vw] h-48 object-cover"
               />
-            </Link>
+            
           )}
         </CardBody>
       </Card>

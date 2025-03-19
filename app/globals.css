@@ -7,3 +7,29 @@
 *{
     font-family: 'NanumSquareRound', sans-serif;
 }
+
+/* 모바일 앱 프레임을 위한 스타일 */
+.mobile-frame {
+  position: relative;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  border-radius: 30px;
+  z-index: 10;
+}
+
+/* 스크롤바 스타일 커스터마이징 */
+.mobile-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mobile-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.mobile-content::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+.mobile-content::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
