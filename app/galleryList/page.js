@@ -70,8 +70,17 @@ export default function GalleryList() {
   console.log('selectedTab', selectedTab)
   console.log('selectedRegion', selectedRegion)
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <Spinner variant="wave" size="lg" color="danger" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center justify-center">
+      
       <div className="bg-white flex items-center w-[90vw] justify-between">
         <Button
           isIconOnly

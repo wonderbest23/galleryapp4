@@ -141,7 +141,7 @@ const Success = () => {
           isIconOnly
           variant="light"
           className="mr-2"
-          onPress={() => router.back()}
+          onPress={() => router.push("/")}
         >
           <FaChevronLeft className="text-xl" />
         </Button>
