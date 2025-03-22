@@ -36,7 +36,7 @@ export function ExhibitionCards({ exhibitionCategory }) {
       if (exhibitionCategory === 'free') {
         query = query.eq('isFree', true);
       } else if (exhibitionCategory === 'recommended') {
-        query = query.eq('isRecommend', true);
+        query = query.eq('isRecommended', true);
       }
       // 'all'인 경우는 추가 필터 없음
       
@@ -99,7 +99,7 @@ export function ExhibitionCards({ exhibitionCategory }) {
             : // 데이터 로드 완료 후 실제 전시회 목록 표시
               exhibitions.map((exhibition, index) => (
                 <Card key={index} className="w-full max-w-[600px] mx-auto">
-                  <Link href={`/exhibition/${index + 1}`} className="w-full">
+                  <Link href={`/exhibition/${exhibition.id}`} className="w-full">
                     <CardBody className="flex gap-4 flex-row w-full h-full">
                       <div className="flex w-1/2 aspect-square overflow-hidden rounded justify-center items-center">
                         <img

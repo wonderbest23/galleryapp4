@@ -31,7 +31,7 @@ export default function GalleryCards({ selectedTab }) {
 
         // selectedTab에 따라 쿼리 조건 추가
         if (selectedTab === "recommended") {
-          query = query.eq("isRecommend", true);
+          query = query.eq("isRecommended", true);
         } else if (selectedTab === "new") {
           query = query.eq("isNew", true);
         } else if (selectedTab === "now") {
@@ -120,14 +120,14 @@ export default function GalleryCards({ selectedTab }) {
                   <CardBody className="flex gap-4 flex-row w-full h-full">
                     <img
                       src={gallery.thumbnail || "/images/noimage.jpg"}
-                      alt={gallery.title || "갤러리 이미지"}
+                      alt={gallery.name || "갤러리 이미지"}
                       className="w-24 h-24 object-cover rounded"
                     />
                     <div className="flex flex-col w-full">
                       <div className="flex flex-row justify-between items-start">
                         <div className="flex flex-col">
                           <div className="text-lg font-bold">
-                            {gallery.title || ""}
+                            {gallery.name || ""}
                           </div>
                         </div>
                       </div>

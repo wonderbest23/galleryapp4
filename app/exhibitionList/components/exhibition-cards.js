@@ -8,35 +8,35 @@ import { FaRegBookmark } from "react-icons/fa6";
 import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
 
-export function ExhibitionCards() {
+export function ExhibitionCards({ exhibitions }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const exhibitions = Array(5).fill({
-    title: "수원 갤러리",
-    subtitle: "김광석 초대전 전시회",
-    date: "2024.03.15 - 2024.04.15",
-    location: "서울 강남구",
-    review: "4.0(225)",
-  });
+  // const exhibitions = Array(5).fill({
+  //   title: "수원 갤러리",
+  //   subtitle: "김광석 초대전 전시회",
+  //   date: "2024.03.15 - 2024.04.15",
+  //   location: "서울 강남구",
+  //   review: "4.0(225)",
+  // });
 
   return (
     <>
-      <div className="flex flex-col items-center gap-4 pb-20">
+      <div className="flex flex-col items-center gap-4">
         <div className="grid gap-4 w-full justify-center items-center">
           {exhibitions.map((exhibition, index) => (
-            <Card key={index} className="w-[90%] mx-auto max-w-[340px]">
-              <Link href={`/gallery/${index + 1}`}>
+            <Card key={index} className="w-full ">
+              <Link href={`/exhibition/${exhibition.id}`}>
                 <CardBody className="flex gap-4 flex-row">
                   <img
-                    src={`https://picsum.photos/200/200?random=${index}`}
+                    src={exhibition.photo}
                     alt={exhibition.title}
                     className="w-24 h-24 object-cover rounded"
                   />
                   <div className="flex flex-col w-full">
                     <div className="flex flex-row justify-between items-start">
                       <div className="flex flex-col">
-                        <div className="text-xs ">{exhibition.title}</div>
+                        <div className="text-xs ">{exhibition.name}</div>
                         <div className="text-lg font-bold">
-                          {exhibition.subtitle}
+                          {exhibition.contents}
                         </div>
                       </div>
                       <div>
@@ -55,11 +55,11 @@ export function ExhibitionCards() {
                       </div>
                       <div className="flex flex-row gap-1">
                         <IoMdPin />
-                        {exhibition.location}
+                        {exhibition.gallery.address}
                       </div>
                       <div className="flex flex-row gap-1">
                         <FaRegStar />
-                        {exhibition.review}
+                        {exhibition.review_average} ({exhibition.review_count})
                       </div>
                     </div>
                   </div>
@@ -69,7 +69,6 @@ export function ExhibitionCards() {
           ))}
         </div>
         
-        <FaPlusCircle className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4" />
       </div>
     </>
   );
