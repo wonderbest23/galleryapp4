@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Tabs, Tab, Button, Select, SelectItem } from "@heroui/react";
+import { Button, Select, SelectItem, Spinner } from "@heroui/react";
 import { FaChevronLeft } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { Card, CardBody, Divider, Image } from "@heroui/react";
@@ -14,6 +14,7 @@ export default function MagazineList() {
   const [magazines, setMagazines] = useState([]);
   const [visibleCount, setVisibleCount] = useState(5);
   const [allLoaded, setAllLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -24,6 +25,7 @@ export default function MagazineList() {
       .order("created_at", { ascending: false });
     setMagazines(data);
     setAllLoaded(data.length <= visibleCount);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -37,6 +39,13 @@ export default function MagazineList() {
     setVisibleCount(newVisibleCount);
     setAllLoaded(magazines.length <= newVisibleCount);
   };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <Spinner variant="wave" size="lg" color="danger" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center">

@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 
-import { Tabs, Tab, Button, Select, SelectItem } from "@heroui/react";
+import { Button, Select, SelectItem, Spinner } from "@heroui/react";
 import { FaChevronLeft } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { FaPlusCircle } from "react-icons/fa";
@@ -15,6 +15,7 @@ export default function GalleryList() {
   const [visibleCount, setVisibleCount] = useState(5);
   const [allLoaded, setAllLoaded] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [loading, setLoading] = useState(false);
 
   const getEvents = async () => {
     // 선택된 연도의 시작일과 끝일 계산
@@ -35,14 +36,20 @@ export default function GalleryList() {
     
     setEvents(data || []);
     setAllLoaded(data?.length <= visibleCount);
+    setLoading(false);
   };
 
   useEffect(() => {
     getEvents();
   }, [selectedYear]);
 
-  console.log("events:", events);
-  console.log("selectedYear:", selectedYear);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <Spinner variant="wave" size="lg" color="danger" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center">

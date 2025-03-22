@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { GalleryCards } from "./components/gallery-cards";
-import { Tabs, Tab, Button, Select, SelectItem } from "@heroui/react";
+import { Tabs, Tab, Button, Select, SelectItem, Spinner } from "@heroui/react";
 import { FaChevronLeft } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { FaPlusCircle } from "react-icons/fa";
