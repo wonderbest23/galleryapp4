@@ -38,8 +38,16 @@ export default function EventCarousel({ events }) {
     >
       <Card className="w-full">
         <CardBody className="p-0">
-          <Link href={`/events/${events[currentSlide].id}`}>
-            <div className="relative w-full" style={{ height: '300px', width: '300px', margin: '0 auto' }}>
+          <Link 
+            href={`/events/${events[currentSlide].id}`}
+            aria-label={`${events[currentSlide].title || `이벤트 ${currentSlide + 1}`} 상세보기`}
+          >
+            <div 
+              className="relative w-full" 
+              style={{ height: '300px', width: '300px', margin: '0 auto' }}
+              role="img"
+              aria-label={events[currentSlide].title || `이벤트 ${currentSlide + 1}`}
+            >
               <img
                 src={events[currentSlide].photo}
                 alt={events[currentSlide].title || `이벤트 ${currentSlide + 1}`}

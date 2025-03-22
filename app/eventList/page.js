@@ -59,7 +59,7 @@ export default function GalleryList() {
         <div className="w-10"></div>
       </div>
       <div className="w-[90vw] flex justify-center items-center mt-4">
-        <Select  placeholder="2025" className="w-1/3" selectedKeys={[selectedYear]} onSelectionChange={setSelectedYear}>
+        <Select  placeholder="2025" className="w-1/3" selectedKeys={[selectedYear]} onChange={(e) => setSelectedYear(e.target.value)}>
             <SelectItem key="2025" value="2025">2025</SelectItem>
             <SelectItem key="2024" value="2024">2024</SelectItem>
             <SelectItem key="2023" value="2023">2023</SelectItem>
