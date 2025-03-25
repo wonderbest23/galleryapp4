@@ -61,7 +61,7 @@ export default function MagazineList() {
         <h2 className="text-lg font-bold text-center flex-grow">매거진</h2>
         <div className="w-10"></div>
       </div>
-      <div className="w-[90vw] flex flex-col gap-4">
+      <div className="w-full flex flex-col gap-4">
         {magazines.slice(0, visibleCount).map((item, index) => (
           <React.Fragment key={item.id}>
             <Link href={`/magazine/${item.id}`}>

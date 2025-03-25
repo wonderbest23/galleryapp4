@@ -2,9 +2,8 @@ import React from "react";
 import { Button } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-export default function Star() {
-  const [rating, setRating] = React.useState(0);
-  const [hoverRating, setHoverRating] = React.useState(0);
+  export default function Star({rating, hoverRating, setRating, setHoverRating}) {
+
 
   const handleRatingClick = (value) => {
     setRating(value);

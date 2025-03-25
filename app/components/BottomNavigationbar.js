@@ -15,19 +15,19 @@ export default function BottomNavigation() {
           </svg>
           <span className="text-xs mt-1">홈</span>
         </Link>
-        <Link href="/list" className={`flex flex-col items-center justify-center w-1/4 h-full ${pathname === '/list' ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}>
+        <Link href="/magazineList" className={`flex flex-col items-center justify-center w-1/4 h-full ${pathname === '/magazineList' ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}>
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
           </svg>
           <span className="text-xs mt-1">리스트</span>
         </Link>
-        <Link href="/bookmarks" className={`flex flex-col items-center justify-center w-1/4 h-full ${pathname === '/bookmarks' ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}>
+        <Link href="/exhibitionList" className={`flex flex-col items-center justify-center w-1/4 h-full ${pathname === '/exhibitionList' ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}>
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
           </svg>
           <span className="text-xs mt-1">북마크</span>
         </Link>
-        <Link href="/mypage" className={`flex flex-col items-center justify-center w-1/4 h-full ${pathname === '/mypage' ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}>
+        <Link href="/mypage" className={`flex flex-col items-center justify-center w-1/4 h-full ${pathname === '/mypage/success' ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}>
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>

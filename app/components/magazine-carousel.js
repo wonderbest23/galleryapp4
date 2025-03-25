@@ -65,7 +65,7 @@ export function MagazineCarousel() {
                   <img
                     src={magazines[currentSlide]?.photo[0]['url'] || `/images/noimage.jpg`}
                     alt={magazines[currentSlide]?.title}
-                    className="w-full h-[300px] object-cover"
+                    className="w-full h-[450px] object-cover"
                   />
                   </Link>
                   <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent text-white">

@@ -1,11 +1,11 @@
-@import url('https://hangeul.pstatic.net/hangeul_static/css/nanum-square-round.css');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 *{
-    font-family: 'NanumSquareRound', sans-serif;
+    font-family: 'Noto Sans KR', sans-serif;
 }
 
 /* 모바일 앱 프레임을 위한 스타일 */

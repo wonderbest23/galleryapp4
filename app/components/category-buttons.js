@@ -8,6 +8,8 @@ import { IoImagesOutline } from "react-icons/io5";
 import { BiBookOpen } from "react-icons/bi";
 import { FiGift } from "react-icons/fi";
 import { TbHandshake } from "react-icons/tb";
+import { FaRegCalendar } from "react-icons/fa";
+
 import { 
   GalleryHorizontalEnd, // 갤러리, 작품 나열
   Image,                // 이미지, 작품, 전시회
@@ -21,6 +23,11 @@ import {
   Users,                 // 제휴, 협력, 커뮤니티
   PanelLeft
 } from 'lucide-react';
+import { RiShoppingBag2Line } from "react-icons/ri";
+import { LuBook } from "react-icons/lu";
+import { LuAlarmClock } from "react-icons/lu";
+import { PiSwatches } from "react-icons/pi";
+
 import Link from "next/link";
 export function CategoryButtons() {
   return (
@@ -28,7 +35,7 @@ export function CategoryButtons() {
       <Link href="/exhibitionList">
         <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
           {/* <MdOutlineImage size={20} /> */}
-          <Palette size={20} className="text-gray-500" />
+          <FaRegCalendar className="text-gray-500 text-xl" />
 
           <span>전시회</span>
         </div>
@@ -36,28 +43,28 @@ export function CategoryButtons() {
       <Link href="/galleryList">
         <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
           {/* <IoImagesOutline size={20} /> */}
-          <GalleryHorizontalEnd size={20} className="text-gray-500" />
+          <RiShoppingBag2Line className="text-gray-500 text-xl" />
           <span>갤러리</span>
         </div>
       </Link>
       <Link href="/magazineList">
         <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
           {/* <BiBookOpen size={20} /> */}
-          <Newspaper size={20} className="text-gray-500" />
+          <LuBook className="text-gray-500 text-xl" />
           <span>매거진</span>
         </div>
       </Link>
       <Link href="/eventList">
       <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
         {/* <FiGift size={20} /> */}
-        <CalendarDays size={20} className="text-gray-500"/>
+        <LuAlarmClock className="text-gray-500 text-xl" />
         <span>이벤트</span>
       </div>
       </Link>
       <Link href="/cooperationList">
         <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
           {/* <TbHandshake size={20} /> */}
-          <Handshake size={20} className="text-gray-500" />
+          <PiSwatches className="text-gray-500 text-xl" />
           <span>제휴</span>
         </div>
       </Link>

@@ -135,8 +135,8 @@ const Success = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="bg-white flex items-center w-[90vw] justify-between">
+    <div className="flex flex-col items-center justify-center ">
+      <div className="bg-white flex items-center w-full justify-between">
         <Button
           isIconOnly
           variant="light"
@@ -148,7 +148,7 @@ const Success = () => {
         <h2 className="text-lg font-bold text-center flex-grow">마이페이지</h2>
         <div className="w-10"></div>
       </div>
-      <div className="w-[90vw] h-auto flex justify-center items-center my-6 flex-col gap-y-4">
+      <div className="w-full h-auto flex justify-center items-center my-6 flex-col gap-y-4">
         <div className="w-24 h-24 flex justify-center items-center bg-black rounded-full">
           {user?.user_metadata?.avatar_url && (
             <Image
@@ -214,7 +214,7 @@ const Success = () => {
         </Tab>
       </Tabs>
 
-      <div className="w-[90vw] h-auto flex justify-center items-center flex-col gap-y-4 mb-24">
+      <div className="w-full h-auto flex justify-center items-center flex-col gap-y-4 mb-24 px-4">
         <div
           onClick={() => {
             setSelectedModal("policy");

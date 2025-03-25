@@ -9,12 +9,13 @@ import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
 import { createClient } from "@/utils/supabase/client";
 
-export function ExhibitionCards({ exhibitionCategory }) {
+export function ExhibitionCards({ exhibitionCategory, user }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [exhibitions, setExhibitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [favorites, setFavorites] = useState([]);
   const PAGE_SIZE = 5;
 
   const supabase = createClient();
@@ -77,6 +78,12 @@ export function ExhibitionCards({ exhibitionCategory }) {
     getExhibitions(1);
   }, [getExhibitions]);
 
+
+
+  const handleBookmarkClick = (exhibitionId) => {
+    
+  }
+
   return (
     <>
       <div className="flex flex-col items-center gap-4 w-full justify-center">
@@ -117,7 +124,7 @@ export function ExhibitionCards({ exhibitionCategory }) {
                             </div>
                           </div>
                           <div>
-                            <FaRegBookmark className="text-gray-500 text-medium" />
+                            <FaRegBookmark onClick={() => handleBookmarkClick(exhibition.id)} className="text-gray-500 text-medium" />
                           </div>
                         </div>
 

@@ -11,13 +11,37 @@ import { MagazineCarousel } from "./components/magazine-carousel";
 import { Input, Tabs, Tab, Card, CardBody, Button } from "@heroui/react";
 import { useEffect, useState } from "react";
 import GalleryCards from "./components/gallery-cards";
+import { createClient } from "@/utils/supabase/client";
 export default function Home() {
   const [exhibitionCategory, setExhibitionCategory] = useState("all");
-  const [selectedTab, setSelectedTab] = useState("recommended");console.log("exhibitionCategory:", exhibitionCategory);
+  const [selectedTab, setSelectedTab] = useState("recommended");
+  const [user, setUser] = useState(null);
+  const [favorites, setFavorites] = useState([]);
+  const supabase = createClient();
+  const getUser = async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      console.error("Error fetching user:", error);
+    } else {
+      setUser(data?.user);
+    }
+  };
+  useEffect(() => {
+    getUser();
+  }, []);
+  const getFavorites = async () => {
+    const { data, error } = await supabase.from("favorite").select("*").eq("name", user.email);
+    if (error) {
+      console.error("Error fetching favorites:", error);
+    } else {
+      setFavorites(data || []);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4 justify-center items-center w-full">
       {/* Banner Carousel */}
-      <ExhibitionCarousel />
+      <ExhibitionCarousel user={user}/>
 
       {/* Category Buttons */}
       <CategoryButtons />
@@ -34,21 +58,21 @@ export default function Home() {
           title="전체전시"
           className="w-full justify-center items-center"
         >
-          <ExhibitionCards exhibitionCategory={exhibitionCategory} />
+          <ExhibitionCards exhibitionCategory={exhibitionCategory} user={user}/>
         </Tab>
         <Tab
           key="free"
           title="무료전시"
           className="w-full justify-center items-center"
         >
-          <ExhibitionCards exhibitionCategory={exhibitionCategory} />
+          <ExhibitionCards exhibitionCategory={exhibitionCategory} user={user}/>
         </Tab>
         <Tab
           key="recommended"
           title="추천전시"
           className="w-full justify-center items-center"
         >
-          <ExhibitionCards exhibitionCategory={exhibitionCategory} />
+          <ExhibitionCards exhibitionCategory={exhibitionCategory} user={user}/>
         </Tab>
       </Tabs>
 
@@ -61,13 +85,13 @@ export default function Home() {
         onSelectionChange={(key) => setSelectedTab(key.toString())}
       >
         <Tab key="recommended" title="추천갤러리">
-          <GalleryCards selectedTab={selectedTab} />
+          <GalleryCards selectedTab={selectedTab} user={user}/>
         </Tab>
         <Tab key="new" title="신규갤러리">
-          <GalleryCards selectedTab={selectedTab} />
+          <GalleryCards selectedTab={selectedTab} user={user}/>
         </Tab>
         <Tab key="now" title="전시갤러리">
-          <GalleryCards selectedTab={selectedTab} />
+          <GalleryCards selectedTab={selectedTab} user={user}/>
         </Tab>
       </Tabs>
 

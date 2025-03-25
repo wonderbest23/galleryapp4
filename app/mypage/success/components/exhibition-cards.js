@@ -20,10 +20,10 @@ export function ExhibitionCards() {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-4 w-full ">
         <div className="grid gap-4 w-full justify-center items-center">
           {exhibitions.map((exhibition, index) => (
-            <Card key={index} className="w-[90vw]">
+            <Card key={index} className="w-full">
               <Link href={`/gallery/${index + 1}`}>
                 <CardBody className="flex gap-4 flex-row">
                   <img

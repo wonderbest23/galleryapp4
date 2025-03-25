@@ -30,7 +30,7 @@ export default function ExhibitionList() {
     const fetchExhibitions = async () => {
       let query = supabase
         .from("exhibition")
-        .select("*,gallery:name(*)")
+        .select("*,gallery:naver_gallery_url(*)")
         .not('gallery', 'is', null);
       
       // 선택된 탭에 따라 필터 적용
@@ -50,7 +50,7 @@ export default function ExhibitionList() {
         .range((page - 1) * 5, page * 5 - 1);
       
       if (error) {
-        console.error("Error fetching exhibitions:", error);
+        console.log("Error fetching exhibitions:", error);
       } else {
         if (page === 1) {
           setExhibitions(data);

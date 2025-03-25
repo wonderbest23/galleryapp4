@@ -24,7 +24,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
@@ -90,8 +90,11 @@ export default function RootLayout({
                         radius="lg"
                         className="w-full"
                       />
+
                       <div className="w-8 flex justify-center items-center">
-                        <FaRegBookmark className="text-xl text-gray-400" />
+                        <Link href="/exhibitionList">
+                          <FaRegBookmark className="text-xl text-gray-400" />
+                        </Link>
                       </div>
                     </div>
                     {children}
@@ -108,7 +111,11 @@ export default function RootLayout({
               <main className="w-full h-full pb-16">
                 <div className="flex justify-center items-center gap-x-4 h-6 mt-6 mb-2 mx-4">
                   <Link href="/">
-                    <img src="/logo/logo.png" alt="logo" className="w-16 h-10" />
+                    <img
+                      src="/logo/logo.png"
+                      alt="logo"
+                      className="w-16 h-10"
+                    />
                   </Link>
                   <Input
                     placeholder="둘러보기"

@@ -19,6 +19,7 @@ import { FiMapPin } from "react-icons/fi";
 import { LuClock4 } from "react-icons/lu";
 import {createClient} from "@/utils/supabase/client"
 import { IoMdInformationCircleOutline } from "react-icons/io";
+import { HiOutlineCurrencyDollar } from "react-icons/hi2";
 
 export default function App() {
   const { id } = useParams();
@@ -36,11 +37,11 @@ export default function App() {
     const fetchNotice = async () => {
       try {
         const { data: noticeData, error: noticeError } = await supabase
-          .from("exhibition_notification")
+          .from("gallery_notification")
           .select("*")
-          .eq("exhibition_id", id)
+          .eq("naver_gallery_url", exhibition?.gallery?.url)
           .order("created_at", { ascending: false });
-        
+        console.log('noticeData:',noticeData)
         if (noticeError) {
           console.error("공지사항을 가져오는 중 오류 발생:", noticeError);
           return;
@@ -53,9 +54,11 @@ export default function App() {
     };
     
     fetchNotice();
-  }, [id]);
+  }, [exhibition]);
 
+  console.log("exhibition:",exhibition)
   console.log('notice:',notice)
+  
 
   useEffect(() => {
     const fetchExhibition = async () => {
@@ -65,7 +68,7 @@ export default function App() {
           .from("exhibition")
           .select(`
             *,
-            name(*)
+            gallery:naver_gallery_url(*)
           `)
           .eq("id", id)
           .single();
@@ -178,6 +181,12 @@ export default function App() {
               <IoMdInformationCircleOutline className="text-lg text-gray-500" />
               <span>
                 {exhibition?.working_hour}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <HiOutlineCurrencyDollar className="text-lg text-gray-500" />
+              <span>
+                {exhibition?.price}
               </span>
             </div>
           </div>
