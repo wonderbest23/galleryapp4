@@ -24,12 +24,15 @@ export const metadata = {
   description: "갤러리 전시회 정보를 손쉽게 찾아보세요",
 };
 
-export const viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
+export function generateViewport() {
+  return {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    // 추가적인 동적 설정이 필요할 경우 여기에 로직 추가
+  };
+}
 
 const geistSans = Geist({
   display: "swap",
