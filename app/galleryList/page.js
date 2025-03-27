@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import { GalleryCards } from "./components/gallery-cards";
 import { Tabs, Tab, Button, Select, SelectItem, Spinner, Checkbox, addToast } from "@heroui/react";
 import { FaChevronLeft } from "react-icons/fa";
@@ -9,8 +9,11 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useSearchParams } from "next/navigation";
 
-export default function GalleryList() {
+function GalleryListContent() {
   const router = useRouter();
+  const searchParams = useSearchParams({ suspense: true });
+  const isBookmarkParam = searchParams.get('isBookmark');
+  
   const [selectedTab, setSelectedTab] = useState("all");
   const [galleries, setGalleries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,9 +24,7 @@ export default function GalleryList() {
   const [bookmarks, setBookmarks] = useState([]);
   const [user, setUser] = useState(null);
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
-  const searchParams = useSearchParams();
-  const isBookmarkParam = searchParams.get('isBookmark');
-  
+
   useEffect(() => {
     if (isBookmarkParam) {
       setIsBookmark(true);
@@ -371,5 +372,21 @@ export default function GalleryList() {
         </Tab>
       </Tabs>
     </div>
+  );
+}
+
+function LoadingComponent() {
+  return (
+    <div className="w-full flex justify-center items-center h-[90vh]">
+      <Spinner variant="wave" color="danger" />
+    </div>
+  );
+}
+
+export default function GalleryList() {
+  return (
+    <Suspense fallback={<LoadingComponent />}>
+      <GalleryListContent />
+    </Suspense>
   );
 }

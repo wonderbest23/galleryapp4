@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import { ExhibitionCards } from "./components/exhibition-cards";
 import { Tabs, Tab, Button, Select, SelectItem,Spinner, Checkbox,addToast } from "@heroui/react";
 import { FaChevronLeft, FaPlus } from "react-icons/fa";
@@ -21,15 +21,7 @@ export default function ExhibitionList() {
   const [bookmarks, setBookmarks] = useState([]);
   const [user, setUser] = useState(null);
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
-  const searchParams = useSearchParams();
-  const isBookmarkParam = searchParams.get('isBookmark');
   
-  useEffect(() => {
-    if (isBookmarkParam) {
-      setIsBookmark(true);
-    }
-  }, [isBookmarkParam]);
-
   const supabase = createClient();
 
   useEffect(() => {
@@ -256,9 +248,11 @@ export default function ExhibitionList() {
         <div className="w-10"></div>
       </div>
       
-      
-        
-      
+      <Suspense fallback={<div className="flex items-center justify-center w-full h-screen">
+          <Spinner variant="wave" size="lg" color="danger" />
+        </div>}>
+        <SearchParamsHandler setIsBookmark={setIsBookmark} />
+      </Suspense>
       
       <div className="flex justify-between items-center w-[90%] mb-4">
       <Checkbox 
@@ -365,4 +359,18 @@ export default function ExhibitionList() {
       </Tabs>
     </div>
   );
+}
+
+// SearchParams를 처리하는 별도의 컴포넌트
+function SearchParamsHandler({ setIsBookmark }) {
+  const searchParams = useSearchParams();
+  
+  useEffect(() => {
+    const isBookmarkParam = searchParams.get('isBookmark');
+    if (isBookmarkParam) {
+      setIsBookmark(true);
+    }
+  }, [searchParams, setIsBookmark]);
+  
+  return null; // UI를 렌더링하지 않는 컴포넌트
 }

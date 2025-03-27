@@ -1,10 +1,11 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Button, Spinner } from "@heroui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
-export default function mypage() {
+// SearchParams를 사용하는 컴포넌트를 별도로 분리
+function MyPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl') || '/mypage/success';
@@ -84,4 +85,27 @@ export default function mypage() {
       </div>
     </div>
   );
+}
+
+// fallback UI가 표시될 로딩 컴포넌트
+function LoadingComponent() {
+  return (
+    <div className="w-full flex justify-center items-center h-[90vh]">
+      <Spinner variant="wave" color="danger" />
+    </div>
+  );
+}
+
+// SearchParams를 사용하는 부분을 별도 컴포넌트로 추출
+function MyPageWithSearchParams() {
+  return (
+    <Suspense fallback={<LoadingComponent />}>
+      <MyPageContent />
+    </Suspense>
+  );
+}
+
+// 메인 컴포넌트
+export default function mypage() {
+  return <MyPageWithSearchParams />;
 }
