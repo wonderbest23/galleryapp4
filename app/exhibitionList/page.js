@@ -8,16 +8,17 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { FaPlusCircle } from "react-icons/fa";
 
-export default function ExhibitionList() {
+// useSearchParams를 사용하는 별도의 클라이언트 컴포넌트
+function ExhibitionListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const initialIsBookmark = searchParams.get('isBookmark') === 'true' || searchParams.get('isBookmark') === '1';
   const [selectedTab, setSelectedTab] = useState("all");
   const [exhibitions, setExhibitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [selectedRegion, setSelectedRegion] = useState("");
-  const initialIsBookmark = searchParams.get('isBookmark') === 'true' || searchParams.get('isBookmark') === '1';
   const [isBookmark, setIsBookmark] = useState(initialIsBookmark);
   const [bookmarks, setBookmarks] = useState([]);
   const [user, setUser] = useState(null);
@@ -294,7 +295,7 @@ export default function ExhibitionList() {
           북마크
         </Checkbox>
         <Select 
-          selectedKeys={[selectedRegion]} 
+          selectedKeys={selectedRegion ? [selectedRegion] : []}
           onChange={(e) => setSelectedRegion(e.target.value)} 
           className="w-1/3" 
           placeholder="지역"
@@ -393,5 +394,18 @@ export default function ExhibitionList() {
         </Tab>
       </Tabs>
     </div>
+  );
+}
+
+// 메인 컴포넌트는 Suspense로 감싸진 컨텐츠를 렌더링
+export default function ExhibitionList() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center w-full h-screen">
+        <Spinner variant="wave" size="lg" color="danger" />
+      </div>
+    }>
+      <ExhibitionListContent />
+    </Suspense>
   );
 }
