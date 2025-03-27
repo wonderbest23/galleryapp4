@@ -3,21 +3,22 @@ import React, { Suspense } from "react";
 import { ExhibitionCards } from "./components/exhibition-cards";
 import { Tabs, Tab, Button, Select, SelectItem,Spinner, Checkbox,addToast } from "@heroui/react";
 import { FaChevronLeft, FaPlus } from "react-icons/fa";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { FaPlusCircle } from "react-icons/fa";
-import { useSearchParams } from "next/navigation";
 
 export default function ExhibitionList() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedTab, setSelectedTab] = useState("all");
   const [exhibitions, setExhibitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [selectedRegion, setSelectedRegion] = useState("");
-  const [isBookmark, setIsBookmark] = useState(false);
+  const initialIsBookmark = searchParams.get('isBookmark') === 'true' || searchParams.get('isBookmark') === '1';
+  const [isBookmark, setIsBookmark] = useState(initialIsBookmark);
   const [bookmarks, setBookmarks] = useState([]);
   const [user, setUser] = useState(null);
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
@@ -36,16 +37,25 @@ export default function ExhibitionList() {
       setLoading(true);
       
       try {
+        console.log('fetchExhibitions 실행:', {
+          isBookmark,
+          userExists: !!user,
+          bookmarksLength: bookmarks.length,
+          loadingBookmarks
+        });
+        
         // 북마크 필터가 활성화되어 있지만 사용자가 로그인하지 않은 경우
         if (isBookmark && !user) {
+          console.log('북마크 필터 활성화됨, 로그인 필요');
           setExhibitions([]);
           setHasMore(false);
           setLoading(false);
           return;
         }
         
-        // 북마크 필터가 활성화되어 있지만 북마크 데이터가 아직 로드되지 않은 경우
-        if (isBookmark && loadingBookmarks) {
+        // 북마크 필터가 활성화되어 있고 사용자가 로그인했지만 북마크 데이터가 아직 로드 중인 경우
+        if (isBookmark && user && loadingBookmarks) {
+          console.log('북마크 데이터 로딩 중, 대기');
           return; // 북마크 데이터가 로드될 때까지 대기
         }
         
@@ -68,13 +78,18 @@ export default function ExhibitionList() {
         
         // 북마크 필터 적용
         if (isBookmark && user) {
+          console.log('북마크 필터링 적용');
+          
           // null이 아닌 유효한 exhibition_id만 필터링
           const bookmarkedIds = bookmarks
             .filter(b => b.exhibition_id !== null)
             .map(b => b.exhibition_id);
           
+          console.log('북마크된 전시회 ID:', bookmarkedIds);
+          
           if (bookmarkedIds.length === 0) {
             // 북마크가 없거나 모두 null인 경우 빈 결과 반환
+            console.log('북마크된 전시회 없음');
             setExhibitions([]);
             setHasMore(false);
             setLoading(false);
@@ -88,6 +103,8 @@ export default function ExhibitionList() {
           .range((page - 1) * 5, page * 5 - 1);
         
         if (error) throw error;
+        
+        console.log('가져온 전시회 데이터:', data.length);
         
         if (page === 1) {
           setExhibitions(data);
@@ -127,6 +144,7 @@ export default function ExhibitionList() {
     
     try {
       setLoadingBookmarks(true);
+      console.log('북마크 데이터 로드 중...');
       
       const { data, error } = await supabase
         .from('bookmark')
@@ -135,6 +153,7 @@ export default function ExhibitionList() {
         
       if (error) throw error;
       
+      console.log('북마크 데이터 로드 완료:', data?.length || 0);
       setBookmarks(data || []);
     } catch (error) {
       console.error('북마크 로드 에러:', error);
@@ -221,9 +240,21 @@ export default function ExhibitionList() {
   // 컴포넌트 마운트 시 북마크 로드
   useEffect(() => {
     if (user) {
+      console.log('사용자 로그인 확인됨, 북마크 로드 시작');
       fetchBookmarks();
     }
   }, [user]);
+
+  // URL 매개변수 업데이트 함수
+  const updateBookmarkUrlParam = (isBookmarked) => {
+    const url = new URL(window.location);
+    if (isBookmarked) {
+      url.searchParams.set('isBookmark', 'true');
+    } else {
+      url.searchParams.delete('isBookmark');
+    }
+    window.history.pushState({}, '', url);
+  };
 
   if (loading) {
     return (
@@ -233,6 +264,7 @@ export default function ExhibitionList() {
     );
   }
   console.log('isBookmark', isBookmark)
+  
   return (
     <div className="flex flex-col items-center justify-center">
       <div className="bg-white flex items-center w-[90vw] justify-between">
@@ -240,7 +272,7 @@ export default function ExhibitionList() {
           isIconOnly
           variant="light"
           className="mr-2"
-          onPress={() => router.back()}
+          onPress={() => router.push("/")}
         >
           <FaChevronLeft className="text-xl" />
         </Button>
@@ -248,22 +280,25 @@ export default function ExhibitionList() {
         <div className="w-10"></div>
       </div>
       
-      <Suspense fallback={<div className="flex items-center justify-center w-full h-screen">
-          <Spinner variant="wave" size="lg" color="danger" />
-        </div>}>
-        <SearchParamsHandler setIsBookmark={setIsBookmark} />
-      </Suspense>
-      
       <div className="flex justify-between items-center w-[90%] mb-4">
-      <Checkbox 
+        <Checkbox 
           color="primary" 
-          isSelected={isBookmark} 
-          onChange={(e)=>setIsBookmark(e.target.checked)}
+          value={isBookmark}
+          isSelected={isBookmark}
+          onChange={(e) => {
+            setIsBookmark(e.target.checked);
+            updateBookmarkUrlParam(e.target.checked);
+          }}
           size="md"
         >
           북마크
         </Checkbox>
-        <Select selectedKeys={[selectedRegion]} onChange={(e)=>setSelectedRegion(e.target.value)} className="w-1/3" placeholder="지역">
+        <Select 
+          selectedKeys={[selectedRegion]} 
+          onChange={(e) => setSelectedRegion(e.target.value)} 
+          className="w-1/3" 
+          placeholder="지역"
+        >
           <SelectItem key="서울" value="서울">서울</SelectItem>
           <SelectItem key="인천" value="인천">인천</SelectItem>
           <SelectItem key="경기" value="경기">경기</SelectItem>
@@ -359,18 +394,4 @@ export default function ExhibitionList() {
       </Tabs>
     </div>
   );
-}
-
-// SearchParams를 처리하는 별도의 컴포넌트
-function SearchParamsHandler({ setIsBookmark }) {
-  const searchParams = useSearchParams();
-  
-  useEffect(() => {
-    const isBookmarkParam = searchParams.get('isBookmark');
-    if (isBookmarkParam) {
-      setIsBookmark(true);
-    }
-  }, [searchParams, setIsBookmark]);
-  
-  return null; // UI를 렌더링하지 않는 컴포넌트
 }

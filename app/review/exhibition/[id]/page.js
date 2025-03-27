@@ -80,7 +80,7 @@ export default function page() {
       category: selectedFeelings,
       rating: rating,
       description: description,
-      name: user,
+      name: user.email,
       user_id: user.id,
     });
     if (error) {
