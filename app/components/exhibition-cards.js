@@ -189,7 +189,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
   return (
     <>
       <div className="flex flex-col items-center gap-4 w-full justify-center">
-        <div className="grid gap-4 w-full max-w-[900px] mx-auto justify-items-center">
+        <div className="grid gap-4 w-full max-w-[900px] mx-auto justify-center items-center">
           {loading && page === 1
             ? // 처음 로딩 중 스켈레톤 UI 표시
               Array(5)
@@ -266,24 +266,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
             </div>
           )}
         </div>
-        {/* <div className="flex gap-2 mt-4">
-          {exhibitions.map((_, index) => (
-            <button
-              key={index}
-              className={`w-2 h-2 rounded-full ${
-                currentIndex === index ? "bg-red-500" : "bg-gray-300"
-              }`}
-              onClick={() => setCurrentIndex(index)}
-            />
-          ))}
-        </div> */}
-        {/* <button
-          className="mt-4 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
-          onClick={() => console.log("플러스 버튼 클릭")}
-        >
-          +
-        </button> */}
-        {hasMore ? (
+        {hasMore && !loading ? (
           <FaPlusCircle 
             className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-8"
             onClick={loadMore}

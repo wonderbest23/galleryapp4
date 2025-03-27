@@ -1,7 +1,7 @@
 "use client";
 import React, { Suspense } from "react";
 import { GalleryCards } from "./components/gallery-cards";
-import { Tabs, Tab, Button, Select, SelectItem, Spinner, Checkbox, addToast } from "@heroui/react";
+import { Tabs, Tab, Button, Select, SelectItem, Spinner, Checkbox, addToast, Skeleton } from "@heroui/react";
 import { FaChevronLeft } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { FaPlusCircle } from "react-icons/fa";
@@ -234,143 +234,149 @@ function GalleryListContent() {
     }
   }, [user]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center w-full h-screen">
-        <Spinner variant="wave" size="lg" color="danger" />
-      </div>
-    );
-  }
-
-  console.log('galleries', galleries)
-  console.log('selectedTab', selectedTab)
-  console.log('selectedRegion', selectedRegion)
-  console.log('isBookmark', isBookmark)
-
   return (
     <div className="flex flex-col items-center justify-center">
-      
-      <div className="bg-white flex items-center w-[90vw] justify-between">
-        <Button
-          isIconOnly
-          variant="light"
-          className="mr-2"
-          onPress={() => router.back()}
-        >
-          <FaChevronLeft className="text-xl" />
-        </Button>
-        <h2 className="text-lg font-bold text-center flex-grow">갤러리</h2>
-        <div className="w-10"></div>
-      </div>
-      
-      <div className="flex justify-between items-center w-[90%] mb-4">
-        <Checkbox 
-          color="primary" 
-          isSelected={isBookmark} 
-          onChange={(e)=>setIsBookmark(e.target.checked)}
-          size="md"
-        >
-          북마크
-        </Checkbox>
-        <Select
-          selectedKeys={[selectedRegion]}
-          onChange={(e)=>setSelectedRegion(e.target.value)}
-          className="w-1/3"
-          placeholder="지역"
-        >
-          <SelectItem key="서울" value="서울">서울</SelectItem>
-          <SelectItem key="인천" value="인천">인천</SelectItem>
-          <SelectItem key="경기" value="경기">경기</SelectItem>
-          <SelectItem key="충청" value="충청">충청</SelectItem>
-          <SelectItem key="경상" value="경상">경상</SelectItem>
-          <SelectItem key="전라" value="전라">전라</SelectItem>
-          <SelectItem key="강원" value="강원">강원</SelectItem>
-          <SelectItem key="제주" value="제주">제주</SelectItem>
-        </Select>
-      </div>
-      <Tabs
-        aria-label="Exhibition options"
-        variant="underlined"
-        className="w-full flex justify-center items-center"
-        selectedKey={selectedTab}
-        onSelectionChange={setSelectedTab}
-      >
-        <Tab
-          key="all"
-          title="전체"
-          className="w-full justify-center items-center"
-        >
-          <GalleryCards 
-            galleries={galleries} 
-            user={user} 
-            bookmarks={bookmarks}
-            toggleBookmark={toggleBookmark}
-            isBookmarked={isBookmarked}
-          />
-          {hasMore ? (
-            <div className="flex justify-center items-center my-4">
-              <FaPlusCircle 
-                className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4" 
-                onClick={loadMore}
+      {loading && page === 1 ? (
+        <div className="flex flex-col items-center justify-center w-full h-full gap-y-6 mt-12">
+          {Array(5)
+            .fill(null)
+            .map((_, index) => (
+            <div key={index} className="max-w-[300px] w-full flex items-center gap-3">
+              <div>
+                <Skeleton className="flex rounded-full w-12 h-12" />
+              </div>
+              <div className="w-full flex flex-col gap-2">
+                <Skeleton className="h-3 w-3/5 rounded-lg" />
+                <Skeleton className="h-3 w-4/5 rounded-lg" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          <div className="bg-white flex items-center w-[90vw] justify-between">
+            <Button
+              isIconOnly
+              variant="light"
+              className="mr-2"
+              onPress={() => router.back()}
+            >
+              <FaChevronLeft className="text-xl" />
+            </Button>
+            <h2 className="text-lg font-bold text-center flex-grow">갤러리</h2>
+            <div className="w-10"></div>
+          </div>
+          
+          <div className="flex justify-between items-center w-[90%] mb-4">
+            <Checkbox 
+              color="primary" 
+              isSelected={isBookmark} 
+              onChange={(e)=>setIsBookmark(e.target.checked)}
+              size="md"
+            >
+              북마크
+            </Checkbox>
+            <Select
+              selectedKeys={[selectedRegion]}
+              onChange={(e)=>setSelectedRegion(e.target.value)}
+              className="w-1/3"
+              placeholder="지역"
+            >
+              <SelectItem key="서울" value="서울">서울</SelectItem>
+              <SelectItem key="인천" value="인천">인천</SelectItem>
+              <SelectItem key="경기" value="경기">경기</SelectItem>
+              <SelectItem key="충청" value="충청">충청</SelectItem>
+              <SelectItem key="경상" value="경상">경상</SelectItem>
+              <SelectItem key="전라" value="전라">전라</SelectItem>
+              <SelectItem key="강원" value="강원">강원</SelectItem>
+              <SelectItem key="제주" value="제주">제주</SelectItem>
+            </Select>
+          </div>
+          <Tabs
+            aria-label="Exhibition options"
+            variant="underlined"
+            className="w-full flex justify-center items-center"
+            selectedKey={selectedTab}
+            onSelectionChange={setSelectedTab}
+          >
+            <Tab
+              key="all"
+              title="전체"
+              className="w-full justify-center items-center"
+            >
+              <GalleryCards 
+                galleries={galleries} 
+                user={user} 
+                bookmarks={bookmarks}
+                toggleBookmark={toggleBookmark}
+                isBookmarked={isBookmarked}
               />
-            </div>
-          ) : (
-            <div className="flex justify-center items-center my-4">
-              <p className="text-gray-500 mb-4">모든 갤러리를 불러왔습니다</p>
-            </div>
-          )}
-        </Tab>
-        <Tab
-          key="now"
-          title="전시중"
-          className="w-full justify-center items-center"
-        >
-          <GalleryCards 
-            galleries={galleries} 
-            user={user} 
-            bookmarks={bookmarks}
-            toggleBookmark={toggleBookmark}
-            isBookmarked={isBookmarked}
-          />
-          {hasMore ? (
-            <div className="flex justify-center items-center my-4">
-              <FaPlusCircle 
-                className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4" 
-                onClick={loadMore}
+              {hasMore ? (
+                <div className="flex justify-center items-center my-4">
+                  <FaPlusCircle 
+                    className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4" 
+                    onClick={loadMore}
+                  />
+                </div>
+              ) : (
+                <div className="flex justify-center items-center my-4">
+                  <p className="text-gray-500 mb-4">모든 갤러리를 불러왔습니다</p>
+                </div>
+              )}
+            </Tab>
+            <Tab
+              key="now"
+              title="전시중"
+              className="w-full justify-center items-center"
+            >
+              <GalleryCards 
+                galleries={galleries} 
+                user={user} 
+                bookmarks={bookmarks}
+                toggleBookmark={toggleBookmark}
+                isBookmarked={isBookmarked}
               />
-            </div>
-          ) : (
-            <div className="flex justify-center items-center my-4">
-              <p className="text-gray-500 mb-4">모든 갤러리를 불러왔습니다</p>
-            </div>
-          )}
-        </Tab>
-        <Tab
-          key="new"
-          title="신규"
-          className="w-full justify-center items-center"
-        >
-          <GalleryCards 
-            galleries={galleries} 
-            user={user} 
-            bookmarks={bookmarks}
-            toggleBookmark={toggleBookmark}
-            isBookmarked={isBookmarked}
-          />
-          {hasMore ? (
-            <div className="flex justify-center items-center my-4">
-              <FaPlusCircle 
-                className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4" 
-                onClick={loadMore}
+              {hasMore ? (
+                <div className="flex justify-center items-center my-4">
+                  <FaPlusCircle 
+                    className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4" 
+                    onClick={loadMore}
+                  />
+                </div>
+              ) : (
+                <div className="flex justify-center items-center my-4">
+                  <p className="text-gray-500 mb-4">모든 갤러리를 불러왔습니다</p>
+                </div>
+              )}
+            </Tab>
+            <Tab
+              key="new"
+              title="신규"
+              className="w-full justify-center items-center"
+            >
+              <GalleryCards 
+                galleries={galleries} 
+                user={user} 
+                bookmarks={bookmarks}
+                toggleBookmark={toggleBookmark}
+                isBookmarked={isBookmarked}
               />
-            </div>
-          ) : (
-            <div className="flex justify-center items-center my-4">
-              <p className="text-gray-500 mb-4">모든 갤러리를 불러왔습니다</p>
-            </div>
-          )}
-        </Tab>
-      </Tabs>
+              {hasMore ? (
+                <div className="flex justify-center items-center my-4">
+                  <FaPlusCircle 
+                    className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4" 
+                    onClick={loadMore}
+                  />
+                </div>
+              ) : (
+                <div className="flex justify-center items-center my-4">
+                  <p className="text-gray-500 mb-4">모든 갤러리를 불러왔습니다</p>
+                </div>
+              )}
+            </Tab>
+          </Tabs>
+        </>
+      )}
     </div>
   );
 }

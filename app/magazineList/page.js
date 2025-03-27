@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Button, Select, SelectItem, Spinner } from "@heroui/react";
+import { Button, Skeleton } from "@heroui/react";
 import { FaChevronLeft } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { Card, CardBody, Divider, Image } from "@heroui/react";
@@ -13,7 +13,7 @@ export default function MagazineList() {
   const [magazines, setMagazines] = useState([]);
   const [visibleCount, setVisibleCount] = useState(5);
   const [allLoaded, setAllLoaded] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const supabase = createClient();
 
@@ -24,7 +24,7 @@ export default function MagazineList() {
       .order("created_at", { ascending: false });
     setMagazines(data);
     setAllLoaded(data.length <= visibleCount);
-    setLoading(false);
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -41,9 +41,22 @@ export default function MagazineList() {
 
   return (
     <div className="flex flex-col items-center justify-center mx-2">
-      {loading ? (
-        <div className="flex items-center justify-center w-full h-screen">
-          <Spinner variant="wave" size="lg" color="danger" />
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center w-full h-full gap-y-6 mt-12">
+          {[...Array(5)].map((_, index) => (
+            <div key={index} className="max-w-[300px] w-full flex items-center gap-3">
+              <div>
+                <Skeleton className="flex rounded-full w-12 h-12" />
+              </div>
+              <div className="w-full flex flex-col gap-2">
+                <Skeleton className="h-3 w-3/5 rounded-lg" />
+                <Skeleton className="h-3 w-4/5 rounded-lg" />
+              </div>
+            </div>
+          ))}
+
+ 
+
         </div>
       ) : (
         <>
