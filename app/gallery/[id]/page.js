@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Tabs, Tab, Card, CardBody, Button, Badge,Spinner } from "@heroui/react";
+import { Tabs, Tab, Card, CardBody, Button, Badge,Spinner, addToast, ToastProvider } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -40,6 +40,8 @@ export default function App() {
     oneStars: 0
   });
 
+  const [isBookmarked, setIsBookmarked] = useState(false);
+
   useEffect(() => {
     const fetchGallery = async () => {
       const { data, error } = await supabase
@@ -55,6 +57,7 @@ export default function App() {
       }
     };
     fetchGallery();
+    fetchBookmarkStatus();
     setIsLoading(false);
   }, [id]);
 
@@ -62,7 +65,9 @@ export default function App() {
     fetchNotifications();
   }, [id, notificationPage]);
   
-
+  useEffect(() => {
+    fetchReviews();
+  }, [id,reviewPage]);
 
   const fetchNotifications = async () => {
     try {
@@ -96,7 +101,164 @@ export default function App() {
     setNotificationPage(prev => prev + 1);
   };
   
-  
+  const fetchReviews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("gallery_review")
+        .select("*")
+        .eq("gallery_id", id)
+        .order('created_at', { ascending: false })
+        .range((reviewPage - 1) * reviewsPerPage, reviewPage * reviewsPerPage - 1);
+
+      if (error) {
+        console.error("리뷰 불러오기 오류:", error);
+        return;
+      }
+
+      if (data.length < reviewsPerPage) {
+        setHasMoreReviews(false);
+      }
+
+      if (reviewPage === 1) {
+        setReviews(data);
+      } else {
+        setReviews(prev => [...prev, ...data]);
+      }
+      
+      // 리뷰 통계 계산
+      calculateReviewStats();
+    } catch (error) {
+      console.error("리뷰 불러오기 중 오류 발생:", error);
+    }
+  };
+
+  const loadMoreReviews = () => {
+    setReviewPage(prev => prev + 1);
+  };
+
+  const calculateReviewStats = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("gallery_review")
+        .select("rating")
+        .eq("gallery_id", id);
+      
+      if (error) {
+        console.error("리뷰 통계 불러오기 오류:", error);
+        return;
+      }
+      
+      if (data.length === 0) return;
+      
+      const count = data.length;
+      const sum = data.reduce((acc, review) => acc + review.rating, 0);
+      const average = sum / count;
+      
+      const fiveStars = data.filter(review => review.rating === 5).length;
+      const fourStars = data.filter(review => review.rating === 4).length;
+      const threeStars = data.filter(review => review.rating === 3).length;
+      const twoStars = data.filter(review => review.rating === 2).length;
+      const oneStars = data.filter(review => review.rating === 1).length;
+      
+      setReviewStats({
+        average,
+        count,
+        fiveStars,
+        fourStars,
+        threeStars,
+        twoStars,
+        oneStars
+      });
+    } catch (error) {
+      console.error("리뷰 통계 계산 중 오류 발생:", error);
+    }
+  };
+
+  // 북마크 상태 확인 함수
+  const fetchBookmarkStatus = async () => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      
+      if (user && user.user) {
+        const { data: bookmarks, error } = await supabase
+          .from('bookmark')
+          .select('*')
+          .eq('user_id', user.user.id)
+          .eq('gallery_id', id);
+        
+        if (error) {
+          console.error('북마크 정보를 가져오는 중 오류 발생:', error);
+          return;
+        }
+        
+        setIsBookmarked(bookmarks && bookmarks.length > 0);
+      }
+    } catch (error) {
+      console.error('북마크 상태 확인 중 오류 발생:', error);
+    }
+  };
+
+  // 북마크 토글 함수
+  const toggleBookmark = async () => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      
+      if (!user || !user.user) {
+        // 로그인이 필요한 경우 처리
+        alert('북마크를 위해 로그인이 필요합니다.');
+        return;
+      }
+      
+      if (isBookmarked) {
+        // 북마크 삭제
+        const { error } = await supabase
+          .from('bookmark')
+          .delete()
+          .eq('user_id', user.user.id)
+          .eq('gallery_id', id);
+          
+        if (error) throw error;
+        
+        // 북마크 해제 토스트 메시지
+        addToast({
+          title: "북마크 해제",
+          description: "북마크가 해제되었습니다.",
+          color: "primary",
+        });
+      } else {
+        // 북마크 추가
+        const { error } = await supabase
+          .from('bookmark')
+          .insert({
+            user_id: user.user.id,
+            gallery_id: id,
+            created_at: new Date().toISOString()
+          });
+          
+        if (error) throw error;
+        
+        // 북마크 추가 토스트 메시지
+        addToast({
+          title: "북마크 설정",
+          description: "북마크가 설정되었습니다.",
+          color: "success",
+        });
+      }
+      
+      // 북마크 상태 변경
+      setIsBookmarked(!isBookmarked);
+    } catch (error) {
+      console.error('북마크 토글 중 오류 발생:', error);
+      
+      // 에러 발생 시 토스트 메시지
+      addToast({
+        title: "오류 발생",
+        description: "북마크 처리 중 오류가 발생했습니다.",
+        color: "danger",
+        icon: <Icon icon="mdi:alert-circle" />,
+      });
+    }
+  };
 
   console.log('gallery:',gallery);
 
@@ -109,6 +271,7 @@ export default function App() {
       ) : (
       <>
       {/* 상단 네비게이션 바 */}
+      
       <div className="bg-white flex items-center">
         <Button
           isIconOnly
@@ -129,12 +292,13 @@ export default function App() {
           className="w-full h-full object-cover"
         />
         <div className="absolute bottom-4 right-4 flex gap-2">
-          <Button isIconOnly variant="flat" className="bg-white/80">
-            <Icon icon="lucide:heart" className="text-xl" />
+          <Button isIconOnly variant="flat" className="bg-white/80" onPress={toggleBookmark}>
+            <Icon 
+              icon={isBookmarked ? "mdi:bookmark" : "mdi:bookmark-outline"} 
+              className="text-xl text-red-500" 
+            />
           </Button>
-          <Button isIconOnly variant="flat" className="bg-white/80">
-            <Icon icon="lucide:share" className="text-xl" />
-          </Button>
+          
         </div>
       </div>
 
@@ -236,24 +400,63 @@ export default function App() {
                         <Icon
                           key={i}
                           icon="lucide:star"
-                          className={`w-8 h-8 ${i < (gallery?.visitor_rating === 0 ? 1 : Math.floor(gallery?.visitor_rating)) ? "text-yellow-400" : "text-gray-300"}`}
+                          className={`w-8 h-8 ${i < Math.floor(reviewStats.average) ? "text-yellow-400" : "text-gray-300"}`}
                         />
                       ))}
                     </div>
                   </div>
                   <div className="text-center">
-                    <p className="text-3xl font-bold">{gallery?.visitor_rating === 0 ? "1.0" : gallery?.visitor_rating?.toFixed(1)}</p>
-                    <p className="text-sm text-gray-500">{gallery?.blog_review_count}개의 리뷰</p>
+                    <p className="text-3xl font-bold">{reviewStats.average.toFixed(1)}</p>
+                    <p className="text-sm text-gray-500">{reviewStats.count}개의 리뷰</p>
                   </div>
-                  
-                  
                 </div>
               </CardBody>
             </Card>
 
+            {reviews.length > 0 ? (
+              reviews.map((review) => (
+                <Card key={review.id} className="my-4 mx-2">
+                  <CardBody>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold">{review.name || '익명'}</h3>
+                        <p className="text-sm text-gray-500">
+                          {new Date(review.created_at).toLocaleDateString('ko-KR')}
+                        </p>
+                      </div>
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Icon
+                            key={i}
+                            icon="lucide:star"
+                            className={`h-4 w-4 ${i < review.rating ? "text-yellow-400" : "text-gray-300"}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="mt-2">{review.title}</p>
+                    <p className="mt-1 text-sm text-gray-700">{review.description}</p>
+                  </CardBody>
+                </Card>
+              ))
+            ) : (
+              <div className="flex justify-center items-center p-8 text-gray-500">
+                등록된 리뷰가 없습니다.
+              </div>
+            )}
             
-
-           
+            {reviews.length > 0 && (
+              <div className="flex justify-center items-center my-4">
+                {hasMoreReviews ? (
+                  <FaPlusCircle 
+                    className="text-red-500 text-2xl font-bold hover:cursor-pointer" 
+                    onClick={loadMoreReviews}
+                  />
+                ) : (
+                  <p className="text-gray-500">더 이상 리뷰가 없습니다.</p>
+                )}
+              </div>
+            )}
           </Tab>
         </Tabs>
       </div>

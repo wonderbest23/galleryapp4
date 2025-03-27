@@ -1,11 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Button, Spinner } from "@heroui/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
 export default function mypage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl') || '/mypage/success';
   const [loading, setLoading] = useState(false);
   
   // 컴포넌트 마운트 시 로그인 상태 확인
@@ -17,8 +19,8 @@ export default function mypage() {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          // 로그인 정보가 있으면 success 페이지로 리다이렉트
-          router.push('/mypage/success');
+          // 로그인 정보가 있으면 returnUrl로 리다이렉트 (없으면 success 페이지로)
+          router.push(returnUrl);
         }
       } catch (error) {
         console.error('로그인 상태 확인 중 오류 발생:', error);
@@ -28,7 +30,7 @@ export default function mypage() {
     };
     
     checkLoginStatus();
-  }, [router]);
+  }, [router, returnUrl]);
   
   const handleKakaoLogin = async () => {
     try {
@@ -38,7 +40,7 @@ export default function mypage() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'kakao',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?redirect_to=/mypage/success`,
+          redirectTo: `${window.location.origin}/auth/callback?redirect_to=${encodeURIComponent(returnUrl)}`,
         },
       });
       

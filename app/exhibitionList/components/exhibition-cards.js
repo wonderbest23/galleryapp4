@@ -1,14 +1,14 @@
 "use client";
 import React, { useState } from "react";
-import { Card, CardBody, Divider } from "@heroui/react";
+import { Card, CardBody, Divider,addToast } from "@heroui/react";
 import { FaRegCalendar } from "react-icons/fa";
 import { IoMdPin } from "react-icons/io";
 import { FaRegStar } from "react-icons/fa";
-import { FaRegBookmark } from "react-icons/fa6";
+import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
 
-export function ExhibitionCards({ exhibitions }) {
+export function ExhibitionCards({ exhibitions, user, bookmarks, toggleBookmark, isBookmarked }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   // const exhibitions = Array(5).fill({
   //   title: "수원 갤러리",
@@ -39,8 +39,12 @@ export function ExhibitionCards({ exhibitions }) {
                           {exhibition.contents}
                         </div>
                       </div>
-                      <div>
-                        <FaRegBookmark className="text-gray-500 text-medium" />
+                      <div onClick={(e) => toggleBookmark(e, exhibition)}>
+                        {isBookmarked(exhibition.id) ? (
+                          <FaBookmark className="text-red-500 text-medium cursor-pointer" />
+                        ) : (
+                          <FaRegBookmark className="text-gray-500 text-medium cursor-pointer" />
+                        )}
                       </div>
                     </div>
 

@@ -13,6 +13,7 @@ import { FaRegBookmark } from "react-icons/fa";
 import BottomNavigation from "@/app/components/BottomNavigationbar";
 import Providers from "@/app/components/providers";
 import Link from "next/link";
+import Navbar from "@/app/components/Navbar";
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : "http://localhost:3000";
@@ -71,32 +72,8 @@ export default function RootLayout({
               <div className="flex-1 overflow-y-auto h-full">
                 <Providers>
                   <main className="w-full h-full pb-16">
-                    <div className="flex justify-center items-center gap-x-4 h-6 mt-6 mb-2 mx-4">
-                      <img
-                        src="/logo/logo.png"
-                        alt="logo"
-                        className="w-16 h-10"
-                      />
-
-                      <Input
-                        placeholder="둘러보기"
-                        startContent={
-                          <Icon
-                            icon="lucide:search"
-                            className="text-default-400"
-                          />
-                        }
-                        size="sm"
-                        radius="lg"
-                        className="w-full"
-                      />
-
-                      <div className="w-8 flex justify-center items-center">
-                        <Link href="/exhibitionList">
-                          <FaRegBookmark className="text-xl text-gray-400" />
-                        </Link>
-                      </div>
-                    </div>
+                    <Navbar />
+                    
                     {children}
                   </main>
                   <BottomNavigation />
@@ -109,27 +86,7 @@ export default function RootLayout({
           <div className="lg:hidden block h-screen w-full">
             <HeroUIProvider>
               <main className="w-full h-full pb-16">
-                <div className="flex justify-center items-center gap-x-4 h-6 mt-6 mb-2 mx-4">
-                  <Link href="/">
-                    <img
-                      src="/logo/logo.png"
-                      alt="logo"
-                      className="w-16 h-10"
-                    />
-                  </Link>
-                  <Input
-                    placeholder="둘러보기"
-                    startContent={
-                      <Icon icon="lucide:search" className="text-default-400" />
-                    }
-                    size="sm"
-                    radius="lg"
-                    className="w-full"
-                  />
-                  <div className="w-8 flex justify-center items-center">
-                    <FaRegBookmark className="text-xl text-gray-400" />
-                  </div>
-                </div>
+                <Navbar></Navbar>
                 {children}
               </main>
               <BottomNavigation />

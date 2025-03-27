@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { ExhibitionCards } from "./components/exhibition-cards";
+import { ExhibitionCards } from "./components/BookmarkedExhibition";
 import {
   Tabs,
   Tab,
@@ -22,6 +22,9 @@ import { FiLogOut } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
+import BookmarkedExhibition from "./components/BookmarkedExhibition";
+import Reviews from "./components/Reviews";
+import GalleryCards from "./components/gallery-cards";
 
 const Success = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -33,6 +36,7 @@ const Success = () => {
   const [title, setTitle] = useState(null);
   const [content, setContent] = useState(null);
   const [selectedModal, setSelectedModal] = useState(null);
+  const [selectedTab, setSelectedTab] = useState("recommended");
 
   const getPolicy = async () => {
     const supabase = createClient();
@@ -175,44 +179,29 @@ const Success = () => {
           title="나의즐겨찾기"
           className="w-full justify-center items-center"
         >
-          <ExhibitionCards />
+          <BookmarkedExhibition user={user} />
         </Tab>
         <Tab
           key="review"
           title="리뷰"
           className="w-full justify-center items-center"
         >
-          <ExhibitionCards />
+          <Reviews user={user} />
+          {/* <ExhibitionCards user={user} /> */}
         </Tab>
       </Tabs>
-
-      <Tabs
-        aria-label="Exhibition options"
-        variant="underlined"
-        className="w-full flex justify-center items-center"
-      >
-        <Tab
-          key="recommended"
-          title="추천갤러리"
-          className="w-full justify-center items-center"
-        >
-          <ExhibitionCards />
-        </Tab>
-        <Tab
-          key="new"
-          title="신규갤러리"
-          className="w-full justify-center items-center"
-        >
-          <ExhibitionCards />
-        </Tab>
-        <Tab
-          key="ongoing"
-          title="전시중갤러리"
-          className="w-full justify-center items-center"
-        >
-          <ExhibitionCards />
-        </Tab>
-      </Tabs>
+      <Tabs className="w-full flex justify-center items-center" aria-label="Gallery options" variant="underlined" selectedKey={selectedTab} onSelectionChange={setSelectedTab}>
+      <Tab key="recommended" title="추천갤러리">
+        <GalleryCards selectedTab={selectedTab} />
+      </Tab>
+      <Tab key="new" title="신규갤러리">
+        <GalleryCards selectedTab={selectedTab} />
+      </Tab>
+      <Tab key="now" title="전시갤러리">
+        <GalleryCards selectedTab={selectedTab} />
+      </Tab>
+    </Tabs>
+      
 
       <div className="w-full h-auto flex justify-center items-center flex-col gap-y-4 mb-24 px-4">
         <div
@@ -227,8 +216,7 @@ const Success = () => {
         </div>
         <Divider></Divider>
         <div  className="flex items-center gap-x-2 w-full cursor-pointer" onClick={() => {
-            setSelectedModal("customerService");
-            onOpen();
+            router.push("http://pf.kakao.com/_sBnXn/chat")
           }}
         >
           <BiSupport className="text-gray-600" size={20} />
@@ -250,10 +238,9 @@ const Success = () => {
               <ModalHeader className="flex flex-col gap-1">
                 {title}
               </ModalHeader>
-              <ModalBody>
-                <p>
-                  {content}
-                </p>
+              <ModalBody className="max-h-[80vh] overflow-y-auto">
+                <div className="text-sm" dangerouslySetInnerHTML={{ __html: content }} />
+                  
 
               </ModalBody>
               <ModalFooter>

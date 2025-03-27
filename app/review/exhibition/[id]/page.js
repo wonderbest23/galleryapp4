@@ -24,7 +24,7 @@ import { addToast, ToastProvider } from "@heroui/react";
 export default function page() {
   const [selectedFeelings, setSelectedFeelings] = useState([]);
   const { id } = useParams();
-  const [gallery, setGallery] = useState(null);
+  const [exhibition, setExhibition] = useState(null);
   const [description, setDescription] = useState("");
   const supabase = createClient();
   const [isLoading, setIsLoading] = useState(true);
@@ -33,27 +33,34 @@ export default function page() {
   const [user, setUser] = useState(null);
   const getUser = async () => {
     const { data, error } = await supabase.auth.getUser();
+    console.log("data:", data);
+    if(!data.user){
+      router.push("/mypage?returnUrl=/review/exhibition/" + id);
+    }
     if (error) {
       console.error("Error fetching user:", error);
     } else {
       setUser(data.user);
     }
   };
-  const fetchGallery = async () => {
+  useEffect(() => {
+    getUser();
+  }, []);
+  const fetchExhibition = async () => {
     const { data, error } = await supabase
-      .from("gallery")
+      .from("exhibition")
       .select("*")
       .eq("id", id)
       .single();
     if (error) {
       console.error("Error fetching gallery:", error);
     } else {
-      setGallery(data);
+      setExhibition(data);
       setIsLoading(false);
     }
   };
   useEffect(() => {
-    fetchGallery();
+    fetchExhibition();
   }, [id]);
 
   const handleFeelingClick = (feeling) => {
@@ -68,12 +75,13 @@ export default function page() {
   console.log("feeling:", selectedFeelings);
 
   const handleReviewSubmit = async () => {
-    const { data, error } = await supabase.from("gallery_review").insert({
-      gallery_id: id,
+    const { data, error } = await supabase.from("exhibition_review").insert({
+      exhibition_id: id,
       category: selectedFeelings,
       rating: rating,
       description: description,
-      name:user
+      name: user,
+      user_id: user.id,
     });
     if (error) {
       console.error("Error submitting review:", error);
@@ -85,12 +93,16 @@ export default function page() {
         color: "success",
       });
     }
+    router.push("/");
   };
+  // if (!user) {
+  //   router.push("/login");
+  // }
 
   return (
     <div className="flex flex-col items-center justify-center gap-y-4 w-full max-w-[375px] px-2">
-      <ToastProvider placement="top-center" toastOffset={60} />
-
+      {user && (
+        <>
       <div className="bg-white flex items-center w-full justify-between">
         <Button
           isIconOnly
@@ -120,26 +132,29 @@ export default function page() {
         <Card className="w-full m-0">
           <CardBody className="flex gap-4 flex-row">
             <img
-              src={gallery?.thumbnail}
-              alt={gallery?.title}
+              src={exhibition?.photo}
+              alt={exhibition?.title}
               className="w-24 h-24 object-cover rounded"
             />
             <div className="flex flex-col w-full">
-              <div className="flex flex-row justify-between items-start">
+              <div className="flex flex-col justify-between items-start">
                 <div className="flex flex-col">
-                  <div className="text-lg font-bold">{gallery?.name}</div>
+                  <div className="text-sm font-bold text-gray-500">
+                    {exhibition?.name}
+                  </div>
+                </div>
+                <div className="flex flex-col">
+                  <div className="text-lg font-bold">
+                    {exhibition?.contents}
+                  </div>
                 </div>
               </div>
 
               <Divider orientation="horizontal" className=" bg-gray-300" />
               <div className="text-xs flex flex-col my-2">
                 <div className="flex flex-row gap-1">
-                  <IoMdPin />
-                  {gallery?.address}
-                </div>
-                <div className="flex flex-row gap-1">
                   <FaRegStar />
-                  {gallery?.visitor_rating}({gallery?.blog_review_count})
+                  {exhibition?.review_average}({exhibition?.review_count})
                 </div>
               </div>
             </div>
@@ -147,7 +162,12 @@ export default function page() {
         </Card>
       )}
       <div className="w-full flex flex-col gap-4">
-        <Star rating={rating} hoverRating={hoverRating} setRating={setRating} setHoverRating={setHoverRating} />
+        <Star
+          rating={rating}
+          hoverRating={hoverRating}
+          setRating={setRating}
+          setHoverRating={setHoverRating}
+        />
       </div>
       <div className="w-full flex flex-col gap-4 font-bold text-xl text-center">
         어떤 부분이 느껴졌나요?
@@ -191,6 +211,8 @@ export default function page() {
           리뷰작성하기
         </Button>
       </div>
+      </>
+      )}
     </div>
   );
 }

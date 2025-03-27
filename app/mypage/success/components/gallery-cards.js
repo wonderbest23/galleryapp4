@@ -8,7 +8,6 @@ import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
-import useBookmarkStore from "./bookmarkStore";
 import { addToast } from "@heroui/react";
 
 export default function GalleryCards({ selectedTab, user }) {
@@ -16,114 +15,8 @@ export default function GalleryCards({ selectedTab, user }) {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const PAGE_SIZE = 5;
+  const PAGE_SIZE = 1;
   const supabase = createClient();
-
-  // Zustand 북마크 스토어에서 상태와 함수 가져오기
-  const { bookmarks, setBookmarks } = useBookmarkStore();
-  
-  // 북마크 상태 확인하는 함수
-  const isBookmarked = (galleryId) => {
-    return bookmarks.some(bookmark => bookmark.gallery_id === galleryId);
-  };
-  
-  // 북마크 토글 함수
-  const toggleBookmark = async (e, gallery) => {
-    e.preventDefault(); // 링크 이벤트 방지
-    e.stopPropagation(); // 이벤트 버블링 방지
-    
-    if (!user) {
-      // 사용자가 로그인하지 않은 경우 처리
-      alert('북마크를 추가하려면 로그인이 필요합니다.');
-      return;
-    }
-    
-    const isCurrentlyBookmarked = isBookmarked(gallery.id);
-    
-    try {
-      if (isCurrentlyBookmarked) {
-        // 북마크 삭제
-        const { error } = await supabase
-          .from('bookmark')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('gallery_id', gallery.id);
-          
-        if (error) throw error;
-        
-        // Zustand 스토어에서 북마크 제거
-        setBookmarks(bookmarks.filter(bookmark => bookmark.gallery_id !== gallery.id));
-        
-        // 북마크 삭제 토스트 표시
-        addToast({
-          title: "북마크 삭제",
-          description: `${gallery.name} 북마크가 삭제되었습니다.`,
-          color: "danger",
-        });
-      } else {
-        // 북마크 추가
-        const { data, error } = await supabase
-          .from('bookmark')
-          .insert({
-            user_id: user.id,
-            gallery_id: gallery.id,
-            created_at: new Date().toISOString()
-          })
-          .select();
-          
-        if (error) throw error;
-        
-        // Zustand 스토어에 북마크 추가
-        setBookmarks([...bookmarks, data[0]]);
-        
-        // 북마크 추가 토스트 표시
-        addToast({
-          title: "북마크 추가",
-          description: `${gallery.name} 북마크에 추가되었습니다.`,
-          color: "success",
-        });
-      }
-    } catch (error) {
-      console.error('북마크 토글 에러:', error);
-      
-      // 에러 토스트 표시
-      addToast({
-        title: "오류 발생",
-        description: "북마크 처리 중 오류가 발생했습니다.",
-        color: "danger",
-        variant: "solid",
-        timeout: 3000
-      });
-    }
-  };
-  
-  // 사용자의 북마크 목록 가져오기
-  const fetchBookmarks = async () => {
-    if (!user) return;
-    
-    try {
-      setLoading(true);
-      
-      const { data, error } = await supabase
-        .from('bookmark')
-        .select('*')
-        .eq('user_id', user.id);
-        
-      if (error) throw error;
-      
-      // 북마크 데이터를 Zustand 스토어에 저장
-      setBookmarks(data || []);
-    } catch (error) {
-      console.error('북마크 로드 에러:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  // 컴포넌트 마운트 시 북마크 로드
-  useEffect(() => {
-    fetchBookmarks();
-  }, [user]);
 
   const getGallerys = useCallback(
     async (pageNum = 1, append = false) => {
@@ -202,22 +95,15 @@ export default function GalleryCards({ selectedTab, user }) {
       <div className="grid gap-4 w-full max-w-[900px] mx-auto justify-items-center">
         {loading && page === 1
           ? // 처음 로딩 중 스켈레톤 UI 표시
-            Array(PAGE_SIZE)
-              .fill()
-              .map((_, index) => (
-                <div
-                  key={index}
-                  className="w-full max-w-[600px] flex items-center gap-3 justify-center mx-auto"
-                >
-                  <div>
-                    <Skeleton className="flex rounded-full w-12 h-12" />
-                  </div>
-                  <div className="w-full flex flex-col gap-2">
-                    <Skeleton className="h-3 w-36 rounded-lg" />
-                    <Skeleton className="h-3 w-24 rounded-lg" />
-                  </div>
-                </div>
-              ))
+            <div className="w-full max-w-[600px] flex items-center gap-3 justify-center mx-auto">
+              <div>
+                <Skeleton className="flex rounded-full w-12 h-12" />
+              </div>
+              <div className="w-full flex flex-col gap-2">
+                <Skeleton className="h-3 w-36 rounded-lg" />
+                <Skeleton className="h-3 w-24 rounded-lg" />
+              </div>
+            </div>
           : // 데이터 로드 완료 후 실제 갤러리 목록 표시
             gallerys.map((gallery, index) => (
               <Card key={index} className="w-full max-w-[600px] mx-auto">
@@ -232,18 +118,9 @@ export default function GalleryCards({ selectedTab, user }) {
                       className="w-24 h-24 object-cover rounded"
                     />
                     <div className="flex flex-col w-full">
-                      <div className="flex flex-row justify-between items-start">
-                        <div className="flex flex-col">
-                          <div className="text-lg font-bold">
-                            {gallery.name || ""}
-                          </div>
-                        </div>
-                        <div onClick={(e) => toggleBookmark(e, gallery)}>
-                          {isBookmarked(gallery.id) ? (
-                            <FaBookmark className="text-red-500 text-medium cursor-pointer" />
-                          ) : (
-                            <FaRegBookmark className="text-gray-500 text-medium cursor-pointer" />
-                          )}
+                      <div className="flex flex-col">
+                        <div className="text-lg font-bold">
+                          {gallery.name || ""}
                         </div>
                       </div>
 
@@ -276,13 +153,16 @@ export default function GalleryCards({ selectedTab, user }) {
         )}
       </div>
 
+      {/* 플러스 버튼을 항상 중앙에 고정하고 마진 추가 */}
       {hasMore ? (
-        <FaPlusCircle
-          className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-8"
-          onClick={loadMore}
-        />
+        <div className="flex justify-center w-full my-8">
+          <FaPlusCircle
+            className="text-red-500 text-3xl font-bold hover:cursor-pointer hover:scale-110 transition-transform"
+            onClick={loadMore}
+          />
+        </div>
       ) : (
-        <div className="text-gray-500 text-sm mb-8">
+        <div className="text-gray-500 text-sm my-8 text-center">
           모든 갤러리를 불러왔습니다
         </div>
       )}

@@ -4,12 +4,10 @@ import { Card, CardBody, Divider } from "@heroui/react";
 import { FaRegCalendar } from "react-icons/fa";
 import { IoMdPin } from "react-icons/io";
 import { FaRegStar } from "react-icons/fa";
-import { FaRegBookmark } from "react-icons/fa6";
+import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 import Link from "next/link";
 
-export function GalleryCards({ galleries }) {
-
-
+export function GalleryCards({ galleries, user, bookmarks, toggleBookmark, isBookmarked }) {
   return (
     <>
       <div className="flex flex-col items-center gap-4">
@@ -36,8 +34,15 @@ export function GalleryCards({ galleries }) {
                             {gallery.name || gallery.subtitle}
                           </div>
                         </div>
-                        <div>
-                          <FaRegBookmark className="text-gray-500 text-medium" />
+                        <div 
+                          onClick={(e) => toggleBookmark(e, gallery)}
+                          className="cursor-pointer"
+                        >
+                          {user && isBookmarked && isBookmarked(gallery.id) ? (
+                            <FaBookmark className="text-red-500 text-medium" />
+                          ) : (
+                            <FaRegBookmark className="text-gray-500 text-medium" />
+                          )}
                         </div>
                       </div>
 

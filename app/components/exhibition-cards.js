@@ -1,13 +1,14 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, CardBody, Divider, Skeleton,Spinner } from "@heroui/react";
+import { Card, CardBody, Divider, Skeleton,Spinner, addToast } from "@heroui/react";
 import { FaRegCalendar } from "react-icons/fa";
 import { IoMdPin } from "react-icons/io";
 import { FaRegStar } from "react-icons/fa";
-import { FaRegBookmark } from "react-icons/fa6";
+import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
 import { createClient } from "@/utils/supabase/client";
+import useBookmarkStore from "./bookmarkStore";
 
 export function ExhibitionCards({ exhibitionCategory, user }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -15,10 +16,117 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [favorites, setFavorites] = useState([]);
+  const [loadingBookmarks, setLoadingBookmarks] = useState(false);
+  
   const PAGE_SIZE = 5;
 
   const supabase = createClient();
+  
+  // Zustand 북마크 스토어에서 상태와 함수 가져오기
+  const { bookmarks, setBookmarks } = useBookmarkStore();
+  
+  // 북마크 상태 확인하는 함수
+  const isBookmarked = (exhibitionId) => {
+    return bookmarks.some(bookmark => bookmark.exhibition_id === exhibitionId);
+  };
+  
+  // 북마크 토글 함수
+  const toggleBookmark = async (e, exhibition) => {
+    e.preventDefault(); // 링크 이벤트 방지
+    e.stopPropagation(); // 이벤트 버블링 방지
+    
+    if (!user) {
+      // 사용자가 로그인하지 않은 경우 처리
+      alert('북마크를 추가하려면 로그인이 필요합니다.');
+      return;
+    }
+    
+    const isCurrentlyBookmarked = isBookmarked(exhibition.id);
+    
+    try {
+      if (isCurrentlyBookmarked) {
+        // 북마크 삭제
+        const { error } = await supabase
+          .from('bookmark')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('exhibition_id', exhibition.id);
+          
+        if (error) throw error;
+        
+        // Zustand 스토어에서 북마크 제거
+        setBookmarks(bookmarks.filter(bookmark => bookmark.exhibition_id !== exhibition.id));
+        
+        // 북마크 삭제 토스트 표시
+        addToast({
+          title: "북마크 삭제",
+          description: `${exhibition.name} 북마크가 삭제되었습니다.`,
+          color: "danger",
+        });
+      } else {
+        // 북마크 추가
+        const { data, error } = await supabase
+          .from('bookmark')
+          .insert({
+            user_id: user.id,
+            exhibition_id: exhibition.id,
+            created_at: new Date().toISOString()
+          })
+          .select();
+          
+        if (error) throw error;
+        
+        // Zustand 스토어에 북마크 추가
+        setBookmarks([...bookmarks, data[0]]);
+        
+        // 북마크 추가 토스트 표시
+        addToast({
+          title: "북마크 추가",
+          description: `${exhibition.name} 북마크에 추가되었습니다.`,
+          color: "success",
+        });
+      }
+    } catch (error) {
+      console.error('북마크 토글 에러:', error);
+      
+      // 에러 토스트 표시
+      addToast({
+        title: "오류 발생",
+        description: "북마크 처리 중 오류가 발생했습니다.",
+        color: "danger",
+        variant: "solid",
+        timeout: 3000
+      });
+    }
+  };
+  
+  // 사용자의 북마크 목록 가져오기
+  const fetchBookmarks = async () => {
+    if (!user) return;
+    
+    try {
+      setLoadingBookmarks(true);
+      
+      const { data, error } = await supabase
+        .from('bookmark')
+        .select('*')
+        .eq('user_id', user.id);
+        
+      if (error) throw error;
+      
+      // 북마크 데이터를 Zustand 스토어에 저장
+      setBookmarks(data || []);
+    } catch (error) {
+      console.error('북마크 로드 에러:', error);
+    } finally {
+      setLoadingBookmarks(false);
+    }
+  };
+  
+  // 컴포넌트 마운트 시 북마크 로드
+  useEffect(() => {
+    fetchBookmarks();
+  }, [user]);
 
   const getExhibitions = useCallback(async (pageNum = 1, append = false) => {
     try {
@@ -78,12 +186,6 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
     getExhibitions(1);
   }, [getExhibitions]);
 
-
-
-  const handleBookmarkClick = (exhibitionId) => {
-    
-  }
-
   return (
     <>
       <div className="flex flex-col items-center gap-4 w-full justify-center">
@@ -123,8 +225,12 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
                               {exhibition.contents}
                             </div>
                           </div>
-                          <div>
-                            <FaRegBookmark onClick={() => handleBookmarkClick(exhibition.id)} className="text-gray-500 text-medium" />
+                          <div onClick={(e) => toggleBookmark(e, exhibition)}>
+                            {isBookmarked(exhibition.id) ? (
+                              <FaBookmark className="text-red-500 text-medium cursor-pointer" />
+                            ) : (
+                              <FaRegBookmark className="text-gray-500 text-medium cursor-pointer" />
+                            )}
                           </div>
                         </div>
 

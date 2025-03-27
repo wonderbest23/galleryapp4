@@ -48,7 +48,7 @@ export default function MagazineList() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center mx-2">
       <div className="bg-white flex items-center w-[90vw] justify-between">
         <Button
           isIconOnly
