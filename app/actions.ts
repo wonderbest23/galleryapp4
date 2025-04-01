@@ -132,3 +132,56 @@ export const signOutAction = async () => {
   await supabase.auth.signOut();
   return redirect("/sign-in");
 };
+
+export const gallerySignOutAction = async () => {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  return redirect("/gallery/login");
+};
+
+export const adminSignInAction = async (formData: FormData) => {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    return encodedRedirect("error", "/admin/login", error.message);
+  }
+
+  return redirect("/admin/gallery");
+};
+
+export const gallerySignInAction = async (formData: FormData) => {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const supabase = await createClient();
+
+  const { error, data } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    return encodedRedirect("error", "/gallery/login", error.message);
+  }
+
+  // 로그인 후 사용자의 역할 확인
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', data.user.id)
+    .single();
+
+  // 역할이 gallery가 아니면 로그인 거부
+  if (profileError || !profile || profile.role !== 'gallery') {
+    await supabase.auth.signOut();
+    return encodedRedirect("error", "/gallery/login", "갤러리 계정만 로그인 가능합니다.");
+  }
+
+  return redirect("/gallery");
+};
