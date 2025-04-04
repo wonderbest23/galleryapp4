@@ -24,7 +24,7 @@ export default function Sidebar({ onItemClick }) {
     <div className="flex flex-col gap-2 p-4">
       {/* Logo Area */}
       <div className="flex items-center gap-2 px-2 mb-6">
-        <Link href="/admin">
+        <Link href="/admin/gallery">
           <Image src="/logo/logo.png" alt="logo" width={50} height={50} />
         </Link>
         <span className="font-bold text-xl">관리자 메뉴</span>
