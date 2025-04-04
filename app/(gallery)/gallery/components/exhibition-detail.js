@@ -1,9 +1,13 @@
-import React from "react";
-import { Input, Button, Textarea, Select, SelectItem, DatePicker } from "@heroui/react";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Input, Button, Textarea, Checkbox, DatePicker,addToast } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import { createClient } from "@/utils/supabase/client";
 
 export function ExhibitionDetail({ 
-  exhibition, 
+  galleryInfo,
+  exhibition = {}, 
   onUpdate, 
   onDelete, 
   isNew = false, 
@@ -13,79 +17,103 @@ export function ExhibitionDetail({
   isEdit = false,
   selectedKey
 }) {
-  const [isEditing, setIsEditing] = React.useState(isNew || isEdit);
   const emptyExhibition = {
-    id: null,
-    title: "",
-    description: "",
-    location: "",
-    artist: "",
-    status: "pending",
-    startDate: new Date().toISOString().split("T")[0],
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    thumbnail: "",
-    ticketPrice: 0,
-    visitorCount: 0,
+    name: "",
+    contents: "",
+    photo: "",
+    date: "",
+    working_hour: "",
+    off_date: "",
+    add_info: "",
+    homepage_url: "",
+    isFree: false,
+    isRecommended: false,
+    review_count: 0,
+    review_average: 0,
+    naver_gallery_url: "",
+    price: 0
   };
   
-  const [editedExhibition, setEditedExhibition] = React.useState(isNew ? emptyExhibition : exhibition);
-  const [imagePreview, setImagePreview] = React.useState(isNew ? null : exhibition?.thumbnail || null);
+  const [editedExhibition, setEditedExhibition] = useState(isNew ? emptyExhibition : exhibition);
+  const [imagePreview, setImagePreview] = useState(isNew ? null : exhibition?.photo || null);
+  const [isSaving, setIsSaving] = useState(false);
+  const supabase = createClient();
 
-  // selectedKey가 변경될 때 필요한 데이터 로드
-  React.useEffect(() => {
+  // selectedKey나 exhibition이 변경될 때 필요한 데이터 로드
+  useEffect(() => {
     if (exhibition && !isNew) {
       setEditedExhibition(exhibition);
-      setImagePreview(exhibition.thumbnail || null);
+      setImagePreview(exhibition.photo || null);
     }
   }, [selectedKey, exhibition, isNew]);
 
-  const handleSave = () => {
-    if (isNew) {
-      // 신규 전시회 저장
-      if (onSave) {
-        const newExhibition = {
-          ...editedExhibition,
-          id: Date.now(), // 임시 ID 생성
-        };
-        onSave(newExhibition);
+  // 저장 핸들러 - 내용이 변경되면 자동으로 저장
+  const handleSave = async () => {
+    // 필수 필드 검증
+    if (!editedExhibition.contents) {
+      alert('갤러리명과 전시회명은 필수 입력 항목입니다.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      if (isNew) {
+        // 신규 전시회 저장
+        if (onSave) {
+          onSave(editedExhibition);
+        }
+      } else {
+        // 기존 전시회 업데이트
+        if (onUpdate) {
+          onUpdate(editedExhibition);
+        }
       }
-    } else {
-      // 기존 전시회 업데이트
-      const savedExhibition = {
-        ...editedExhibition,
-      };
-      onUpdate(savedExhibition);
-      setIsEditing(false);
+    } catch (error) {
+      console.error('전시회 저장 중 오류 발생:', error);
+      alert('전시회 정보 저장 중 오류가 발생했습니다.');
+    } finally {
+      setIsSaving(false);
+      addToast({
+        title: "전시회 저장 완료",
+        description: "전시회 정보가 성공적으로 저장되었습니다.",
+        color: "success",
+      });
     }
   };
 
+  // 취소 핸들러
   const handleCancel = () => {
     if (isNew) {
       if (onCancel) onCancel();
     } else {
       setEditedExhibition(exhibition);
-      setImagePreview(exhibition.thumbnail || null);
-      setIsEditing(false);
+      setImagePreview(exhibition.photo || null);
       if (onCancel) onCancel();
     }
   };
 
+  // 삭제 핸들러
   const handleDelete = () => {
     if (window.confirm("정말로 이 전시회를 삭제하시겠습니까?")) {
-      onDelete();
+      if (onDelete) onDelete();
     }
   };
 
+  // 필드 변경 핸들러
+  const handleFieldChange = (field, value) => {
+    const updatedExhibition = {...editedExhibition, [field]: value};
+    setEditedExhibition(updatedExhibition);
+    // 여기서 변경사항 즉시 저장하지 않고, 사용자가 저장 버튼을 누를 때 저장하도록 변경
+  };
+
+  // 이미지 변경 핸들러
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        setEditedExhibition({
-          ...editedExhibition,
-          thumbnail: reader.result
-        });
+        handleFieldChange('photo', reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -95,94 +123,125 @@ export function ExhibitionDetail({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">
-          {isNew ? "신규 전시회 등록" : isEditing ? "전시회 정보 수정" : "전시회 상세 정보"}
+          {isNew ? "신규 전시회 등록" : "전시회 정보"}
         </h2>
         {!isReadOnly && (
           <div className="flex gap-2">
-            {isEditing ? (
-              <>
-                <Button color="primary" onPress={handleSave}>
-                  <Icon icon="lucide:save" className="text-lg mr-1" />
-                  {isNew ? "추가" : "저장"}
-                </Button>
-                <Button color="default" variant="flat" onPress={handleCancel}>
-                  취소
-                </Button>
-              </>
-            ) : null}
+            <Button color="primary" onPress={handleSave} isLoading={isSaving}>
+              <Icon icon="lucide:save" className="text-lg mr-1" />
+              {isNew ? "추가" : "저장"}
+            </Button>
+            {!isNew && (
+              <Button 
+                color="danger" 
+                variant="flat" 
+                onPress={handleDelete}
+              >
+                <Icon icon="lucide:trash" className="mr-1" />
+                삭제
+              </Button>
+            )}
+            <Button color="default" variant="flat" onPress={handleCancel}>
+              취소
+            </Button>
           </div>
         )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
-          label="전시회 제목"
-          value={editedExhibition.title}
-          onValueChange={(value) => setEditedExhibition({...editedExhibition, title: value})}
-          isReadOnly={!isEditing}
-          className="md:col-span-2"
+          label="갤러리명"
+          value={galleryInfo?.name || ""}
+          onValueChange={(value) => handleFieldChange('name', value)}
+          // isReadOnly={isReadOnly}
+          isDisabled
         />
 
         <Input
-          label="전시 장소"
-          value={editedExhibition.location}
-          onValueChange={(value) => setEditedExhibition({...editedExhibition, location: value})}
-          isReadOnly={!isEditing}
+          label="전시회명"
+          value={editedExhibition.contents || ""}
+          onValueChange={(value) => handleFieldChange('contents', value)}
+          isReadOnly={isReadOnly}
         />
 
         <Input
-          label="작가"
-          value={editedExhibition.artist}
-          onValueChange={(value) => setEditedExhibition({...editedExhibition, artist: value})}
-          isReadOnly={!isEditing}
+          label="전시 기간"
+          value={editedExhibition.date || ""}
+          onValueChange={(value) => handleFieldChange('date', value)}
+          isReadOnly={isReadOnly}
+          placeholder="예: 2024.01.01 ~ 2024.12.31"
         />
 
         <Input
-          type="date"
-          label="시작일"
-          value={editedExhibition.startDate}
-          onChange={(e) => setEditedExhibition({...editedExhibition, startDate: e.target.value})}
-          isReadOnly={!isEditing}
+          label="운영 시간"
+          value={editedExhibition.working_hour || ""}
+          onValueChange={(value) => handleFieldChange('working_hour', value)}
+          isReadOnly={isReadOnly}
+          placeholder="예: 10:00 - 18:00"
         />
 
         <Input
-          type="date"
-          label="종료일"
-          value={editedExhibition.endDate}
-          onChange={(e) => setEditedExhibition({...editedExhibition, endDate: e.target.value})}
-          isReadOnly={!isEditing}
+          label="휴관일"
+          value={editedExhibition.off_date || ""}
+          onValueChange={(value) => handleFieldChange('off_date', value)}
+          isReadOnly={isReadOnly}
+          placeholder="예: 매주 월요일"
+        />
+
+        <Input
+          label="네이버 갤러리 URL"
+          value={galleryInfo?.url || ""}
+          onValueChange={(value) => handleFieldChange('naver_gallery_url', value)}
+          isReadOnly={isReadOnly}
+          isDisabled
+        />
+
+        <Input
+          label="홈페이지 URL"
+          value={editedExhibition.homepage_url || ""}
+          onValueChange={(value) => handleFieldChange('homepage_url', value)}
+          isReadOnly={isReadOnly}
         />
 
         <Input
           type="number"
-          label="입장료 (원)"
-          value={editedExhibition.ticketPrice}
-          onValueChange={(value) => setEditedExhibition({...editedExhibition, ticketPrice: value})}
-          isReadOnly={!isEditing}
+          label="가격 (원)"
+          value={editedExhibition.price || 0}
+          onValueChange={(value) => handleFieldChange('price', value)}
+          isReadOnly={isReadOnly}
         />
 
-        <Select
-          label="상태"
-          selectedKeys={[editedExhibition.status]}
-          onChange={(e) => setEditedExhibition({...editedExhibition, status: e.target.value})}
-          isDisabled={!isEditing}
-        >
-          <SelectItem key="pending" value="pending">준비중</SelectItem>
-          <SelectItem key="active" value="active">진행중</SelectItem>
-          <SelectItem key="ended" value="ended">종료됨</SelectItem>
-        </Select>
+        <div className="flex flex-col gap-2">
+          <span className="text-small font-medium">옵션</span>
+          <div className="flex flex-col gap-2">
+            <Checkbox
+              isSelected={editedExhibition.isFree || false}
+              onValueChange={(value) => handleFieldChange('isFree', value)}
+              isDisabled={isReadOnly}
+            >
+              무료 전시회
+            </Checkbox>
+            <Checkbox
+              isSelected={editedExhibition.isRecommended || false}
+              onValueChange={(value) => handleFieldChange('isRecommended', value)}
+              isDisabled={isReadOnly}
+            >
+              추천 전시회 (메인 페이지 상단 노출)
+            </Checkbox>
+          </div>
+        </div>
 
         <div className="space-y-2 md:col-span-2">
-          <label className="text-small font-medium">썸네일 이미지</label>
+          <label className="text-small font-medium">전시회 이미지</label>
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center">
             {imagePreview ? (
               <div className="relative w-full">
                 <img 
                   src={imagePreview} 
-                  alt="썸네일 미리보기" 
+                  alt="전시회 이미지" 
                   className="w-full h-48 object-cover rounded-md"
                 />
-                {isEditing && (
+                {!isReadOnly && (
                   <Button
                     isIconOnly
                     color="danger"
@@ -191,7 +250,7 @@ export function ExhibitionDetail({
                     className="absolute top-2 right-2"
                     onPress={() => {
                       setImagePreview(null);
-                      setEditedExhibition({...editedExhibition, thumbnail: ""});
+                      handleFieldChange('photo', '');
                     }}
                   >
                     <Icon icon="lucide:x" />
@@ -204,16 +263,16 @@ export function ExhibitionDetail({
                 <p className="text-sm text-gray-500">이미지 미리보기</p>
               </>
             )}
-            {isEditing && (
-              <div className="mt-4 ">
+            {!isReadOnly && (
+              <div className="mt-4">
                 <input
                   type="file"
-                  id="thumbnail-upload"
+                  id="photo-upload"
                   accept="image/*"
                   onChange={handleImageChange}
                   className="hidden"
                 />
-                <label htmlFor="thumbnail-upload">
+                <label htmlFor="photo-upload">
                   <Button as="span" color="primary" variant="flat" size="sm">
                     <Icon icon="lucide:upload" className="mr-1" />
                     이미지 {imagePreview ? '변경' : '업로드'}
@@ -225,26 +284,30 @@ export function ExhibitionDetail({
         </div>
 
         <Textarea
-          label="전시회 설명"
-          value={editedExhibition.description}
-          onValueChange={(value) => setEditedExhibition({...editedExhibition, description: value})}
-          isReadOnly={!isEditing}
+          label="추가 정보"
+          value={editedExhibition.add_info || ""}
+          onValueChange={(value) => handleFieldChange('add_info', value)}
+          isReadOnly={isReadOnly}
           className="md:col-span-2"
+          placeholder="전시회에 대한 상세 정보를 입력하세요."
         />
       </div>
 
-      {!isNew && !isEditing && (
+      {!isNew && (
         <div className="border-t pt-4 mt-6">
-          <h3 className="text-lg font-medium mb-2">방문 통계</h3>
+          <h3 className="text-lg font-medium mb-2">리뷰 통계</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-default-100 p-4 rounded-lg">
-              <p className="text-sm text-default-600">총 방문자 수</p>
-              <p className="text-2xl font-bold">{editedExhibition.visitorCount.toLocaleString()}명</p>
+              <p className="text-sm text-default-600">평균 평점</p>
+              <p className="text-2xl font-bold">
+                {(editedExhibition.review_average || 0).toFixed(1)}
+                <span className="text-sm font-normal ml-1">/ 5.0</span>
+              </p>
             </div>
             <div className="bg-default-100 p-4 rounded-lg">
-              <p className="text-sm text-default-600">일일 평균 방문자</p>
+              <p className="text-sm text-default-600">리뷰 수</p>
               <p className="text-2xl font-bold">
-                {Math.round(editedExhibition.visitorCount / 30).toLocaleString()}명
+                {(editedExhibition.review_count || 0).toLocaleString()}개
               </p>
             </div>
           </div>

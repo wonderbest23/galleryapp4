@@ -5,13 +5,37 @@ import React, { useState } from "react";
 import { Button, Drawer } from "@heroui/react";
 import { Menu } from "lucide-react"; // Icon 대신 lucide-react 직접 사용
 import  Providers  from "./components/providers";
+import { useEffect } from "react";
 
 import Sidebar from "./components/sidebar";
 import "@/app/globals.css";
-
+import {createClient} from "@/utils/supabase/client"
+import useUserInfoStore from "./store/userInfo";
 export default function AdminLayout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
+  const supabase = createClient();
+  const {userInfo, setUserInfo} = useUserInfoStore();
 
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const {data:user, error} = await supabase.auth.getUser();
+      if (error) {
+        console.error('사용자 정보 가져오기 오류:', error);
+      } else {
+        const {data:userInfo, error:userInfoError} = await supabase.from('profiles').select('*').eq('id', user?.user?.id).single();
+        if (userInfoError) {
+          console.error('사용자 정보 가져오기 오류:', userInfoError);
+        } else {
+          setUserInfo(userInfo);
+        }
+      }
+    };
+    fetchUserInfo();
+
+  }, []);
+  
+  // console.log('userInfo', userInfo);
+  
   return (
     <html lang="ko">
       <body>

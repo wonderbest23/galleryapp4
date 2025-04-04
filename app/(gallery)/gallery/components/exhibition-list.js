@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import {
   Input,
   Table,
@@ -11,55 +13,68 @@ import {
   Button,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import { createClient } from "@/utils/supabase/client";
+import { debounce } from "lodash";
 
 export function ExhibitionList({ onSelectExhibition, selectedKey, onSelectedKeyChange }) {
-  const [search, setSearch] = React.useState("");
-  const [lastSelectedExhibition, setLastSelectedExhibition] = React.useState(null);
+  const [search, setSearch] = useState("");
+  const [exhibitions, setExhibitions] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const itemsPerPage = 5;
+  
+  // Supabase 클라이언트 생성
+  const supabase = createClient();
+  
+  // 전시회 데이터 로드 함수
+  const loadExhibitions = async () => {
+    setIsLoading(true);
+    try {
+      const start = (currentPage - 1) * itemsPerPage;
+      const end = start + itemsPerPage - 1;
+      
+      let query = supabase
+        .from('exhibition')
+        .select('*', { count: 'exact' })
+        .range(start, end)
+        .order('created_at', { ascending: false });
 
-  // 샘플 데이터
-  const exhibitions = [
-    {
-      id: 1,
-      title: "현대미술의 혁신가들",
-      location: "서울시립미술관",
-      artist: "다양한 작가",
-      status: "active",
-      startDate: "2024-04-01",
-      endDate: "2024-05-30",
-      thumbnail: "/images/exhibition/modern-art.jpg",
-      visitorCount: 1845,
-    },
-    {
-      id: 2,
-      title: "자연의 울림: 환경과 예술",
-      location: "국립현대미술관",
-      artist: "김자연, 이환경 외 3명",
-      status: "active",
-      startDate: "2024-03-15",
-      endDate: "2024-06-15",
-      thumbnail: "/images/exhibition/nature-art.jpg",
-      visitorCount: 2241,
-    },
-    {
-      id: 3,
-      title: "디지털 시대의 예술",
-      location: "디지털미디어시티",
-      artist: "박디지털, 최테크 외 5명",
-      status: "pending",
-      startDate: "2024-05-10",
-      endDate: "2024-07-20",
-      thumbnail: "/images/exhibition/digital-art.jpg",
-      visitorCount: 0,
-    },
-  ];
+      if (search) {
+        query = query.or(`name.ilike.%${search}%, contents.ilike.%${search}%, add_info.ilike.%${search}%`);
+      }
 
-  const filteredExhibitions = exhibitions.filter(
-    (exhibition) =>
-      exhibition.title.toLowerCase().includes(search.toLowerCase()) ||
-      exhibition.artist.toLowerCase().includes(search.toLowerCase()) ||
-      exhibition.location.toLowerCase().includes(search.toLowerCase())
-  );
+      const { data, error, count } = await query;
+      
+      if (error) throw error;
+      
+      setExhibitions(data || []);
+      setTotalPages(Math.ceil((count || 0) / itemsPerPage));
+    } catch (error) {
+      console.error('전시회 데이터를 가져오는 중 오류 발생:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // debounce 적용한 검색 함수
+  const debouncedSearch = debounce(() => {
+    loadExhibitions();
+    setCurrentPage(1); // 검색 시 첫 페이지로 이동
+  }, 500);
+
+  // 검색어 변경 핸들러
+  const handleSearchChange = (value) => {
+    setSearch(value);
+    debouncedSearch();
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  // 전시회 선택 핸들러
   const handleSelectionChange = (keys) => {
     if (onSelectedKeyChange) {
       onSelectedKeyChange(keys);
@@ -70,23 +85,19 @@ export function ExhibitionList({ onSelectExhibition, selectedKey, onSelectedKeyC
       const exhibition = exhibitions.find((e) => e.id === selectedId);
       
       if (exhibition) {
-        const updatedExhibition = { ...exhibition };
-        setLastSelectedExhibition(updatedExhibition);
-        onSelectExhibition(updatedExhibition);
+        onSelectExhibition(exhibition);
       }
     }
   };
 
-  React.useEffect(() => {
-    if (selectedKey && selectedKey.size > 0) {
-      const selectedId = Number(Array.from(selectedKey)[0]);
-      const exhibition = exhibitions.find((e) => e.id === selectedId);
-      
-      if (exhibition && !lastSelectedExhibition) {
-        setLastSelectedExhibition(exhibition);
-      }
-    }
-  }, [selectedKey]);
+  // 페이지 또는 검색어 변경 시 데이터 로드
+  useEffect(() => {
+    loadExhibitions();
+    // 컴포넌트 언마운트 시 debounce 취소
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [currentPage]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -94,7 +105,7 @@ export function ExhibitionList({ onSelectExhibition, selectedKey, onSelectedKeyC
         <Input
           placeholder="전시회 검색..."
           value={search}
-          onValueChange={setSearch}
+          onValueChange={handleSearchChange}
           startContent={
             <Icon icon="lucide:search" className="text-default-400" />
           }
@@ -108,45 +119,38 @@ export function ExhibitionList({ onSelectExhibition, selectedKey, onSelectedKeyC
         variant="bordered"
         aria-label="전시회 목록"
         selectionMode="single"
-        disabledKeys={[]}
         selectedKeys={selectedKey}
         onSelectionChange={handleSelectionChange}
+        isLoading={isLoading}
       >
         <TableHeader>
-          <TableColumn>제목</TableColumn>
-          <TableColumn>장소</TableColumn>
-          <TableColumn>작가</TableColumn>
-          <TableColumn>기간</TableColumn>
-          <TableColumn>상태</TableColumn>
-          <TableColumn>방문자 수</TableColumn>
+          <TableColumn className="text-center w-1/6">제목</TableColumn>
+          <TableColumn className="text-center w-1/6">장소</TableColumn>
+          <TableColumn className="text-center w-1/2">추가 정보</TableColumn>
+          <TableColumn className="text-center w-1/6">기간</TableColumn>
         </TableHeader>
-        <TableBody>
-          {filteredExhibitions.map((exhibition) => (
+        <TableBody emptyContent="전시회 데이터가 없습니다.">
+          {exhibitions.map((exhibition) => (
             <TableRow key={exhibition.id}>
-              <TableCell>{exhibition.title}</TableCell>
-              <TableCell>{exhibition.location}</TableCell>
-              <TableCell>{exhibition.artist}</TableCell>
+              <TableCell>{exhibition.contents}</TableCell>
+              <TableCell>{exhibition.name}</TableCell>
               <TableCell>
-                {exhibition.startDate} ~ {exhibition.endDate}
+                {/* <div className="line-clamp-3 text-ellipsis overflow-hidden break-words">
+                  {exhibition.add_info}
+                </div> */}
               </TableCell>
-              <TableCell>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs ${
-                    exhibition.status === "active"
-                      ? "bg-success-100 text-success-600"
-                      : "bg-warning-100 text-warning-600"
-                  }`}
-                >
-                  {exhibition.status === "active" ? "진행중" : "준비중"}
-                </span>
-              </TableCell>
-              <TableCell>{exhibition.visitorCount.toLocaleString()}</TableCell>
+              <TableCell>{exhibition.date}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
       <div className="flex justify-center w-full">
-        <Pagination total={10} initialPage={1} />
+        <Pagination 
+          total={totalPages} 
+          initialPage={1}
+          page={currentPage}
+          onChange={handlePageChange}
+        />
       </div>
     </div>
   );
