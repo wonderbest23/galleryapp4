@@ -331,7 +331,7 @@ export default function App() {
           </div>
 
           {/* Tabs Section */}
-          <div className="mt-4 mb-16">
+          <div className="mt-4 pb-16">
             <Tabs
               aria-label="Options"
               selectedKey={selected}

@@ -21,39 +21,41 @@ export default function GalleryCards({ selectedTab, user }) {
 
   // Zustand 북마크 스토어에서 상태와 함수 가져오기
   const { bookmarks, setBookmarks } = useBookmarkStore();
-  
+
   // 북마크 상태 확인하는 함수
   const isBookmarked = (galleryId) => {
-    return bookmarks.some(bookmark => bookmark.gallery_id === galleryId);
+    return bookmarks.some((bookmark) => bookmark.gallery_id === galleryId);
   };
-  
+
   // 북마크 토글 함수
   const toggleBookmark = async (e, gallery) => {
     e.preventDefault(); // 링크 이벤트 방지
     e.stopPropagation(); // 이벤트 버블링 방지
-    
+
     if (!user) {
       // 사용자가 로그인하지 않은 경우 처리
-      alert('북마크를 추가하려면 로그인이 필요합니다.');
+      alert("북마크를 추가하려면 로그인이 필요합니다.");
       return;
     }
-    
+
     const isCurrentlyBookmarked = isBookmarked(gallery.id);
-    
+
     try {
       if (isCurrentlyBookmarked) {
         // 북마크 삭제
         const { error } = await supabase
-          .from('bookmark')
+          .from("bookmark")
           .delete()
-          .eq('user_id', user.id)
-          .eq('gallery_id', gallery.id);
-          
+          .eq("user_id", user.id)
+          .eq("gallery_id", gallery.id);
+
         if (error) throw error;
-        
+
         // Zustand 스토어에서 북마크 제거
-        setBookmarks(bookmarks.filter(bookmark => bookmark.gallery_id !== gallery.id));
-        
+        setBookmarks(
+          bookmarks.filter((bookmark) => bookmark.gallery_id !== gallery.id)
+        );
+
         // 북마크 삭제 토스트 표시
         addToast({
           title: "북마크 삭제",
@@ -63,19 +65,19 @@ export default function GalleryCards({ selectedTab, user }) {
       } else {
         // 북마크 추가
         const { data, error } = await supabase
-          .from('bookmark')
+          .from("bookmark")
           .insert({
             user_id: user.id,
             gallery_id: gallery.id,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
           })
           .select();
-          
+
         if (error) throw error;
-        
+
         // Zustand 스토어에 북마크 추가
         setBookmarks([...bookmarks, data[0]]);
-        
+
         // 북마크 추가 토스트 표시
         addToast({
           title: "북마크 추가",
@@ -84,42 +86,42 @@ export default function GalleryCards({ selectedTab, user }) {
         });
       }
     } catch (error) {
-      console.error('북마크 토글 에러:', error);
-      
+      console.error("북마크 토글 에러:", error);
+
       // 에러 토스트 표시
       addToast({
         title: "오류 발생",
         description: "북마크 처리 중 오류가 발생했습니다.",
         color: "danger",
         variant: "solid",
-        timeout: 3000
+        timeout: 3000,
       });
     }
   };
-  
+
   // 사용자의 북마크 목록 가져오기
   const fetchBookmarks = async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
-      
+
       const { data, error } = await supabase
-        .from('bookmark')
-        .select('*')
-        .eq('user_id', user.id);
-        
+        .from("bookmark")
+        .select("*")
+        .eq("user_id", user.id);
+
       if (error) throw error;
-      
+
       // 북마크 데이터를 Zustand 스토어에 저장
       setBookmarks(data || []);
     } catch (error) {
-      console.error('북마크 로드 에러:', error);
+      console.error("북마크 로드 에러:", error);
     } finally {
       setLoading(false);
     }
   };
-  
+
   // 컴포넌트 마운트 시 북마크 로드
   useEffect(() => {
     fetchBookmarks();
@@ -135,7 +137,10 @@ export default function GalleryCards({ selectedTab, user }) {
         const to = from + PAGE_SIZE - 1;
 
         // 기본 쿼리 시작
-        let query = supabase.from("gallery").select("*", { count: "exact" });
+        let query = supabase
+          .from("gallery")
+          .select("*", { count: "exact" })
+          .order("blog_review_count", { ascending: false });
 
         // selectedTab에 따라 쿼리 조건 추가
         if (selectedTab === "recommended") {

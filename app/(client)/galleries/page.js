@@ -59,7 +59,8 @@ function GalleryListContent() {
         
         let query = supabase
           .from("gallery")
-          .select("*");
+          .select("*", { count: "exact" })
+          .order("blog_review_count", { ascending: false });
         
         // 선택된 탭에 따라 필터 적용
         if (selectedTab === "now") {

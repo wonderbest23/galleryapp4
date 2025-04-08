@@ -19,7 +19,7 @@ export function GalleryCards({ galleries, user, bookmarks, toggleBookmark, isBoo
           <div className="grid gap-4 w-full justify-center items-center">
             {galleries.map((gallery, index) => (
               <Card key={index} className="w-[90vw]">
-                <Link href={`/gallery/${gallery.id || index + 1}`}>
+                <Link href={`/galleries/${gallery.id || index + 1}`}>
                   <CardBody className="flex gap-4 flex-row">
                     <img
                       src={gallery.thumbnail || `https://picsum.photos/200/200?random=${index}`}

@@ -77,6 +77,7 @@ function ExhibitionListContent() {
           .from("exhibition")
           .select("*,gallery:naver_gallery_url(*)")
           .not("gallery", "is", null)
+          .order("review_count", { ascending: false })
           .gte('end_date', new Date().toISOString());
 
         // 선택된 탭에 따라 필터 적용

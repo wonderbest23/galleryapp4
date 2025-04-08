@@ -32,7 +32,7 @@ import Link from "next/link";
 export function CategoryButtons() {
   return (
     <div className="grid grid-cols-5 gap-2 px-4 w-full">
-      <Link href="/exhibitionList">
+      <Link href="/exhibitions">
         <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
           {/* <MdOutlineImage size={20} /> */}
           <FaRegCalendar className="text-gray-500 text-xl" />
@@ -40,7 +40,7 @@ export function CategoryButtons() {
           <span>전시회</span>
         </div>
       </Link>
-      <Link href="/galleryList">
+      <Link href="/galleries">
         <div className="flex flex-col items-center gap-1 py-2 w-full text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200">
           {/* <IoImagesOutline size={20} /> */}
           <RiShoppingBag2Line className="text-gray-500 text-xl" />

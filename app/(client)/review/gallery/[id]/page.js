@@ -37,11 +37,12 @@ export default function page() {
       router.push("/mypage?returnUrl=/review/gallery/" + id);
     }
     if (error) {
-      console.error("Error fetching user:", error);
+      console.log("Error fetching user:", error);
     } else {
       setUser(data.user);
     }
   };
+  
   useEffect(() => {
     getUser();
   }, []);
@@ -53,7 +54,7 @@ export default function page() {
       .eq("id", id)
       .single();
     if (error) {
-      console.error("Error fetching gallery:", error);
+      console.log("Error fetching gallery:", error);
     } else {
       setGallery(data);
       setIsLoading(false);
@@ -75,6 +76,31 @@ export default function page() {
   console.log("feeling:", selectedFeelings);
 
   const handleReviewSubmit = async () => {
+    // 먼저 이 사용자가 이 갤러리에 대한 리뷰를 이미 작성했는지 확인
+    const { data: existingReview, error: checkError } = await supabase
+      .from("gallery_review")
+      .select("*")
+      .eq("gallery_id", id)
+      .eq("user_id", user.id)
+      
+
+    if (checkError) {
+      console.log("기존 리뷰 확인 중 오류 발생:", checkError);
+      return;
+    }
+
+    // 이미 리뷰가 존재하는 경우
+    if (existingReview && existingReview.length > 0) {
+      addToast({
+        title: "리뷰 작성 불가",
+        description: "이미 작성한 리뷰가 있어서 추가 작성은 불가합니다.",
+        color: "danger",
+      });
+      router.push("/");
+      return;
+    }
+
+    // 리뷰가 존재하지 않는 경우 새로운 리뷰 작성
     const { data, error } = await supabase.from("gallery_review").insert({
       gallery_id: id,
       category: selectedFeelings,
@@ -84,7 +110,7 @@ export default function page() {
       user_id: user.id,
     });
     if (error) {
-      console.error("Error submitting review:", error);
+      console.log("Error submitting review:", error);
     } else {
       console.log("Review submitted successfully");
       addToast({
@@ -196,7 +222,7 @@ export default function page() {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="리뷰 내용"
           />
-          <div className="w-full flex flex-col gap-4 font-bold text-xl text-center">
+          <div className="w-full flex flex-col gap-4 font-bold text-xl text-center mb-24">
             <Button
               color="primary"
               className="w-full font-bold"

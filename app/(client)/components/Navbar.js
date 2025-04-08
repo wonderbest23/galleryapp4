@@ -111,7 +111,7 @@ export default function Navbar() {
             {gallery.length > 0 ? (
               <div className="space-y-2">
                 {gallery.slice(0, 3).map((item) => (
-                  <Link href={`/gallery/${item.id}`} key={item.id} onClick={handleLinkClick}>
+                  <Link href={`/galleries/${item.id}`} key={item.id} onClick={handleLinkClick}>
                     <div className="flex items-center p-2 hover:bg-gray-50 rounded-lg transition">
                       <div className="flex-shrink-0 mr-3">
                         <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
