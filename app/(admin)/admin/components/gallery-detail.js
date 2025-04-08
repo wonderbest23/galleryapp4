@@ -2,6 +2,7 @@
 import React from "react";
 import { Input, Button, Textarea, Checkbox, addToast } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import { QRCodeSVG } from "qrcode.react";
 
 import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
@@ -37,6 +38,11 @@ export function GalleryDetail({
     }
   );
 
+  // QR 코드 관련 상태
+  const [qrValue, setQrValue] = useState("");
+  const [baseUrl, setBaseUrl] = useState("");
+  const qrRef = useRef(null);
+  
   // 이미지 업로드 관련 상태
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -62,7 +68,65 @@ export function GalleryDetail({
       // 썸네일 URL이 있는 경우 항상 미리보기 설정
       setImagePreview(gallery.thumbnail || "");
     }
+    
+    // QR 코드 URL 설정
+    if (gallery.id) {
+      // 현재 window.location.origin 가져오기
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      setBaseUrl(origin);
+      setQrValue(`${origin}/review/gallery/${gallery.id}`);
+    }
   }, [gallery]);
+
+  // QR 코드 다운로드 함수
+  const downloadQRCode = () => {
+    if (!qrRef.current) return;
+    
+    const canvas = document.createElement("canvas");
+    const svgElement = qrRef.current.querySelector("svg");
+    const { width, height } = svgElement.getBoundingClientRect();
+    
+    // 고해상도 캔버스 설정
+    const scale = 2; // 2배 크기로 렌더링
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    
+    const context = canvas.getContext("2d");
+    context.scale(scale, scale);
+    
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const svgURL = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData);
+    
+    const image = new Image();
+    image.onload = () => {
+      context.drawImage(image, 0, 0, width, height);
+      
+      try {
+        const dataURL = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.download = `gallery-review-qr-${editedGallery.id || 'new'}.png`;
+        link.href = dataURL;
+        link.click();
+      } catch (err) {
+        console.error("QR 코드 다운로드 중 오류 발생:", err);
+        addToast({
+          title: "QR 코드 다운로드 오류",
+          description: "QR 코드 이미지를 생성하는 중 오류가 발생했습니다.",
+          color: "danger",
+        });
+      }
+    };
+    
+    image.onerror = () => {
+      addToast({
+        title: "QR 코드 다운로드 오류",
+        description: "QR 코드 이미지 변환 중 오류가 발생했습니다.",
+        color: "danger",
+      });
+    };
+    
+    image.src = svgURL;
+  };
 
   // 이미지 파일 변경 핸들러
   const handleImageChange = (e) => {
@@ -757,6 +821,54 @@ export function GalleryDetail({
             </Checkbox>
           </div>
         </div>
+        
+        {/* QR 코드 섹션 - 편집 모드가 아닌 경우에만 표시 */}
+        {!isNewGallery && !isEditing && (
+          <div className="flex flex-col items-center gap-5 md:col-span-2 border border-gray-200 p-6 rounded-lg mt-6 bg-gradient-to-b from-gray-50 to-white shadow-sm">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-1">리뷰 페이지 QR 코드</h3>
+              <p className="text-sm text-gray-600">
+                아래 QR 코드를 스캔하면 갤러리 리뷰 페이지로 이동합니다
+              </p>
+            </div>
+            
+            <div ref={qrRef} className="bg-white p-5 rounded-lg shadow border border-gray-100">
+              {qrValue && (
+                <QRCodeSVG 
+                  value={qrValue} 
+                  size={220}
+                  level="H"
+                  includeMargin={true}
+                />
+              )}
+            </div>
+            
+            <div className="text-center space-y-3 w-full max-w-md">
+              <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                <p className="font-medium text-gray-700 mb-1">리뷰 페이지 URL:</p>
+                <p className="text-sm text-gray-600 break-all font-mono">
+                  {qrValue || "QR 코드 URL을 확인할 수 없습니다."}
+                </p>
+              </div>
+              
+              <div className="flex justify-center">
+                <Button 
+                  color="primary" 
+                  onPress={downloadQRCode}
+                  isDisabled={!qrValue}
+                  className="px-6"
+                >
+                  <Icon icon="lucide:download" className="text-lg mr-2" />
+                  QR 코드 다운로드
+                </Button>
+              </div>
+              
+              <p className="text-xs text-gray-500 mt-2">
+                갤러리 안내판이나 홍보 자료에 이 QR 코드를 사용하여 방문객들이 쉽게 리뷰를 작성할 수 있도록 하세요.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
