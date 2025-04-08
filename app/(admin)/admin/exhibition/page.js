@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useState, useEffect } from "react";
 import { HiUsers, HiPhotograph, HiClock, HiThumbUp } from "react-icons/hi";
 import { ExhibitionList } from "../components/exhibition-list";
@@ -55,9 +55,9 @@ export default function Exhibition() {
       review_count: 0,
       review_average: 0,
       naver_gallery_url: "",
-      price: 0
+      price: 0,
     };
-    
+
     setSelectedExhibition(newExhibition);
     setSelectedKeys(new Set([]));
   };
@@ -68,10 +68,10 @@ export default function Exhibition() {
   };
 
   return (
-    <div className="w-full h-full p-4 space-y-8">
-      <div className="flex flex-col md:flex-row gap-6">
+    <div className="w-full h-full p-4 space-y-8 py-20">
+      <div className="flex max-w-7xl mx-auto flex-col gap-6">
         {/* 왼쪽 영역 - 전시회 목록 */}
-        <div className="w-full md:w-1/2 space-y-4">
+        <div className="w-full space-y-4">
           <h1 className="text-2xl font-bold">전시회 관리</h1>
           <ExhibitionList
             onSelectExhibition={handleSelectExhibition}
@@ -85,36 +85,35 @@ export default function Exhibition() {
         </div>
 
         {/* 오른쪽 영역 - 전시회 상세 정보 */}
-        <div className="w-full md:w-1/2 bg-content1 p-4 rounded-lg border-1 border-default-200">
-          {selectedExhibition ? (
-            <ExhibitionDetail
-              exhibition={selectedExhibition}
-              onUpdate={handleUpdateExhibition}
-              selectedKeys={selectedKeys}
-              setSelectedKeys={setSelectedKeys}
-              onRefresh={refreshFunction}
-              refreshToggle={refreshToggle}
-              setRefreshToggle={setRefreshToggle}
-              selectedExhibition={selectedExhibition}
-              setSelectedExhibition={setSelectedExhibition}
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center p-8 text-center">
-              <Icon icon="lucide:image" className="text-6xl mb-4 text-default-400" />
-              <h3 className="text-xl font-semibold mb-2">전시회 선택 안됨</h3>
-              <p className="text-default-500 mb-6">
-                좌측 목록에서 전시회를 선택하거나 신규 등록 버튼을 클릭하세요.
-              </p>
-              <Button 
-                color="primary" 
-                onPress={handleCreateExhibition}
-                className="flex items-center"
-              >
-                <Icon icon="lucide:plus" className="mr-1" />
-                전시회 신규 등록
-              </Button>
-            </div>
-          )}
+        <div className="w-full ">
+          <section className="bg-content2 rounded-lg p-4">
+            {selectedExhibition ? (
+              <ExhibitionDetail
+                exhibition={selectedExhibition}
+                onUpdate={handleUpdateExhibition}
+                selectedKeys={selectedKeys}
+                setSelectedKeys={setSelectedKeys}
+                onRefresh={() => {
+                  // 전시회 목록 새로고침 함수 호출
+                  if (refreshFunction) {
+                    console.log('부모 컴포넌트: 전시회 목록 새로고침 시도');
+                    refreshFunction();
+                    console.log('부모 컴포넌트: 전시회 목록 새로고침 완료');
+                  } else {
+                    console.log('부모 컴포넌트: refreshFunction 함수가 없습니다');
+                  }
+                }}
+                refreshToggle={refreshToggle}
+                setRefreshToggle={setRefreshToggle}
+                selectedExhibition={selectedExhibition}
+                setSelectedExhibition={setSelectedExhibition}
+              />
+            ) : (
+              <div className="text-center text-default-500 py-8">
+                전시회를 선택하면 상세 정보가 표시됩니다.
+              </div>
+            )}
+          </section>
         </div>
       </div>
     </div>

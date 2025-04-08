@@ -76,7 +76,8 @@ function ExhibitionListContent() {
         let query = supabase
           .from("exhibition")
           .select("*,gallery:naver_gallery_url(*)")
-          .not("gallery", "is", null);
+          .not("gallery", "is", null)
+          .gte('end_date', new Date().toISOString());
 
         // 선택된 탭에 따라 필터 적용
         if (selectedTab === "free") {

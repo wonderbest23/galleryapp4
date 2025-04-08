@@ -25,9 +25,9 @@ export function ExhibitionCards({ exhibitions, user, bookmarks, toggleBookmark, 
           {exhibitions.map((exhibition, index) => (
             <Card key={index} className="w-full ">
               <Link href={`/exhibition/${exhibition.id}`}>
-                <CardBody className="flex gap-4 flex-row">
+                <CardBody className="flex gap-4 flex-row items-center justify-center">
                   <img
-                    src={exhibition.photo}
+                    src={exhibition.photo||"/images/noimage.jpg"}
                     alt={exhibition.title}
                     className="w-24 h-24 object-cover rounded"
                   />

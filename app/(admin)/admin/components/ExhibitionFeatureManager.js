@@ -323,7 +323,7 @@ export default function ExhibitionFeatureManager() {
           <TableHeader>
             <TableColumn className="w-1/10">노출</TableColumn>
             <TableColumn className="w-full">전시회명</TableColumn>
-            <TableColumn className="w-1/6">액션</TableColumn>
+            {/* <TableColumn className="w-1/6">액션</TableColumn> */}
           </TableHeader>
           <TableBody>
             {exhibitions.map((exhibition) => (
@@ -337,7 +337,7 @@ export default function ExhibitionFeatureManager() {
                 <TableCell onClick={() => handleViewDetail(exhibition)}>
                   {exhibition.contents}
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   <Button
                     size="sm"
                     color="primary"
@@ -346,7 +346,7 @@ export default function ExhibitionFeatureManager() {
                   >
                     상세보기
                   </Button>
-                </TableCell>
+                </TableCell> */}
               </TableRow>
             ))}
           </TableBody>

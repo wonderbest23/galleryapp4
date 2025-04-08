@@ -30,7 +30,8 @@ export default function Navbar() {
       const { data, error } = await supabase
         .from("exhibition")
         .select("*")
-        .ilike("contents", `%${searchTerm}%`); // title 컬럼으로 변경
+        .ilike("contents", `%${searchTerm}%`) // title 컬럼으로 변경
+        .gte('end_date', new Date().toISOString());
       
       if (error) {
         console.error("전시회 데이터 검색 오류:", error);
@@ -103,11 +104,11 @@ export default function Navbar() {
       </div>
       
       {/* 검색 결과 배너 */}
-      {(exhibitions.length > 0 || gallery.length > 0) && (
+      {search && ( // 검색어가 있을 때 항상 검색 결과 배너 표시
         <div className="absolute w-full bg-white shadow-md rounded-b-lg p-4 z-10">
-          {gallery.length > 0 && (
-            <div className="mb-3">
-              <h3 className="text-sm font-semibold text-gray-600 mb-2">갤러리</h3>
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-gray-600 mb-2">갤러리</h3>
+            {gallery.length > 0 ? (
               <div className="space-y-2">
                 {gallery.slice(0, 3).map((item) => (
                   <Link href={`/gallery/${item.id}`} key={item.id} onClick={handleLinkClick}>
@@ -135,16 +136,16 @@ export default function Navbar() {
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="text-sm text-gray-500 p-2">갤러리 검색 결과가 없습니다.</div>
+            )}
+          </div>
           
-          {gallery.length > 0 && exhibitions.length > 0 && (
-            <div className="border-t border-gray-200 my-2"></div>
-          )}
+          <div className="border-t border-gray-200 my-2"></div>
           
-          {exhibitions.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-gray-600 mb-2">전시회</h3>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-600 mb-2">전시회</h3>
+            {exhibitions.length > 0 ? (
               <div className="space-y-2">
                 {exhibitions.slice(0, 3).map((item) => (
                   <Link href={`/exhibition/${item.id}`} key={item.id} onClick={handleLinkClick}>
@@ -172,16 +173,10 @@ export default function Navbar() {
                   </div>
                 )}
               </div>
-            </div>
-          )}
-          
-          {(gallery.length > 3 || exhibitions.length > 3) && (
-            <div className="mt-3 text-center">
-              <Link href={`/search?query=${search}`} onClick={handleLinkClick}>
-                <span className="text-sm text-blue-500 hover:underline">모든 검색 결과 보기</span>
-              </Link>
-            </div>
-          )}
+            ) : (
+              <div className="text-sm text-gray-500 p-2">전시회 검색 결과가 없습니다.</div>
+            )}
+          </div>
         </div>
       )}
     </div>

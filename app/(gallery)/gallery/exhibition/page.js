@@ -339,6 +339,8 @@ export default function Exhibition() {
     }
   };
 
+  console.log('userInfo:',userInfo)
+
   return (
     <div className="w-full h-full flex flex-col gap-4 py-20">
       <div className="w-full max-w-7xl mx-auto space-y-6">
@@ -465,7 +467,7 @@ export default function Exhibition() {
               {/* 직접 편집 가능한 폼 영역 */}
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
+                  {/* <div>
                     <label className="block text-sm font-medium mb-1">
                       갤러리명
                     </label>
@@ -477,7 +479,7 @@ export default function Exhibition() {
                       }
                       className="w-full"
                     />
-                  </div>
+                  </div> */}
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       전시회명

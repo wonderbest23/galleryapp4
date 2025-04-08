@@ -139,7 +139,8 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
       // 기본 쿼리 시작
       let query = supabase
         .from("exhibition")
-        .select("*", { count: 'exact' });
+        .select("*", { count: 'exact' })
+        .gte('end_date', new Date().toISOString());
       
       // exhibitionCategory에 따라 필터 적용
       if (exhibitionCategory === 'free') {

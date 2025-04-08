@@ -32,31 +32,24 @@ export function MagazineDetail({
   const [imageUploading, setImageUploading] = React.useState(false);
   const [uploadProgress, setUploadProgress] = React.useState(0);
   // 이전 매거진 ID를 저장하는 ref
-  const prevMagazineIdRef = React.useRef(magazine.id);
+  const prevMagazineIdRef = React.useRef(null);
   const supabase = createClient();
 
   useEffect(() => {
-    // 매거진 데이터가 변경된 경우에만 처리
-    if (prevMagazineIdRef.current !== magazine.id) {
-      // 매거진이 변경되면 editedMagazine 상태 업데이트
-      setEditedMagazine({
-        ...magazine,
-        subtitle: magazine.subtitle || "",
-        // photo와 photos 모두 확인하여 처리 (데이터베이스에는 photo로 저장되므로)
-        photos: magazine.photos || magazine.photo || [{ url: "" }],
-        contents: magazine.contents || "",
-      });
+    // magazine 객체가 변경되면 항상 데이터 업데이트
+    setEditedMagazine({
+      ...magazine,
+      subtitle: magazine.subtitle || "",
+      // photo와 photos 모두 확인하여 처리 (데이터베이스에는 photo로 저장되므로)
+      photos: magazine.photos || magazine.photo || [{ url: "" }],
+      contents: magazine.contents || "",
+    });
 
-      // 새 매거진이거나 다른 매거진으로 전환된 경우 편집 모드 설정
-      if (!magazine.id) {
-        setIsEditing(true); // 신규 등록 모드
-      } else {
-        setIsEditing(true); // 기존 매거진도 바로 편집 모드로 설정
-      }
+    // 새 매거진이거나 기존 매거진이든 항상 편집 모드로 설정
+    setIsEditing(true);
 
-      // 이전 매거진 ID 업데이트
-      prevMagazineIdRef.current = magazine.id;
-    }
+    // 이전 매거진 ID 업데이트
+    prevMagazineIdRef.current = magazine.id;
   }, [magazine]);
 
   const uploadImageToSupabase = async (file) => {

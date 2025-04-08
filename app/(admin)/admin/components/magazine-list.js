@@ -130,8 +130,9 @@ export function MagazineList({
           className="w-full"
         />
       </div>
-
+      <div className="overflow-x-auto w-full">
       <Table
+        className="min-w-[600px] "
         classNames={{ wrapper: "p-0" }}
         shadow="none"
         variant="bordered"
@@ -157,6 +158,7 @@ export function MagazineList({
           ))}
         </TableBody>
       </Table>
+      </div>
       <div className="flex justify-center w-full">
         <Pagination 
           page={page} 

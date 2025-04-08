@@ -3,7 +3,8 @@ import React from "react";
 import { Input, Button, Textarea, Checkbox, addToast } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { createClient } from "@/utils/supabase/client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 export function ExhibitionDetail({
   exhibition,
@@ -23,24 +24,100 @@ export function ExhibitionDetail({
   // 이전 전시회 ID를 저장하는 ref
   const prevExhibitionIdRef = React.useRef(exhibition.id);
   const supabase = createClient();
+  const [imageFile, setImageFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
-    // 전시회 데이터가 변경된 경우에만 처리
-    if (prevExhibitionIdRef.current !== exhibition.id) {
-      // 전시회가 변경되면 editedExhibition 상태 업데이트
-      setEditedExhibition(exhibition);
+    // 전시회 ID 또는 사진이 변경된 경우 실행
+    setEditedExhibition(exhibition);
+    setPreviewUrl(exhibition.photo || '');
 
-      // 새 전시회이거나 다른 전시회로 전환된 경우에만 편집 모드 설정
-      if (!exhibition.id) {
-        setIsEditing(true); // 신규 등록 모드
-      } else {
-        setIsEditing(false); // 기존 전시회 조회 모드
-      }
-
-      // 이전 전시회 ID 업데이트
-      prevExhibitionIdRef.current = exhibition.id;
+    // 새 전시회이거나 다른 전시회로 전환된 경우에만 편집 모드 설정
+    if (!exhibition.id) {
+      setIsEditing(true); // 신규 등록 모드
+    } else {
+      setIsEditing(false); // 기존 전시회 조회 모드
     }
-  }, [exhibition]);
+
+    // 이전 전시회 ID 업데이트
+    prevExhibitionIdRef.current = exhibition.id;
+  }, [exhibition, exhibition.photo]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // 파일 유형 체크
+    if (!file.type.includes("image")) {
+      addToast({
+        title: "이미지 업로드 오류",
+        description: "이미지 파일만 업로드할 수 있습니다.",
+        color: "danger",
+      });
+      return;
+    }
+    
+    // 파일 크기 체크 (5MB 제한)
+    if (file.size > 5 * 1024 * 1024) {
+      addToast({
+        title: "이미지 업로드 오류",
+        description: "이미지 크기는 5MB 이하여야 합니다.",
+        color: "danger",
+      });
+      return;
+    }
+    
+    setImageFile(file);
+    
+    // 이미지 미리보기 생성
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const uploadImage = async () => {
+    if (!imageFile) return null;
+    
+    try {
+      setIsUploading(true);
+      
+      // 고유한 파일명 생성
+      const fileExt = imageFile.name.split(".").pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `exhibition/${fileName}`;
+      
+      // Supabase Storage에 파일 업로드
+      const { data, error } = await supabase.storage
+        .from("exhibition")
+        .upload(filePath, imageFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (error) throw error;
+      
+      // 공개 URL 가져오기
+      const { data: { publicUrl } } = supabase.storage
+        .from("exhibition")
+        .getPublicUrl(filePath);
+      
+      return publicUrl;
+    } catch (error) {
+      console.error("이미지 업로드 오류:", error);
+      addToast({
+        title: "이미지 업로드 오류",
+        description: error.message,
+        color: "danger",
+      });
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!editedExhibition.name) {
@@ -76,6 +153,23 @@ export function ExhibitionDetail({
     }
 
     try {
+      // 이미지가 선택되었다면 업로드
+      let photoUrl = editedExhibition.photo;
+      if (imageFile) {
+        setIsUploading(true);
+        photoUrl = await uploadImage();
+        if (!photoUrl) {
+          addToast({
+            title: "이미지 업로드 실패",
+            description: "이미지 업로드에 실패했습니다. 다시 시도해주세요.",
+            color: "danger",
+          });
+          setIsUploading(false);
+          return;
+        }
+        setIsUploading(false);
+      }
+
       if (isNewExhibition) {
         // Supabase에 새 전시회 데이터 삽입
         console.log("삽입하기");
@@ -85,7 +179,7 @@ export function ExhibitionDetail({
             {
               name: editedExhibition.name,
               contents: editedExhibition.contents,
-              photo: editedExhibition.photo,
+              photo: photoUrl,
               date: editedExhibition.date,
               working_hour: editedExhibition.working_hour,
               off_date: editedExhibition.off_date,
@@ -117,7 +211,7 @@ export function ExhibitionDetail({
           .update({
             name: editedExhibition.name,
             contents: editedExhibition.contents,
-            photo: editedExhibition.photo,
+            photo: photoUrl,
             date: editedExhibition.date,
             working_hour: editedExhibition.working_hour,
             off_date: editedExhibition.off_date,
@@ -136,11 +230,13 @@ export function ExhibitionDetail({
           throw error;
         }
 
-        onUpdate(editedExhibition);
+        onUpdate({...editedExhibition, photo: photoUrl});
       }
 
       // 저장 후 편집 모드 종료
       setIsEditing(false);
+      setImageFile(null);
+      setPreviewUrl('');
       setEditedExhibition({
         name: "",
         contents: "",
@@ -205,6 +301,8 @@ export function ExhibitionDetail({
     setSelectedKeys(new Set([]));
     setRefreshToggle((refreshToggle) => refreshToggle + 1);
     setIsEditing(false);
+    setImageFile(null);
+    setPreviewUrl('');
     setEditedExhibition({
       name: "",
       contents: "",
@@ -232,10 +330,42 @@ export function ExhibitionDetail({
     } else {
       // 기존 데이터 편집 취소 시 원래 데이터로 복원
       setEditedExhibition(exhibition);
+      setPreviewUrl(exhibition.photo || '');
+      setImageFile(null);
       setIsEditing(false);
     }
   };
+
+  // 이미지 삭제 함수
+  const deleteImage = async () => {
+    if (!editedExhibition.photo) return;
+    
+    try {
+      // URL에서 경로 추출
+      const urlParts = editedExhibition.photo.split("/");
+      const filePath = urlParts[urlParts.length - 2] + "/" + urlParts[urlParts.length - 1];
+      
+      // Supabase Storage에서 이미지 삭제
+      const { error } = await supabase.storage
+        .from("exhibition")
+        .remove([filePath]);
+        
+      if (error) throw error;
+    } catch (error) {
+      console.error("이미지 삭제 오류:", error);
+    }
+  };
   
+  // 이미지 삭제 버튼 핸들러
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setPreviewUrl("");
+    setEditedExhibition({ ...editedExhibition, photo: "" });
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   return (
     <div className="space-y-6 ">
@@ -246,11 +376,12 @@ export function ExhibitionDetail({
         <div className="flex gap-2">
           {isEditing ? (
             <>
-              <Button color="primary" onPress={handleSave}>
+              <Button color="primary" onPress={handleSave} isDisabled={isUploading}>
                 <Icon icon="lucide:save" className="text-lg mr-1" />
                 {isNewExhibition ? "등록" : "저장"}
+                {isUploading && " (업로드 중...)"}
               </Button>
-              <Button variant="flat" onPress={handleCancel}>
+              <Button variant="flat" onPress={handleCancel} isDisabled={isUploading}>
                 <Icon icon="lucide:x" className="text-lg mr-1" />
                 취소
               </Button>
@@ -260,7 +391,7 @@ export function ExhibitionDetail({
               <Button
                 color="primary"
                 variant="flat"
-                onPress={() =>{handleSave(); setIsEditing(true)}}
+                onPress={() => setIsEditing(true)}
               >
                 <Icon icon="lucide:edit" className="text-lg mr-1" />
                 수정
@@ -283,13 +414,87 @@ export function ExhibitionDetail({
           }
           isRequired={true}
         />
-        <Input
-          label="이미지 URL"
-          value={editedExhibition.photo}
-          onValueChange={(value) =>
-            setEditedExhibition({ ...editedExhibition, photo: value })
-          }
-        />
+        
+        {/* 썸네일 이미지 업로드 컴포넌트 */}
+        <div className="space-y-2 col-span-2">
+          <div className="flex justify-between items-center">
+            <label className="block text-sm font-medium">전시회 이미지</label>
+            {previewUrl && (
+              <Button
+                size="sm"
+                color="danger"
+                variant="flat"
+                onPress={handleRemoveImage}
+                isDisabled={isUploading}
+              >
+                <Icon icon="lucide:trash-2" className="text-sm mr-1" />
+                이미지 삭제
+              </Button>
+            )}
+          </div>
+          
+          <div className="flex items-start space-x-4">
+            {/* 이미지 미리보기 영역 */}
+            <div className="w-36 h-36 border border-dashed border-gray-300 rounded-lg overflow-hidden flex items-center justify-center bg-gray-50">
+              {previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt="썸네일 미리보기"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="text-gray-400 text-center p-2">
+                  <Icon icon="lucide:image" className="text-3xl mx-auto mb-1" />
+                  <p className="text-xs">이미지 없음</p>
+                </div>
+              )}
+            </div>
+            
+            {/* 업로드 영역 */}
+            <div className="flex-1 space-y-2">
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                className="hidden"
+                id="thumbnail-upload"
+                disabled={isUploading}
+              />
+              
+              <Button
+                className="w-full"
+                color="primary"
+                variant="flat"
+                onPress={() => fileInputRef.current?.click()}
+                isDisabled={isUploading}
+              >
+                <Icon icon="lucide:upload" className="text-lg mr-1" />
+                {isUploading ? "업로드 중..." : "이미지 선택"}
+              </Button>
+              
+              <p className="text-xs text-gray-500">
+                5MB 이하의 이미지 파일을 선택해주세요. (JPG, PNG, GIF)
+              </p>
+              
+              {/* 외부 URL 입력 필드 */}
+              <Input
+                size="sm"
+                label="또는 이미지 URL 직접 입력"
+                value={!imageFile ? editedExhibition.photo || "" : ""}
+                onValueChange={(value) => {
+                  if (!imageFile) {
+                    setEditedExhibition({ ...editedExhibition, photo: value });
+                    setPreviewUrl(value);
+                  }
+                }}
+                placeholder="https://example.com/image.jpg"
+                isDisabled={!!imageFile || isUploading}
+              />
+            </div>
+          </div>
+        </div>
+        
         <Input
           label="전시 기간"
           value={editedExhibition.date}

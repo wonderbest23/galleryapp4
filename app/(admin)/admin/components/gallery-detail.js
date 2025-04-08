@@ -2,8 +2,11 @@
 import React from "react";
 import { Input, Button, Textarea, Checkbox, addToast } from "@heroui/react";
 import { Icon } from "@iconify/react";
+
+import { useState, useEffect, useRef } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { createClient } from "@/utils/supabase/client";
-import { useState, useEffect } from "react";
+import { createClient as createClientAdmin } from "@supabase/supabase-js";
 
 export function GalleryDetail({
   gallery,
@@ -21,11 +24,27 @@ export function GalleryDetail({
   const [isEditing, setIsEditing] = React.useState(isNewGallery);
   const [editedGallery, setEditedGallery] = React.useState(gallery);
   // 이전 갤러리 ID를 저장하는 ref
-  const prevGalleryIdRef = React.useRef(gallery.id);
+  const prevGalleryIdRef = React.useRef(null);
   const supabase = createClient();
+  const supabaseAdmin = createClientAdmin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  );
+
+  // 이미지 업로드 관련 상태
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
-    // 갤러리 데이터가 변경된 경우에만 처리
+    // 갤러리 데이터가 변경되었거나 처음 로드된 경우 처리
     if (prevGalleryIdRef.current !== gallery.id) {
       // 갤러리가 변경되면 editedGallery 상태 업데이트
       setEditedGallery(gallery);
@@ -39,8 +58,116 @@ export function GalleryDetail({
 
       // 이전 갤러리 ID 업데이트
       prevGalleryIdRef.current = gallery.id;
+
+      // 썸네일 URL이 있는 경우 항상 미리보기 설정
+      setImagePreview(gallery.thumbnail || "");
     }
   }, [gallery]);
+
+  // 이미지 파일 변경 핸들러
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // 파일 유형 체크
+    if (!file.type.includes("image")) {
+      addToast({
+        title: "이미지 업로드 오류",
+        description: "이미지 파일만 업로드할 수 있습니다.",
+        color: "danger",
+      });
+      return;
+    }
+
+    // 파일 크기 체크 (5MB 제한)
+    if (file.size > 5 * 1024 * 1024) {
+      addToast({
+        title: "이미지 업로드 오류",
+        description: "이미지 크기는 5MB 이하여야 합니다.",
+        color: "danger",
+      });
+      return;
+    }
+
+    setImageFile(file);
+
+    // 이미지 미리보기 생성
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // 이미지 업로드 함수
+  const uploadImage = async () => {
+    if (!imageFile) return null;
+
+    try {
+      setIsUploading(true);
+
+      // 고유한 파일명 생성
+      const fileExt = imageFile.name.split(".").pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `gallery/${fileName}`;
+
+      // Supabase Storage에 이미지 업로드
+      const { data, error } = await supabase.storage
+        .from("gallery")
+        .upload(filePath, imageFile);
+
+      if (error) throw error;
+
+      // 공개 URL 가져오기
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("gallery").getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error("이미지 업로드 오류:", error);
+      addToast({
+        title: "이미지 업로드 오류",
+        description: error.message,
+        color: "danger",
+      });
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // 이미지 삭제 함수
+  const deleteImage = async () => {
+    if (!editedGallery.thumbnail) return;
+
+    try {
+      // URL에서 경로 추출
+      const urlParts = editedGallery.thumbnail.split("/");
+      const filePath =
+        urlParts[urlParts.length - 2] + "/" + urlParts[urlParts.length - 1];
+
+      // Supabase Storage에서 이미지 삭제
+      const { error } = await supabase.storage
+        .from("gallery")
+        .remove([filePath]);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("이미지 삭제 오류:", error);
+    }
+  };
+
+  // 이미지 삭제 버튼 핸들러
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview("");
+    setEditedGallery({ ...editedGallery, thumbnail: "" });
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const handleSave = async () => {
     if (!editedGallery.url) {
@@ -68,6 +195,15 @@ export function GalleryDetail({
     }
 
     try {
+      // 이미지 파일이 있는 경우 업로드
+      let thumbnailUrl = editedGallery.thumbnail;
+      if (imageFile) {
+        const uploadedUrl = await uploadImage();
+        if (uploadedUrl) {
+          thumbnailUrl = uploadedUrl;
+        }
+      }
+
       if (isNewGallery) {
         // Supabase에 새 갤러리 데이터 삽입
         console.log("삽입하기기");
@@ -80,7 +216,7 @@ export function GalleryDetail({
               address: editedGallery.address,
               phone: editedGallery.phone,
               workinghour: editedGallery.workinghour,
-              thumbnail: editedGallery.thumbnail,
+              thumbnail: thumbnailUrl,
               visitor_rating: editedGallery.visitor_rating,
               blog_review_count: editedGallery.blog_review_count,
               homepage_url: editedGallery.homepage_url,
@@ -111,7 +247,7 @@ export function GalleryDetail({
             address: editedGallery.address,
             phone: editedGallery.phone,
             workinghour: editedGallery.workinghour,
-            thumbnail: editedGallery.thumbnail,
+            thumbnail: thumbnailUrl,
             visitor_rating: editedGallery.visitor_rating,
             blog_review_count: editedGallery.blog_review_count,
             homepage_url: editedGallery.homepage_url,
@@ -127,11 +263,13 @@ export function GalleryDetail({
           throw error;
         }
 
-        onUpdate(editedGallery);
+        onUpdate({ ...editedGallery, thumbnail: thumbnailUrl });
       }
 
       // 저장 후 편집 모드 종료
       setIsEditing(false);
+      setImageFile(null);
+      setImagePreview("");
       setEditedGallery({
         name: "",
         url: "",
@@ -183,39 +321,54 @@ export function GalleryDetail({
   };
 
   const handleDelete = async () => {
-    const { error } = await supabase
-      .from("gallery")
-      .delete()
-      .eq("id", editedGallery.id);
-    if (error) {
-      throw error;
-    }
-    addToast({
-      title: "갤러리 삭제 완료",
-      description: "갤러리 정보가 성공적으로 삭제되었습니다.",
-      color: "success",
-    });
-    setSelectedKeys(new Set([]));
-    setRefreshToggle((refreshToggle) => refreshToggle + 1);
-    setIsEditing(false);
-    setEditedGallery({
-      name: "",
-      url: "",
-      address: "",
-      phone: "",
-      workinghour: "",
-      thumbnail: "",
-      visitor_rating: 0,
-      blog_review_count: 0,
-      homepage_url: "",
-      shop_info: "",
-      add_info: "",
-      isNew: false,
-      isRecommended: false,
-      isNow: false,
-    });
-    setSelectedGallery(null);
+    try {
+      // 이미지가 있다면 먼저 스토리지에서 삭제
+      if (editedGallery.thumbnail) {
+        await deleteImage();
+      }
 
+      const { error } = await supabase
+        .from("gallery")
+        .delete()
+        .eq("id", editedGallery.id);
+      if (error) {
+        throw error;
+      }
+      addToast({
+        title: "갤러리 삭제 완료",
+        description: "갤러리 정보가 성공적으로 삭제되었습니다.",
+        color: "success",
+      });
+      setSelectedKeys(new Set([]));
+      setRefreshToggle((refreshToggle) => refreshToggle + 1);
+      setIsEditing(false);
+      setImageFile(null);
+      setImagePreview("");
+      setEditedGallery({
+        name: "",
+        url: "",
+        address: "",
+        phone: "",
+        workinghour: "",
+        thumbnail: "",
+        visitor_rating: 0,
+        blog_review_count: 0,
+        homepage_url: "",
+        shop_info: "",
+        add_info: "",
+        isNew: false,
+        isRecommended: false,
+        isNow: false,
+      });
+      setSelectedGallery(null);
+    } catch (error) {
+      console.error("갤러리 삭제 중 오류 발생:", error);
+      addToast({
+        title: "갤러리 삭제 중 오류 발생",
+        description: error.message,
+        color: "danger",
+      });
+    }
   };
 
   const handleCancel = () => {
@@ -226,10 +379,108 @@ export function GalleryDetail({
       // 기존 데이터 편집 취소 시 원래 데이터로 복원
       setEditedGallery(gallery);
       setIsEditing(false);
+
+      // 이미지 미리보기 초기화
+      if (gallery.thumbnail) {
+        setImagePreview(gallery.thumbnail);
+      } else {
+        setImagePreview("");
+      }
+      setImageFile(null);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
-  console.log("editedGallery:", editedGallery);
-  console.log("selectedKeys:", selectedKeys);
+
+  // 계정 생성 처리 함수
+  const handleCreateAccount = async () => {
+    try {
+      // 12자리 난수 생성
+      const randomNum = Math.floor(100000000000 + Math.random() * 900000000000);
+      const email = `${randomNum}@naver.com`;
+      const password = "123456789";
+
+      // Supabase Admin API를 사용하여 계정 생성
+      const { data, error } = await supabaseAdmin.auth.admin.createUser({
+        email: email,
+        password: password,
+      });
+
+      if (error) throw error;
+
+      // 생성된 사용자 ID 가져오기
+      const userId = data.user.id;
+      console.log("userId:", userId);
+      const userEmail = data.user.email;
+      console.log("userEmail:", userEmail);
+      
+      // 갤러리 테이블 업데이트
+      const { error: galleryError } = await supabase
+        .from("gallery")
+        .update({ account_id: userId,account_email:userEmail})
+        .eq("id", editedGallery.id);
+      
+      if (galleryError) {
+        console.log("갤러리 계정 ID 업데이트 오류:", galleryError);
+      }
+      
+      // profiles 테이블에 row가 생성될 때까지 기다리기
+      let profileExists = false;
+      let attempts = 0;
+      const maxAttempts = 10; // 최대 시도 횟수
+      
+      while (!profileExists && attempts < maxAttempts) {
+        // 프로필 존재 여부 확인
+        const { data: profileData, error: checkError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
+          
+        if (profileData) {
+          profileExists = true;
+          console.log("프로필 생성 확인됨:", profileData);
+          
+          // profiles 테이블 업데이트 - supabaseAdmin으로 변경
+          const { error: profileError } = await supabaseAdmin
+            .from("profiles")
+            .update({ role: "gallery", url: editedGallery.url })
+            .eq("id", profileData.id);
+            
+          if (profileError) {
+            console.log("프로필 업데이트 오류:", profileError, "프로필 데이터:", profileData);
+            throw profileError;
+          } else {
+            console.log("프로필 업데이트 성공");
+          }
+        } else {
+          console.log(`프로필 확인 중... 시도 ${attempts + 1}/${maxAttempts}`);
+          await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 대기
+          attempts++;
+        }
+      }
+      
+      if (!profileExists) {
+        throw new Error("프로필 생성 확인 시간 초과. 나중에 다시 시도해주세요.");
+      }
+
+      addToast({
+        title: "계정 생성 완료",
+        description: `이메일: ${email}, 비밀번호: ${password}`,
+        color: "success",
+      });      
+
+    } catch (error) {
+      console.error("계정 생성 오류:", error);
+      addToast({
+        title: "계정 생성 오류",
+        description: error.message,
+        color: "danger",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6 ">
@@ -240,11 +491,19 @@ export function GalleryDetail({
         <div className="flex gap-2">
           {isEditing ? (
             <>
-              <Button color="primary" onPress={handleSave}>
+              <Button
+                color="primary"
+                onPress={handleSave}
+                isDisabled={isUploading}
+              >
                 <Icon icon="lucide:save" className="text-lg mr-1" />
                 {isNewGallery ? "등록" : "저장"}
               </Button>
-              <Button variant="flat" onPress={handleCancel}>
+              <Button
+                variant="flat"
+                onPress={handleCancel}
+                isDisabled={isUploading}
+              >
                 <Icon icon="lucide:x" className="text-lg mr-1" />
                 취소
               </Button>
@@ -276,13 +535,19 @@ export function GalleryDetail({
           <>
             <Input
               label="아이디"
-              value={editedGallery.id}
+              value={editedGallery.account_email||"없음"}
               onValueChange={(value) =>
-                setEditedGallery({ ...editedGallery, id: value })
+                setEditedGallery({ ...editedGallery, account_email: value })
               }
+              isDisabled={true}
             />
             <div className="flex flex-col justify-center items-center">
-              <Button className="w-full h-full" color="primary" variant="solid">
+              <Button
+                className="w-full h-full"
+                color="primary"
+                variant="solid"
+                onPress={handleCreateAccount}
+              >
                 <Icon icon="lucide:user-plus" className="text-lg mr-1" />
                 계정 생성하기
               </Button>
@@ -326,13 +591,87 @@ export function GalleryDetail({
             setEditedGallery({ ...editedGallery, workinghour: value })
           }
         />
-        <Input
-          label="썸네일"
-          value={editedGallery.thumbnail}
-          onValueChange={(value) =>
-            setEditedGallery({ ...editedGallery, thumbnail: value })
-          }
-        />
+
+        {/* 썸네일 이미지 업로드 컴포넌트 */}
+        <div className="space-y-2 col-span-2">
+          <div className="flex justify-between items-center">
+            <label className="block text-sm font-medium">썸네일 이미지</label>
+            {imagePreview && (
+              <Button
+                size="sm"
+                color="danger"
+                variant="flat"
+                onPress={handleRemoveImage}
+                isDisabled={isUploading}
+              >
+                <Icon icon="lucide:trash-2" className="text-sm mr-1" />
+                이미지 삭제
+              </Button>
+            )}
+          </div>
+
+          <div className="flex items-start space-x-4">
+            {/* 이미지 미리보기 영역 */}
+            <div className="w-36 h-36 border border-dashed border-gray-300 rounded-lg overflow-hidden flex items-center justify-center bg-gray-50">
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="썸네일 미리보기"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="text-gray-400 text-center p-2">
+                  <Icon icon="lucide:image" className="text-3xl mx-auto mb-1" />
+                  <p className="text-xs">이미지 없음</p>
+                </div>
+              )}
+            </div>
+
+            {/* 업로드 영역 */}
+            <div className="flex-1 space-y-2">
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                className="hidden"
+                id="thumbnail-upload"
+                disabled={isUploading}
+              />
+
+              <Button
+                className="w-full"
+                color="primary"
+                variant="flat"
+                onPress={() => fileInputRef.current?.click()}
+                isDisabled={isUploading}
+              >
+                <Icon icon="lucide:upload" className="text-lg mr-1" />
+                {isUploading ? "업로드 중..." : "이미지 선택"}
+              </Button>
+
+              <p className="text-xs text-gray-500">
+                5MB 이하의 이미지 파일을 선택해주세요. (JPG, PNG, GIF)
+              </p>
+
+              {/* 외부 URL 입력 필드 */}
+              <Input
+                size="sm"
+                label="또는 이미지 URL 직접 입력"
+                value={!imageFile ? editedGallery.thumbnail || "" : ""}
+                onValueChange={(value) => {
+                  if (!imageFile) {
+                    setEditedGallery({ ...editedGallery, thumbnail: value });
+                    setImagePreview(value);
+                  }
+                }}
+                placeholder="https://example.com/image.jpg"
+                isDisabled={!!imageFile || isUploading}
+              />
+            </div>
+          </div>
+        </div>
+
         <Input
           label="방문자 평점"
           value={editedGallery.visitor_rating}
@@ -384,7 +723,6 @@ export function GalleryDetail({
               radius="sm"
             >
               <div className="flex items-center gap-2">
-
                 <span>신규</span>
               </div>
             </Checkbox>
@@ -401,7 +739,6 @@ export function GalleryDetail({
               radius="sm"
             >
               <div className="flex items-center gap-2">
-
                 <span>추천</span>
               </div>
             </Checkbox>
@@ -415,7 +752,6 @@ export function GalleryDetail({
               radius="sm"
             >
               <div className="flex items-center gap-2">
-                
                 <span>현재 진행 중</span>
               </div>
             </Checkbox>
