@@ -227,7 +227,7 @@ export default function GalleryCards({ selectedTab, user }) {
             gallerys.map((gallery, index) => (
               <Card key={index} className="w-full max-w-[600px] mx-auto">
                 <Link
-                  href={`/gallery/${gallery.id || index + 1}`}
+                  href={`/galleries/${gallery.id || index + 1}`}
                   className="w-full"
                 >
                   <CardBody className="flex gap-4 flex-row w-full h-full">
