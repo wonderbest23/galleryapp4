@@ -168,6 +168,7 @@ export default function GalleryFeatureManager() {
                     onValueChange={() => toggleRecommended(gallery.id, gallery.isRecommended)}
                   />
                 </TableCell>
+                
                 <TableCell>{gallery.name}</TableCell>
               </TableRow>
             ))}
