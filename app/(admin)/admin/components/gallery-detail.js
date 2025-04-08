@@ -598,6 +598,7 @@ export function GalleryDetail({
         {!isEditing && (
           <>
             <Input
+              className="col-span-2 md:col-span-1"
               label="아이디"
               value={editedGallery.account_email||"없음"}
               onValueChange={(value) =>
@@ -605,9 +606,9 @@ export function GalleryDetail({
               }
               isDisabled={true}
             />
-            <div className="flex flex-col justify-center items-center">
+            <div className="flex flex-col justify-center items-center col-span-2 md:col-span-1">
               <Button
-                className="w-full h-full"
+                className="w-full md:h-full h-12"
                 color="primary"
                 variant="solid"
                 onPress={handleCreateAccount}
@@ -620,6 +621,7 @@ export function GalleryDetail({
         )}
 
         <Input
+          className="col-span-2 md:col-span-1"
           label="이름"
           value={editedGallery.name}
           onValueChange={(value) =>
@@ -627,6 +629,7 @@ export function GalleryDetail({
           }
         />
         <Input
+          className="col-span-2 md:col-span-1"
           label="URL"
           value={editedGallery.url}
           onValueChange={(value) =>
@@ -635,6 +638,7 @@ export function GalleryDetail({
           isRequired
         />
         <Input
+          className="col-span-2 md:col-span-1"
           label="주소"
           value={editedGallery.address}
           onValueChange={(value) =>
@@ -642,6 +646,7 @@ export function GalleryDetail({
           }
         />
         <Input
+          className="col-span-2 md:col-span-1"
           label="전화번호"
           value={editedGallery.phone}
           onValueChange={(value) =>
@@ -649,6 +654,7 @@ export function GalleryDetail({
           }
         />
         <Input
+          className="col-span-2 md:col-span-1"
           label="영업시간"
           value={editedGallery.workinghour}
           onValueChange={(value) =>
@@ -737,6 +743,7 @@ export function GalleryDetail({
         </div>
 
         <Input
+          className="col-span-2 md:col-span-1"
           label="방문자 평점"
           value={editedGallery.visitor_rating}
           onValueChange={(value) =>
@@ -744,6 +751,7 @@ export function GalleryDetail({
           }
         />
         <Input
+          className="col-span-2 md:col-span-1"
           label="블로그 리뷰 수"
           value={editedGallery.blog_review_count}
           onValueChange={(value) =>
@@ -751,6 +759,7 @@ export function GalleryDetail({
           }
         />
         <Input
+          className="col-span-2 md:col-span-1"
           label="홈페이지 URL"
           value={editedGallery.homepage_url}
           onValueChange={(value) =>
@@ -758,20 +767,22 @@ export function GalleryDetail({
           }
         />
         <Textarea
+          className="col-span-2 md:col-span-1"
           label="매장 정보"
           value={editedGallery.shop_info}
           onValueChange={(value) =>
             setEditedGallery({ ...editedGallery, shop_info: value })
           }
-          className="md:col-span-2"
+          
         />
         <Textarea
+          className="col-span-2 md:col-span-1"
           label="추가 정보"
           value={editedGallery.add_info}
           onValueChange={(value) =>
             setEditedGallery({ ...editedGallery, add_info: value })
           }
-          className="md:col-span-2"
+          
         />
 
         <div className="flex flex-col gap-4 md:col-span-2 mt-2">
@@ -824,7 +835,7 @@ export function GalleryDetail({
         
         {/* QR 코드 섹션 - 편집 모드가 아닌 경우에만 표시 */}
         {!isNewGallery && !isEditing && (
-          <div className="flex flex-col items-center gap-5 md:col-span-2 border border-gray-200 p-6 rounded-lg mt-6 bg-gradient-to-b from-gray-50 to-white shadow-sm">
+          <div className="flex flex-col items-center gap-5 col-span-2 border border-gray-200 p-6 rounded-lg mt-6 bg-gradient-to-b from-gray-50 to-white shadow-sm">
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-1">리뷰 페이지 QR 코드</h3>
               <p className="text-sm text-gray-600">

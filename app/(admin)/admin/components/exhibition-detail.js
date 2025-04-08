@@ -469,8 +469,9 @@ export function ExhibitionDetail({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-4 ">
         <Input
+          className="col-span-2 md:col-span-1"
           label="전시회 이름"
           value={editedExhibition.name}
           onValueChange={(value) =>
@@ -490,6 +491,7 @@ export function ExhibitionDetail({
                 variant="flat"
                 onPress={handleRemoveImage}
                 isDisabled={isUploading}
+                className="col-span-2 md:col-span-1"
               >
                 <Icon icon="lucide:trash-2" className="text-sm mr-1" />
                 이미지 삭제
@@ -504,7 +506,7 @@ export function ExhibitionDetail({
                 <img
                   src={previewUrl}
                   alt="썸네일 미리보기"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover col-span-2 md:col-span-1"
                 />
               ) : (
                 <div className="text-gray-400 text-center p-2">
@@ -521,13 +523,13 @@ export function ExhibitionDetail({
                 accept="image/*"
                 ref={fileInputRef}
                 onChange={handleImageChange}
-                className="hidden"
+                className="hidden col-span-2 md:col-span-1"
                 id="thumbnail-upload"
                 disabled={isUploading}
               />
               
               <Button
-                className="w-full"
+                className="w-full col-span-2 md:col-span-1"
                 color="primary"
                 variant="flat"
                 onPress={() => fileInputRef.current?.click()}
@@ -565,6 +567,7 @@ export function ExhibitionDetail({
           onValueChange={(value) =>
             setEditedExhibition({ ...editedExhibition, date: value })
           }
+          className="col-span-2 md:col-span-1"
         />
         <Input
           label="운영 시간"
@@ -572,6 +575,7 @@ export function ExhibitionDetail({
           onValueChange={(value) =>
             setEditedExhibition({ ...editedExhibition, working_hour: value })
           }
+          className="col-span-2 md:col-span-1"
         />
         <Input
           label="휴무일"
@@ -586,6 +590,7 @@ export function ExhibitionDetail({
           onValueChange={(value) =>
             setEditedExhibition({ ...editedExhibition, homepage_url: value })
           }
+          className="col-span-2 md:col-span-1"
         />
         <Input
           label="리뷰 수"
@@ -600,6 +605,7 @@ export function ExhibitionDetail({
           onValueChange={(value) =>
             setEditedExhibition({ ...editedExhibition, review_average: value })
           }
+          className="col-span-2 md:col-span-1"
         />
         <Input
           label="네이버 갤러리 URL"
@@ -607,6 +613,7 @@ export function ExhibitionDetail({
           onValueChange={(value) =>
             setEditedExhibition({ ...editedExhibition, naver_gallery_url: value })
           }
+          className="col-span-2 md:col-span-1"
           isRequired
         />
         <Input
@@ -615,6 +622,7 @@ export function ExhibitionDetail({
           onValueChange={(value) =>
             setEditedExhibition({ ...editedExhibition, price: value })
           }
+          className="col-span-2 md:col-span-1"
         />
         <Textarea
           label="전시회 내용"
@@ -622,7 +630,7 @@ export function ExhibitionDetail({
           onValueChange={(value) =>
             setEditedExhibition({ ...editedExhibition, contents: value })
           }
-          className="md:col-span-2"
+          className="col-span-2 md:col-span-1"
         />
         <Textarea
           label="추가 정보"
@@ -630,7 +638,7 @@ export function ExhibitionDetail({
           onValueChange={(value) =>
             setEditedExhibition({ ...editedExhibition, add_info: value })
           }
-          className="md:col-span-2"
+          className="col-span-2 md:col-span-1"
         />
 
         <div className="flex flex-col gap-4 md:col-span-2 mt-2">
@@ -642,6 +650,7 @@ export function ExhibitionDetail({
               onValueChange={(value) =>
                 setEditedExhibition({ ...editedExhibition, isFree: value })
               }
+              className="col-span-2 md:col-span-1"
             >
               무료 전시회
             </Checkbox>
@@ -659,7 +668,7 @@ export function ExhibitionDetail({
 
         {/* QR 코드 섹션 - 편집 모드가 아닌 경우에만 표시 */}
         {!isNewExhibition && !isEditing && (
-          <div className="flex flex-col items-center gap-5 md:col-span-2 border border-gray-200 p-6 rounded-lg mt-6 bg-gradient-to-b from-gray-50 to-white shadow-sm">
+          <div className="flex flex-col items-center gap-5 col-span-2 border border-gray-200 p-6 rounded-lg mt-6 bg-gradient-to-b from-gray-50 to-white shadow-sm">
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-1">리뷰 페이지 QR 코드</h3>
               <p className="text-sm text-gray-600">
