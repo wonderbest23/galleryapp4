@@ -13,7 +13,15 @@ export default function Navbar() {
   const [search, setSearch] = useState("");
   const [exhibitions, setExhibitions] = useState([]);
   const [gallery, setGallery] = useState([]);
-  
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+  }, []);   
   // 링크 클릭 시 검색창 초기화 함수 추가
   const handleLinkClick = () => {
     setSearch("");
@@ -23,7 +31,6 @@ export default function Navbar() {
   
   // useCallback 제거하고 단순화된 접근 방식 사용
   const handleSearch = async (searchTerm) => {
-    console.log("검색 실행:", searchTerm);
     
     try {
       // 전시회 데이터 검색
@@ -97,9 +104,15 @@ export default function Navbar() {
         />
 
         <div className="w-8 flex justify-center items-center">
-          <Link href="/exhibitionList">
-            <FaRegBookmark className="text-xl text-gray-400" />
-          </Link>
+          {user ? (
+            <Link href="/exhibitions?isBookmark=true">
+              <FaRegBookmark className="text-xl text-gray-400" />
+            </Link>
+          ) : (
+            <Link href="/mypage?returnUrl=/exhibitions?isBookmark=true">
+              <FaRegBookmark className="text-xl text-gray-400" />
+            </Link>
+          )}
         </div>
       </div>
       

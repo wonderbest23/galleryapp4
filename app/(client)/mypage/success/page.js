@@ -124,7 +124,7 @@ const Success = () => {
       // Supabase 로그아웃
       const supabase = createClient();
       await supabase.auth.signOut();
-      router.push("/mypage");
+      router.push("/");
     } catch (error) {
       console.error("로그아웃 중 오류가 발생했습니다:", error);
     }
