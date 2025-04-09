@@ -134,8 +134,95 @@ export function ExhibitionDetail({
   };
 
   const handleSave = async () => {
+    // 편집 모드가 아닌 경우에는 바로 저장 진행
+    if (!isEditing && !isNewExhibition) {
+      // 이미지가 선택되었다면 업로드부터 진행
+      let photoUrl = exhibition.photo;
+      if (imageFile) {
+        setIsUploading(true);
+        photoUrl = await uploadImage();
+        if (!photoUrl) {
+          addToast({
+            title: "이미지 업로드 실패",
+            description: "이미지 업로드에 실패했습니다. 다시 시도해주세요.",
+            color: "danger",
+          });
+          setIsUploading(false);
+          return;
+        }
+        setIsUploading(false);
+      }
+      
+      // 이제 이미지 URL을 포함한 데이터로 업데이트
+      try {
+        // 기존 전시회 데이터 업데이트
+        console.log("업데이트하기");
+        
+        // naver_gallery_url 처리
+        const naver_gallery_url = exhibition.naver_gallery_url && typeof exhibition.naver_gallery_url === 'object' 
+          ? exhibition.naver_gallery_url.url || "" 
+          : exhibition.naver_gallery_url || "";
+        
+        const { error } = await supabase
+          .from("exhibition")
+          .update({
+            name: exhibition.name,
+            contents: exhibition.contents,
+            photo: photoUrl, // 여기서 새 이미지 URL 사용
+            start_date: exhibition.start_date,
+            end_date: exhibition.end_date,
+            working_hour: exhibition.working_hour,
+            off_date: exhibition.off_date,
+            add_info: exhibition.add_info,
+            homepage_url: exhibition.homepage_url,
+            isFree: exhibition.isFree,
+            isRecommended: exhibition.isRecommended,
+            review_count: exhibition.review_count,
+            review_average: exhibition.review_average,
+            // naver_gallery_url: naver_gallery_url,
+            price: exhibition.price,
+          })
+          .eq("id", exhibition.id);
+
+        if (error) {
+          throw error;
+        }
+
+        // 업데이트된 photo URL을 포함하여 전달
+        onUpdate({...exhibition, photo: photoUrl});
+
+        addToast({
+          title: "전시회 저장 완료",
+          description: "전시회 정보가 성공적으로 저장되었습니다.",
+          color: "success",
+        });
+        
+        // 목록 새로고침 실행
+        try {
+          if (onRefresh) {
+            onRefresh();
+          }
+        } catch (refreshError) {
+          console.error("전시회 목록 새로고침 중 오류 발생:", refreshError);
+        }
+        
+        setRefreshToggle((refreshToggle) => refreshToggle + 1);
+        setImageFile(null); // 이미지 파일 초기화
+        return;
+      } catch (error) {
+        console.log("전시회 저장 중 오류 발생:", error);
+        addToast({
+          title: "전시회 저장 중 오류 발생",
+          description: error.message,
+          color: "danger",
+        });
+        setRefreshToggle((refreshToggle) => refreshToggle + 1);
+        return;
+      }
+    }
+    
     console.log('editedExhibition', editedExhibition)
-    if (!editedExhibition.name) {
+    if (!editedExhibition.contents) {
       addToast({
         title: "전시회 저장 중 오류 발생",
         description: "전시회 이름을 입력해주세요.",
@@ -159,7 +246,13 @@ export function ExhibitionDetail({
       });
       return;
     }
-    if (editedExhibition.naver_gallery_url==="") {
+    
+    // naver_gallery_url 유효성 검사 - 객체 또는 문자열 모두 처리
+    const naver_gallery_url_value = typeof editedExhibition.naver_gallery_url === 'object' 
+      ? (editedExhibition.naver_gallery_url?.url || "") 
+      : (editedExhibition.naver_gallery_url || "");
+      
+    if (naver_gallery_url_value === "") {
       addToast({
         title: "전시회 저장 중 오류 발생",
         description: "네이버 갤러리 URL을 입력해주세요.",
@@ -239,6 +332,12 @@ export function ExhibitionDetail({
       if (isNewExhibition) {
         // Supabase에 새 전시회 데이터 삽입
         console.log("삽입하기");
+        
+        // naver_gallery_url 처리
+        const naver_gallery_url_value = typeof editedExhibition.naver_gallery_url === 'object' 
+          ? (editedExhibition.naver_gallery_url?.url || "") 
+          : (editedExhibition.naver_gallery_url || "");
+        
         const { data, error } = await supabase
           .from("exhibition")
           .insert([
@@ -256,7 +355,7 @@ export function ExhibitionDetail({
               isRecommended: editedExhibition.isRecommended,
               review_count: editedExhibition.review_count,
               review_average: editedExhibition.review_average,
-              naver_gallery_url: editedExhibition.naver_gallery_url,
+              naver_gallery_url: naver_gallery_url_value,
               price: editedExhibition.price,
             },
           ])
@@ -511,10 +610,10 @@ export function ExhibitionDetail({
               <Button
                 color="primary"
                 variant="flat"
-                onPress={() => setIsEditing(true)}
+                onPress={handleSave}
               >
-                <Icon icon="lucide:edit" className="text-lg mr-1" />
-                수정
+                <Icon icon="lucide:save" className="text-lg mr-1" />
+                저장
               </Button>
               <Button color="danger" variant="flat" onPress={handleDelete}>
                 <Icon icon="lucide:trash" className="text-lg mr-1" />
@@ -675,13 +774,13 @@ export function ExhibitionDetail({
         />
         <Input
           label="네이버 갤러리 URL"
-          value={editedExhibition.naver_gallery_url.url}
+          value={editedExhibition.naver_gallery_url && typeof editedExhibition.naver_gallery_url === 'object' ? editedExhibition.naver_gallery_url.url || "" : editedExhibition.naver_gallery_url || ""}
           onValueChange={(value) =>
             setEditedExhibition({ ...editedExhibition, naver_gallery_url: value })
           }
           className="col-span-2 md:col-span-1"
           isRequired
-          isDisabled={true}
+          isDisabled={!isEditing}
         />
         <Input
           label="가격"
