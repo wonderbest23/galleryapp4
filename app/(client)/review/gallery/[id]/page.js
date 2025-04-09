@@ -82,7 +82,7 @@ export default function page() {
       .select("*")
       .eq("gallery_id", id)
       .eq("user_id", user.id)
-      
+      .single();
 
     if (checkError) {
       console.log("기존 리뷰 확인 중 오류 발생:", checkError);

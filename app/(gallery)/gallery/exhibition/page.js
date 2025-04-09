@@ -10,6 +10,34 @@ import { addToast } from "@heroui/react";
 import useUserInfoStore from "../store/userInfo";
 import { v4 as uuidv4 } from 'uuid';
 
+// 날짜 범위를 포맷팅하는 함수
+const formatDateRange = (startDate, endDate) => {
+  try {
+    // ISO 문자열에서 Date 객체 생성
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // 유효한 날짜인지 확인
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return `${startDate} ~ ${endDate}`;
+    }
+
+    // YYYY.MM.DD 형식으로 포맷팅
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}.${month}.${day}`;
+    };
+
+    return `${formatDate(start)} ~ ${formatDate(end)}`;
+  } catch (error) {
+    // 오류 발생 시 원본 값 반환
+    console.error("날짜 포맷팅 오류:", error);
+    return `${startDate} ~ ${endDate}`;
+  }
+};
+
 export default function Exhibition() {
   const { userInfo } = useUserInfoStore();
   // Supabase 클라이언트 생성
@@ -112,7 +140,16 @@ export default function Exhibition() {
   // 신규 전시회 저장 핸들러
   const handleSaveNew = async (newExhibition) => {
     try {
-      // Supabase에 새 전시회 데이터 저장
+      // 날짜 값 처리 - 반드시 end_date도 포함되도록 확인
+      const startDate = newExhibition.start_date || null;
+      const endDate = newExhibition.end_date || null;
+      
+      console.log("신규 Supabase로 전송할 날짜 데이터:", {
+        start_date: startDate,
+        end_date: endDate
+      });
+      
+      // Supabase에 새 전시회 데이터 저장 - end_date 확인
       const { data, error } = await supabase
         .from("exhibition")
         .insert([
@@ -120,7 +157,8 @@ export default function Exhibition() {
             name: newExhibition.name || "",
             contents: newExhibition.contents || "",
             photo: newExhibition.photo || "",
-            date: newExhibition.date || "",
+            start_date: startDate,
+            end_date: endDate, // 반드시 포함
             working_hour: newExhibition.working_hour || "",
             off_date: newExhibition.off_date || "",
             add_info: newExhibition.add_info || "",
@@ -244,6 +282,21 @@ export default function Exhibition() {
 
     setIsLoading(true);
     try {
+      // 날짜 값 처리 - 반드시 end_date도 포함되도록 확인
+      const startDate = selectedExhibition.start_date || null;
+      const endDate = selectedExhibition.end_date || null;
+      
+      // 디버깅을 위한 로그 추가
+      console.log("Supabase로 전송할 날짜 데이터:", {
+        start_date: startDate,
+        end_date: endDate
+      });
+      
+      // DB 업데이트 전 end_date가 있는지 확인
+      if (!endDate) {
+        console.warn("end_date가 비어 있습니다. 업데이트 계속 진행합니다.");
+      }
+      
       // Supabase에 업데이트 데이터 저장
       const { error } = await supabase
         .from("exhibition")
@@ -251,7 +304,8 @@ export default function Exhibition() {
           name: selectedExhibition.name,
           contents: selectedExhibition.contents,
           photo: selectedExhibition.photo,
-          date: selectedExhibition.date,
+          start_date: startDate,
+          end_date: endDate, // 반드시 포함
           working_hour: selectedExhibition.working_hour,
           off_date: selectedExhibition.off_date,
           add_info: selectedExhibition.add_info,
@@ -263,7 +317,10 @@ export default function Exhibition() {
         })
         .eq("id", selectedExhibition.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase 업데이트 에러:", error);
+        throw error;
+      }
 
       // 성공 메시지
       // alert('전시회 정보가 성공적으로 업데이트되었습니다.');
@@ -309,7 +366,11 @@ export default function Exhibition() {
         // 데이터 새로고침
         loadExhibitions();
       } catch (error) {
-        console.error("전시회 삭제 중 오류 발생:", error);
+        addToast({
+          title: "삭제 실패",
+          description: "전시회 삭제 중 오류가 발생했습니다.",
+          color: "danger",
+        });
       }
     }
   };
@@ -340,6 +401,8 @@ export default function Exhibition() {
   };
 
   console.log('userInfo:',userInfo)
+  console.log("selectedExhibition:",selectedExhibition)
+  
 
   return (
     <div className="w-full h-full flex flex-col gap-4 py-20">
@@ -411,7 +474,9 @@ export default function Exhibition() {
                         </div>
                       </td>
                       <td className="p-3 ">
-                        {exhibition.date}
+                        {exhibition.start_date && exhibition.end_date 
+                          ? formatDateRange(exhibition.start_date, exhibition.end_date)
+                          : "날짜 미설정"}
                       </td>
                     </tr>
                   ))
@@ -467,19 +532,7 @@ export default function Exhibition() {
               {/* 직접 편집 가능한 폼 영역 */}
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* <div>
-                    <label className="block text-sm font-medium mb-1">
-                      갤러리명
-                    </label>
-                    <Input
-                      isDisabled
-                      value={selectedExhibition.name || ""}
-                      onChange={(e) =>
-                        handleFieldChange("name", e.target.value)
-                      }
-                      className="w-full"
-                    />
-                  </div> */}
+
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       전시회명
@@ -546,16 +599,35 @@ export default function Exhibition() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      날짜
+                      시작일
                     </label>
                     <Input
-                      value={selectedExhibition.date || ""}
+                      value={selectedExhibition.start_date || ""}
                       onChange={(e) =>
-                        handleFieldChange("date", e.target.value)
+                        handleFieldChange("start_date", e.target.value)
                       }
                       className="w-full"
+                      placeholder="YYYYmmdd 형식 (예: 20240531)"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      종료일 <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      value={selectedExhibition.end_date || ""}
+                      onChange={(e) =>
+                        handleFieldChange("end_date", e.target.value)
+                      }
+                      className="w-full"
+                      placeholder="YYYYmmdd 형식 (예: 20240630)"
+                      color={!selectedExhibition.end_date ? "danger" : "default"}
+                      helperText={!selectedExhibition.end_date ? "종료일은 필수 입력 항목입니다" : ""}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       운영 시간
@@ -568,9 +640,6 @@ export default function Exhibition() {
                       className="w-full"
                     />
                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       휴관일
@@ -579,22 +648,6 @@ export default function Exhibition() {
                       value={selectedExhibition.off_date || ""}
                       onChange={(e) =>
                         handleFieldChange("off_date", e.target.value)
-                      }
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      가격
-                    </label>
-                    <Input
-                      type="number"
-                      value={selectedExhibition.price || 0}
-                      onChange={(e) =>
-                        handleFieldChange(
-                          "price",
-                          parseInt(e.target.value) || 0
-                        )
                       }
                       className="w-full"
                     />
@@ -613,7 +666,7 @@ export default function Exhibition() {
                       }
                     />
                   </div>
-                  <div>
+                  {/* <div>
                     <label className="block text-sm font-medium mb-1">
                       추천 전시회
                     </label>
@@ -623,7 +676,7 @@ export default function Exhibition() {
                         handleFieldChange("isRecommended", value)
                       }
                     />
-                  </div>
+                  </div> */}
                 </div>
 
                 <div>

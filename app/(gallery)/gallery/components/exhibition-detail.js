@@ -1,27 +1,28 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Input, Button, Textarea, Checkbox, DatePicker,addToast } from "@heroui/react";
+import { Input, Button, Textarea, Checkbox, addToast } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { createClient } from "@/utils/supabase/client";
 
-export function ExhibitionDetail({ 
+export function ExhibitionDetail({
   galleryInfo,
-  exhibition = {}, 
-  onUpdate, 
-  onDelete, 
-  isNew = false, 
-  onSave, 
-  onCancel, 
-  isReadOnly = false, 
+  exhibition = {},
+  onUpdate,
+  onDelete,
+  isNew = false,
+  onSave,
+  onCancel,
+  isReadOnly = false,
   isEdit = false,
-  selectedKey
+  selectedKey,
 }) {
   const emptyExhibition = {
     name: "",
     contents: "",
     photo: "",
-    date: "",
+    start_date: "",
+    end_date: "",
     working_hour: "",
     off_date: "",
     add_info: "",
@@ -31,11 +32,15 @@ export function ExhibitionDetail({
     review_count: 0,
     review_average: 0,
     naver_gallery_url: "",
-    price: 0
+    price: 0,
   };
-  
-  const [editedExhibition, setEditedExhibition] = useState(isNew ? emptyExhibition : exhibition);
-  const [imagePreview, setImagePreview] = useState(isNew ? null : exhibition?.photo || null);
+
+  const [editedExhibition, setEditedExhibition] = useState(
+    isNew ? emptyExhibition : exhibition
+  );
+  const [imagePreview, setImagePreview] = useState(
+    isNew ? null : exhibition?.photo || null
+  );
   const [isSaving, setIsSaving] = useState(false);
   const supabase = createClient();
 
@@ -51,7 +56,31 @@ export function ExhibitionDetail({
   const handleSave = async () => {
     // 필수 필드 검증
     if (!editedExhibition.contents) {
-      alert('갤러리명과 전시회명은 필수 입력 항목입니다.');
+      alert("갤러리명과 전시회명은 필수 입력 항목입니다.");
+      return;
+    }
+
+    // 날짜 형식 검증
+    const validateDateFormat = (dateStr) => {
+      if (!dateStr || dateStr.trim() === "") return true;
+      return /^\d{8}$/.test(dateStr.trim());
+    };
+
+    if (!validateDateFormat(editedExhibition.start_date)) {
+      addToast({
+        title: "날짜 형식 오류",
+        description: "시작일은 YYYYmmdd 형식으로 입력해주세요. (예: 20240101)",
+        color: "danger",
+      });
+      return;
+    }
+
+    if (!validateDateFormat(editedExhibition.end_date)) {
+      addToast({
+        title: "날짜 형식 오류",
+        description: "종료일은 YYYYmmdd 형식으로 입력해주세요. (예: 20240131)",
+        color: "danger",
+      });
       return;
     }
 
@@ -69,8 +98,12 @@ export function ExhibitionDetail({
         }
       }
     } catch (error) {
-      console.error('전시회 저장 중 오류 발생:', error);
-      alert('전시회 정보 저장 중 오류가 발생했습니다.');
+      // console.error("전시회 저장 중 오류 발생:", error);
+      addToast({
+        title: "전시회 저장 중 오류 발생",
+        description: "전시회 정보 저장 중 오류가 발생했습니다.",
+        color: "danger",
+      });
     } finally {
       setIsSaving(false);
       addToast({
@@ -101,7 +134,7 @@ export function ExhibitionDetail({
 
   // 필드 변경 핸들러
   const handleFieldChange = (field, value) => {
-    const updatedExhibition = {...editedExhibition, [field]: value};
+    const updatedExhibition = { ...editedExhibition, [field]: value };
     setEditedExhibition(updatedExhibition);
     // 여기서 변경사항 즉시 저장하지 않고, 사용자가 저장 버튼을 누를 때 저장하도록 변경
   };
@@ -113,11 +146,12 @@ export function ExhibitionDetail({
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        handleFieldChange('photo', reader.result);
+        handleFieldChange("photo", reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
+  console.log("editedExhibition", editedExhibition);
 
   return (
     <div className="space-y-6">
@@ -132,11 +166,7 @@ export function ExhibitionDetail({
               {isNew ? "추가" : "저장"}
             </Button>
             {!isNew && (
-              <Button 
-                color="danger" 
-                variant="flat" 
-                onPress={handleDelete}
-              >
+              <Button color="danger" variant="flat" onPress={handleDelete}>
                 <Icon icon="lucide:trash" className="mr-1" />
                 삭제
               </Button>
@@ -152,30 +182,47 @@ export function ExhibitionDetail({
         <Input
           label="갤러리명"
           value={galleryInfo?.name || ""}
-          onValueChange={(value) => handleFieldChange('name', value)}
-          // isReadOnly={isReadOnly}
+          onValueChange={(value) => handleFieldChange("name", value)}
           isDisabled
         />
 
         <Input
           label="전시회명"
           value={editedExhibition.contents || ""}
-          onValueChange={(value) => handleFieldChange('contents', value)}
+          onValueChange={(value) => handleFieldChange("contents", value)}
           isReadOnly={isReadOnly}
         />
 
         <Input
-          label="전시 기간"
-          value={editedExhibition.date || ""}
-          onValueChange={(value) => handleFieldChange('date', value)}
+          label="전시시작"
+          value={editedExhibition.start_date || ""}
+          onValueChange={(value) => {
+            // 숫자만 입력 가능하도록 처리
+            const numericValue = value.replace(/[^\d]/g, "").slice(0, 8);
+            handleFieldChange("start_date", numericValue);
+          }}
           isReadOnly={isReadOnly}
-          placeholder="예: 2024.01.01 ~ 2024.12.31"
+          placeholder="YYYYmmdd 형식으로 입력 (예: 20240101)"
+          description="8자리 숫자로 입력 (YYYYMMDD)"
+        />
+
+        <Input
+          label="전시종료"
+          value={editedExhibition.end_date || ""}
+          onValueChange={(value) => {
+            // 숫자만 입력 가능하도록 처리
+            const numericValue = value.replace(/[^\d]/g, "").slice(0, 8);
+            handleFieldChange("end_date", numericValue);
+          }}
+          isReadOnly={isReadOnly}
+          placeholder="YYYYmmdd 형식으로 입력 (예: 20240131)"
+          description="8자리 숫자로 입력 (YYYYMMDD)"
         />
 
         <Input
           label="운영 시간"
           value={editedExhibition.working_hour || ""}
-          onValueChange={(value) => handleFieldChange('working_hour', value)}
+          onValueChange={(value) => handleFieldChange("working_hour", value)}
           isReadOnly={isReadOnly}
           placeholder="예: 10:00 - 18:00"
         />
@@ -183,7 +230,7 @@ export function ExhibitionDetail({
         <Input
           label="휴관일"
           value={editedExhibition.off_date || ""}
-          onValueChange={(value) => handleFieldChange('off_date', value)}
+          onValueChange={(value) => handleFieldChange("off_date", value)}
           isReadOnly={isReadOnly}
           placeholder="예: 매주 월요일"
         />
@@ -191,7 +238,9 @@ export function ExhibitionDetail({
         <Input
           label="네이버 갤러리 URL"
           value={galleryInfo?.url || ""}
-          onValueChange={(value) => handleFieldChange('naver_gallery_url', value)}
+          onValueChange={(value) =>
+            handleFieldChange("naver_gallery_url", value)
+          }
           isReadOnly={isReadOnly}
           isDisabled
         />
@@ -199,7 +248,7 @@ export function ExhibitionDetail({
         <Input
           label="홈페이지 URL"
           value={editedExhibition.homepage_url || ""}
-          onValueChange={(value) => handleFieldChange('homepage_url', value)}
+          onValueChange={(value) => handleFieldChange("homepage_url", value)}
           isReadOnly={isReadOnly}
         />
 
@@ -207,7 +256,7 @@ export function ExhibitionDetail({
           type="number"
           label="가격 (원)"
           value={editedExhibition.price || 0}
-          onValueChange={(value) => handleFieldChange('price', value)}
+          onValueChange={(value) => handleFieldChange("price", value)}
           isReadOnly={isReadOnly}
         />
 
@@ -216,14 +265,16 @@ export function ExhibitionDetail({
           <div className="flex flex-col gap-2">
             <Checkbox
               isSelected={editedExhibition.isFree || false}
-              onValueChange={(value) => handleFieldChange('isFree', value)}
+              onValueChange={(value) => handleFieldChange("isFree", value)}
               isDisabled={isReadOnly}
             >
               무료 전시회
             </Checkbox>
             <Checkbox
               isSelected={editedExhibition.isRecommended || false}
-              onValueChange={(value) => handleFieldChange('isRecommended', value)}
+              onValueChange={(value) =>
+                handleFieldChange("isRecommended", value)
+              }
               isDisabled={isReadOnly}
             >
               추천 전시회 (메인 페이지 상단 노출)
@@ -232,13 +283,26 @@ export function ExhibitionDetail({
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <label className="text-small font-medium">전시회 이미지</label>
+          <div className="flex items-center justify-between">
+            <label className="text-small font-medium">전시회 이미지</label>
+            <Button 
+              color="primary" 
+              variant="flat" 
+              size="sm"
+              as="a" 
+              href="/sample/guide.jpg"
+              download
+            >
+              <Icon icon="lucide:info" />
+              가이드 라인
+            </Button>
+          </div>
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center">
             {imagePreview ? (
               <div className="relative w-full">
-                <img 
-                  src={imagePreview} 
-                  alt="전시회 이미지" 
+                <img
+                  src={imagePreview}
+                  alt="전시회 이미지"
                   className="w-full h-48 object-cover rounded-md"
                 />
                 {!isReadOnly && (
@@ -250,7 +314,7 @@ export function ExhibitionDetail({
                     className="absolute top-2 right-2"
                     onPress={() => {
                       setImagePreview(null);
-                      handleFieldChange('photo', '');
+                      handleFieldChange("photo", "");
                     }}
                   >
                     <Icon icon="lucide:x" />
@@ -259,7 +323,10 @@ export function ExhibitionDetail({
               </div>
             ) : (
               <>
-                <Icon icon="lucide:image" className="text-4xl text-gray-400 mb-2" />
+                <Icon
+                  icon="lucide:image"
+                  className="text-4xl text-gray-400 mb-2"
+                />
                 <p className="text-sm text-gray-500">이미지 미리보기</p>
               </>
             )}
@@ -275,7 +342,7 @@ export function ExhibitionDetail({
                 <label htmlFor="photo-upload">
                   <Button as="span" color="primary" variant="flat" size="sm">
                     <Icon icon="lucide:upload" className="mr-1" />
-                    이미지 {imagePreview ? '변경' : '업로드'}
+                    이미지 {imagePreview ? "변경" : "업로드"}
                   </Button>
                 </label>
               </div>
@@ -286,7 +353,7 @@ export function ExhibitionDetail({
         <Textarea
           label="추가 정보"
           value={editedExhibition.add_info || ""}
-          onValueChange={(value) => handleFieldChange('add_info', value)}
+          onValueChange={(value) => handleFieldChange("add_info", value)}
           isReadOnly={isReadOnly}
           className="md:col-span-2"
           placeholder="전시회에 대한 상세 정보를 입력하세요."

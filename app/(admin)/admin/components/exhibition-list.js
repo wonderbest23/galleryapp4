@@ -47,7 +47,7 @@ export function ExhibitionList({
 
     let query = supabase
       .from("exhibition")
-      .select("*", {
+      .select("*,naver_gallery_url(*) ", {
         count: "exact",
       })
       .order("id", { ascending: false })
@@ -75,6 +75,7 @@ export function ExhibitionList({
     setExhibitions(data || []);
     setTotal(Math.ceil((count || 0) / itemsPerPage));
   };
+  console.log('exhibitions', exhibitions)
 
   useEffect(() => {
     console.log("가져오자");
@@ -342,7 +343,7 @@ export function ExhibitionList({
             {exhibitions.map((exhibition) => (
               <TableRow key={exhibition.id}>
                 <TableCell>{exhibition.contents}</TableCell>
-                <TableCell>{exhibition.name}</TableCell>
+                <TableCell>{exhibition.naver_gallery_url.name}</TableCell>
                 <TableCell>
                   <div className="line-clamp-2 overflow-hidden text-ellipsis">
                     {exhibition.add_info}

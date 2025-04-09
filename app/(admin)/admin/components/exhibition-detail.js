@@ -134,6 +134,7 @@ export function ExhibitionDetail({
   };
 
   const handleSave = async () => {
+    console.log('editedExhibition', editedExhibition)
     if (!editedExhibition.name) {
       addToast({
         title: "전시회 저장 중 오류 발생",
@@ -164,6 +165,57 @@ export function ExhibitionDetail({
         description: "네이버 갤러리 URL을 입력해주세요.",
         color: "danger",
       });
+      return;
+    }
+
+    // end_date 검증 강화
+    if (!editedExhibition.end_date || editedExhibition.end_date==="" || editedExhibition.end_date.trim() === "") {
+      addToast({
+        title: "전시회 저장 중 오류 발생",
+        description: "전시종료일을 입력해주세요.",
+        color: "danger",
+      });
+      return;
+    }
+    
+    // YYYYmmdd 형식 검증
+    const dateFormatRegex = /^\d{8}$/;
+    if (!dateFormatRegex.test(editedExhibition.end_date)) {
+      addToast({
+        title: "전시회 저장 중 오류 발생",
+        description: "전시종료일은 YYYYMMDD 형식(예: 20241231)으로 입력해주세요.",
+        color: "danger",
+      });
+      return;
+    }
+    
+    // 유효한 날짜인지 추가 검증
+    const year = parseInt(editedExhibition.end_date.substring(0, 4));
+    const month = parseInt(editedExhibition.end_date.substring(4, 6)) - 1; // 0-11
+    const day = parseInt(editedExhibition.end_date.substring(6, 8));
+    
+    const date = new Date(year, month, day);
+    if (
+      date.getFullYear() !== year || 
+      date.getMonth() !== month || 
+      date.getDate() !== day
+    ) {
+      addToast({
+        title: "전시회 저장 중 오류 발생",
+        description: "유효하지 않은 날짜입니다. 올바른 날짜를 입력해주세요.",
+        color: "danger",
+      });
+      return;
+    }
+    
+    // start_date도 동일한 형식인지 확인
+    if (editedExhibition.start_date && !dateFormatRegex.test(editedExhibition.start_date)) {
+      addToast({
+        title: "전시회 저장 중 오류 발생",
+        description: "전시시작일은 YYYYMMDD 형식(예: 20241231)으로 입력해주세요.",
+        color: "danger",
+      });
+      return;
     }
 
     try {
@@ -194,7 +246,8 @@ export function ExhibitionDetail({
               name: editedExhibition.name,
               contents: editedExhibition.contents,
               photo: photoUrl,
-              date: editedExhibition.date,
+              start_date: editedExhibition.start_date,
+              end_date: editedExhibition.end_date,
               working_hour: editedExhibition.working_hour,
               off_date: editedExhibition.off_date,
               add_info: editedExhibition.add_info,
@@ -226,7 +279,8 @@ export function ExhibitionDetail({
             name: editedExhibition.name,
             contents: editedExhibition.contents,
             photo: photoUrl,
-            date: editedExhibition.date,
+            start_date: editedExhibition.start_date,
+            end_date: editedExhibition.end_date,
             working_hour: editedExhibition.working_hour,
             off_date: editedExhibition.off_date,
             add_info: editedExhibition.add_info,
@@ -255,7 +309,8 @@ export function ExhibitionDetail({
         name: "",
         contents: "",
         photo: "",
-        date: "",
+        start_date: "",
+        end_date: "",
         working_hour: "",
         off_date: "",
         add_info: "",
@@ -321,7 +376,8 @@ export function ExhibitionDetail({
       name: "",
       contents: "",
       photo: "",
-      date: "",
+      start_date: "",
+      end_date: "",
       working_hour: "",
       off_date: "",
       add_info: "",
@@ -473,9 +529,9 @@ export function ExhibitionDetail({
         <Input
           className="col-span-2 md:col-span-1"
           label="전시회 이름"
-          value={editedExhibition.name}
+          value={editedExhibition.contents||""}
           onValueChange={(value) =>
-            setEditedExhibition({ ...editedExhibition, name: value })
+            setEditedExhibition({ ...editedExhibition, contents: value })
           }
           isRequired={true}
         />
@@ -562,13 +618,23 @@ export function ExhibitionDetail({
         </div>
         
         <Input
-          label="전시 기간"
-          value={editedExhibition.date}
+          label="전시시작"
+          value={editedExhibition.start_date||""}
           onValueChange={(value) =>
-            setEditedExhibition({ ...editedExhibition, date: value })
+            setEditedExhibition({ ...editedExhibition, start_date: value })
           }
           className="col-span-2 md:col-span-1"
         />
+        <Input
+          label="전시종료"
+          value={editedExhibition.end_date||""}
+          onValueChange={(value) =>
+            setEditedExhibition({ ...editedExhibition, end_date: value })
+          }
+          className="col-span-2 md:col-span-1"
+          isRequired={true}
+        />
+
         <Input
           label="운영 시간"
           value={editedExhibition.working_hour}
@@ -594,14 +660,14 @@ export function ExhibitionDetail({
         />
         <Input
           label="리뷰 수"
-          value={editedExhibition.review_count}
+          value={editedExhibition.review_count||0}
           onValueChange={(value) =>
             setEditedExhibition({ ...editedExhibition, review_count: value })
           }
         />
         <Input
           label="평균 평점"
-          value={editedExhibition.review_average}
+          value={editedExhibition.review_average||0}
           onValueChange={(value) =>
             setEditedExhibition({ ...editedExhibition, review_average: value })
           }
@@ -609,12 +675,13 @@ export function ExhibitionDetail({
         />
         <Input
           label="네이버 갤러리 URL"
-          value={editedExhibition.naver_gallery_url}
+          value={editedExhibition.naver_gallery_url.url}
           onValueChange={(value) =>
             setEditedExhibition({ ...editedExhibition, naver_gallery_url: value })
           }
           className="col-span-2 md:col-span-1"
           isRequired
+          isDisabled={true}
         />
         <Input
           label="가격"
