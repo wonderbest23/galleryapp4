@@ -264,7 +264,7 @@ export default function GalleryCards({ selectedTab, user }) {
               alt={gallery.name || "갤러리 이미지"}
               className="h-[153px] w-full object-cover"
             />
-            <div
+            {/* <div
               className="absolute top-2 right-2 z-10 p-1 rounded-full bg-white/70"
               onClick={(e) => toggleBookmark(e, gallery)}
             >
@@ -273,17 +273,17 @@ export default function GalleryCards({ selectedTab, user }) {
               ) : (
                 <FaRegBookmark className="text-gray-600 text-lg" />
               )}
-            </div>
+            </div> */}
           </div>
           <CardBody className="flex flex-col justify-between h-full">
             <div className="text-[16px] font-bold">{gallery.name}</div>
-            <div className="text-[10px] text-gray-600">
-              <p className="line-clamp-1">
+            <div className="text-[10px] ">
+              <p className="line-clamp-1 text-[#BDBDBD]">
                 {gallery.address || "주소 정보 없음"}
               </p>
             </div>
             <div className="flex text-sm justify-between items-center">
-              <div className=" rounded-md text-[10px] ">평균별점</div>
+              <div className=" rounded-md text-[10px] text-[#BDBDBD] ">평균별점</div>
               <div className="flex items-center gap-x-1">
                 
                 <span className="text-[10px] text-[#007AFF]">{gallery.visitor_rating || "평점 없음"}</span>
