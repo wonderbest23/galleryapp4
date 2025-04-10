@@ -41,35 +41,92 @@ export default function App() {
   });
 
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState({
+    gallery: false,
+    notifications: false,
+    reviews: false,
+    bookmark: false
+  });
+
+  // 모든 데이터가 로드되었는지 확인하는 useEffect
+  useEffect(() => {
+    if (dataLoaded.gallery && dataLoaded.notifications && dataLoaded.reviews && dataLoaded.bookmark) {
+      setIsLoading(false);
+    }
+  }, [dataLoaded]);
 
   useEffect(() => {
     const fetchGallery = async () => {
-      const { data, error } = await supabase
-        .from("gallery")
-        .select("*")
-        .eq("id", id)
-        .single();    
+      try {
+        const { data, error } = await supabase
+          .from("gallery")
+          .select("*")
+          .eq("id", id)
+          .single();    
 
-      if (error) {
-        console.error("Error fetching gallery:", error);
-      } else {
-        setGallery(data);
+        if (error) {
+          console.error("Error fetching gallery:", error);
+        } else {
+          setGallery(data);
+        }
+        setDataLoaded(prev => ({ ...prev, gallery: true }));
+      } catch (error) {
+        console.error("갤러리 정보 불러오기 중 오류 발생:", error);
+        setDataLoaded(prev => ({ ...prev, gallery: true })); // 에러가 발생해도 로딩 상태는 변경
       }
     };
+    
     fetchGallery();
-    fetchBookmarkStatus();
-    setIsLoading(false);
+    fetchInitialData();
   }, [id]);
 
-  useEffect(() => {
-    fetchNotifications();
-  }, [id, notificationPage]);
-  
-  useEffect(() => {
-    fetchReviews();
-  }, [id,reviewPage]);
+  // 초기 데이터 로드를 위한 함수
+  const fetchInitialData = async () => {
+    try {
+      await Promise.all([
+        fetchBookmarkStatus(),
+        fetchInitialNotifications(),
+        fetchInitialReviews()
+      ]);
+    } catch (error) {
+      console.error("초기 데이터 로드 중 오류 발생:", error);
+    }
+  };
 
-  const fetchNotifications = async () => {
+  // 초기 알림 데이터 로드
+  const fetchInitialNotifications = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("gallery_notification")
+        .select("*")
+        .eq("gallery_id", id)
+        .order('created_at', { ascending: false })
+        .range(0, notificationsPerPage - 1);
+
+      if (error) {
+        console.error("알림 불러오기 오류:", error);
+      } else {
+        if (data.length < notificationsPerPage) {
+          setHasMoreNotifications(false);
+        }
+        setNotifications(data);
+      }
+      setDataLoaded(prev => ({ ...prev, notifications: true }));
+    } catch (error) {
+      console.error("알림 불러오기 중 오류 발생:", error);
+      setDataLoaded(prev => ({ ...prev, notifications: true }));
+    }
+  };
+
+  // 기존 fetchNotifications는 더 많은 알림을 로드할 때만 사용
+  useEffect(() => {
+    if (notificationPage > 1) {
+      fetchMoreNotifications();
+    }
+  }, [notificationPage]);
+
+  const fetchMoreNotifications = async () => {
+    // 기존 fetchNotifications 함수의 내용을 여기로 이동
     try {
       const { data, error } = await supabase
         .from("gallery_notification")
@@ -87,91 +144,53 @@ export default function App() {
         setHasMoreNotifications(false);
       }
 
-      if (notificationPage === 1) {
-        setNotifications(data);
-      } else {
-        setNotifications(prev => [...prev, ...data]);
-      }
+      setNotifications(prev => [...prev, ...data]);
     } catch (error) {
       console.error("알림 불러오기 중 오류 발생:", error);
     }
   };
 
-  const loadMoreNotifications = () => {
-    setNotificationPage(prev => prev + 1);
-  };
-  
-  const fetchReviews = async () => {
+  // 초기 리뷰 및 통계 로드
+  const fetchInitialReviews = async () => {
     try {
       const { data, error } = await supabase
         .from("gallery_review")
         .select("*")
         .eq("gallery_id", id)
         .order('created_at', { ascending: false })
-        .range((reviewPage - 1) * reviewsPerPage, reviewPage * reviewsPerPage - 1);
+        .range(0, reviewsPerPage - 1);
 
       if (error) {
         console.error("리뷰 불러오기 오류:", error);
-        return;
-      }
-
-      if (data.length < reviewsPerPage) {
-        setHasMoreReviews(false);
-      }
-
-      if (reviewPage === 1) {
-        setReviews(data);
       } else {
-        setReviews(prev => [...prev, ...data]);
+        if (data.length < reviewsPerPage) {
+          setHasMoreReviews(false);
+        }
+        setReviews(data);
       }
       
       // 리뷰 통계 계산
-      calculateReviewStats();
+      await calculateReviewStats();
+      setDataLoaded(prev => ({ ...prev, reviews: true }));
     } catch (error) {
       console.error("리뷰 불러오기 중 오류 발생:", error);
+      setDataLoaded(prev => ({ ...prev, reviews: true }));
     }
   };
 
-  const loadMoreReviews = () => {
-    setReviewPage(prev => prev + 1);
+  // 기존 fetchReviews는 더 많은 리뷰를 로드할 때만 사용
+  useEffect(() => {
+    if (reviewPage > 1) {
+      fetchMoreReviews();
+    }
+  }, [reviewPage]);
+
+  const fetchMoreReviews = async () => {
+    // ... existing code ...
   };
 
   const calculateReviewStats = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("gallery_review")
-        .select("rating")
-        .eq("gallery_id", id);
-      
-      if (error) {
-        console.error("리뷰 통계 불러오기 오류:", error);
-        return;
-      }
-      
-      if (data.length === 0) return;
-      
-      const count = data.length;
-      const sum = data.reduce((acc, review) => acc + review.rating, 0);
-      const average = sum / count;
-      
-      const fiveStars = data.filter(review => review.rating === 5).length;
-      const fourStars = data.filter(review => review.rating === 4).length;
-      const threeStars = data.filter(review => review.rating === 3).length;
-      const twoStars = data.filter(review => review.rating === 2).length;
-      const oneStars = data.filter(review => review.rating === 1).length;
-      
-      setReviewStats({
-        average,
-        count,
-        fiveStars,
-        fourStars,
-        threeStars,
-        twoStars,
-        oneStars
-      });
-    } catch (error) {
-      console.error("리뷰 통계 계산 중 오류 발생:", error);
-    }
+    // ... existing code ...
   };
 
   // 북마크 상태 확인 함수
@@ -188,13 +207,14 @@ export default function App() {
         
         if (error) {
           console.error('북마크 정보를 가져오는 중 오류 발생:', error);
-          return;
+        } else {
+          setIsBookmarked(bookmarks && bookmarks.length > 0);
         }
-        
-        setIsBookmarked(bookmarks && bookmarks.length > 0);
       }
+      setDataLoaded(prev => ({ ...prev, bookmark: true }));
     } catch (error) {
       console.error('북마크 상태 확인 중 오류 발생:', error);
+      setDataLoaded(prev => ({ ...prev, bookmark: true }));
     }
   };
 
@@ -267,7 +287,10 @@ export default function App() {
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen">
       {isLoading ? (
-        <Spinner variant="wave" color="danger" className="w-full h-screen flex justify-center items-center" />
+        <div className="w-full h-screen flex flex-col justify-center items-center">
+          <Spinner variant="wave" color="primary" size="lg" />
+          <p className="mt-4 text-gray-600">갤러리 정보를 불러오고 있습니다...</p>
+        </div>
       ) : (
       <>
       {/* 상단 네비게이션 바 */}
@@ -384,7 +407,7 @@ export default function App() {
               <div className="flex justify-center items-center my-4">
                 <FaPlusCircle 
                   className="text-red-500 text-2xl font-bold hover:cursor-pointer" 
-                  onClick={loadMoreNotifications}
+                  onClick={() => setNotificationPage(prev => prev + 1)}
                 />
               </div>
             )}
@@ -450,7 +473,7 @@ export default function App() {
                 {hasMoreReviews ? (
                   <FaPlusCircle 
                     className="text-red-500 text-2xl font-bold hover:cursor-pointer" 
-                    onClick={loadMoreReviews}
+                    onClick={() => setReviewPage(prev => prev + 1)}
                   />
                 ) : (
                   <p className="text-gray-500">더 이상 리뷰가 없습니다.</p>

@@ -36,7 +36,14 @@ export default function App() {
   const [reviews, setReviews] = useState([]);
   const [displayedReviewCount, setDisplayedReviewCount] = useState(3);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [allDataLoaded, setAllDataLoaded] = useState(false);
   const supabase = createClient();
+
+  useEffect(() => {
+    if (exhibition !== null && notice !== null && reviews !== null && !isLoading) {
+      setAllDataLoaded(true);
+    }
+  }, [exhibition, notice, reviews, isLoading]);
 
   useEffect(() => {
     const fetchNotice = async () => {
@@ -58,7 +65,9 @@ export default function App() {
       }
     };
 
-    fetchNotice();
+    if (exhibition) {
+      fetchNotice();
+    }
   }, [exhibition]);
 
   console.log("exhibition:", exhibition);
@@ -234,10 +243,10 @@ export default function App() {
 
   return (
     <>
-      {isLoading ? (
+      {!allDataLoaded ? (
         <Spinner
           variant="wave"
-          color="danger"
+          color="primary"
           className="w-full h-screen flex justify-center items-center"
         />
       ) : (

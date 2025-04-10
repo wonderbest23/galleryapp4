@@ -16,6 +16,12 @@ import { IoMdInformationCircleOutline } from "react-icons/io";
 export default function App() {
   const [selected, setSelected] = useState("home");
   const [isLoading, setIsLoading] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState({
+    gallery: false,
+    bookmark: false,
+    notifications: false,
+    reviews: false
+  });
   const router = useRouter();
   const { id } = useParams();
   const supabase = createClient();
@@ -44,97 +50,117 @@ export default function App() {
 
   useEffect(() => {
     const fetchGallery = async () => {
-      const { data, error } = await supabase
-        .from("gallery")
-        .select("*")
-        .eq("id", id)
-        .single();    
+      try {
+        const { data, error } = await supabase
+          .from("gallery")
+          .select("*")
+          .eq("id", id)
+          .single();    
 
-      if (error) {
-        console.error("Error fetching gallery:", error);
-      } else {
-        setGallery(data);
+        if (error) {
+          console.error("Error fetching gallery:", error);
+        } else {
+          setGallery(data);
+        }
+        setDataLoaded(prev => ({ ...prev, gallery: true }));
+      } catch (error) {
+        console.error("갤러리 불러오기 중 오류 발생:", error);
+        setDataLoaded(prev => ({ ...prev, gallery: true }));
       }
     };
     fetchGallery();
-    fetchBookmarkStatus();
-    setIsLoading(false);
   }, [id]);
 
   useEffect(() => {
-    fetchNotifications();
-  }, [id, notificationPage]);
+    const fetchBookmarkStatus = async () => {
+      try {
+        const { data: user } = await supabase.auth.getUser();
+        
+        if (user && user.user) {
+          const { data: bookmarks, error } = await supabase
+            .from('bookmark')
+            .select('*')
+            .eq('user_id', user.user.id)
+            .eq('gallery_id', id);
+          
+          if (error) {
+            console.error('북마크 정보를 가져오는 중 오류 발생:', error);
+          } else {
+            setIsBookmarked(bookmarks && bookmarks.length > 0);
+          }
+        }
+        setDataLoaded(prev => ({ ...prev, bookmark: true }));
+      } catch (error) {
+        console.error('북마크 상태 확인 중 오류 발생:', error);
+        setDataLoaded(prev => ({ ...prev, bookmark: true }));
+      }
+    };
+    fetchBookmarkStatus();
+  }, [id]);
+
+  useEffect(() => {
+    const initialFetchNotifications = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("gallery_notification")
+          .select("*")
+          .eq("gallery_id", id)
+          .order('created_at', { ascending: false })
+          .range(0, notificationsPerPage - 1);
+
+        if (error) {
+          console.error("알림 불러오기 오류:", error);
+        } else {
+          if (data.length < notificationsPerPage) {
+            setHasMoreNotifications(false);
+          }
+          setNotifications(data);
+        }
+        setDataLoaded(prev => ({ ...prev, notifications: true }));
+      } catch (error) {
+        console.error("알림 불러오기 중 오류 발생:", error);
+        setDataLoaded(prev => ({ ...prev, notifications: true }));
+      }
+    };
+    initialFetchNotifications();
+  }, [id]);
   
   useEffect(() => {
-    fetchReviews();
-  }, [id,reviewPage]);
+    const initialFetchReviews = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("gallery_review")
+          .select("*")
+          .eq("gallery_id", id)
+          .order('created_at', { ascending: false })
+          .range(0, reviewsPerPage - 1);
 
-  const fetchNotifications = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("gallery_notification")
-        .select("*")
-        .eq("gallery_id", id)
-        .order('created_at', { ascending: false })
-        .range((notificationPage - 1) * notificationsPerPage, notificationPage * notificationsPerPage - 1);
-
-      if (error) {
-        console.error("알림 불러오기 오류:", error);
-        return;
+        if (error) {
+          console.error("리뷰 불러오기 오류:", error);
+        } else {
+          if (data.length < reviewsPerPage) {
+            setHasMoreReviews(false);
+          }
+          setReviews(data);
+        }
+        
+        // 리뷰 통계 계산
+        await calculateReviewStats();
+        setDataLoaded(prev => ({ ...prev, reviews: true }));
+      } catch (error) {
+        console.error("리뷰 불러오기 중 오류 발생:", error);
+        setDataLoaded(prev => ({ ...prev, reviews: true }));
       }
+    };
+    initialFetchReviews();
+  }, [id]);
 
-      if (data.length < notificationsPerPage) {
-        setHasMoreNotifications(false);
-      }
-
-      if (notificationPage === 1) {
-        setNotifications(data);
-      } else {
-        setNotifications(prev => [...prev, ...data]);
-      }
-    } catch (error) {
-      console.error("알림 불러오기 중 오류 발생:", error);
+  // 모든 데이터가 로드되었는지 확인하는 useEffect
+  useEffect(() => {
+    if (dataLoaded.gallery && dataLoaded.bookmark && dataLoaded.notifications && dataLoaded.reviews) {
+      setIsLoading(false);
     }
-  };
-
-  const loadMoreNotifications = () => {
-    setNotificationPage(prev => prev + 1);
-  };
-  
-  const fetchReviews = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("gallery_review")
-        .select("*")
-        .eq("gallery_id", id)
-        .order('created_at', { ascending: false })
-        .range((reviewPage - 1) * reviewsPerPage, reviewPage * reviewsPerPage - 1);
-
-      if (error) {
-        console.error("리뷰 불러오기 오류:", error);
-        return;
-      }
-
-      if (data.length < reviewsPerPage) {
-        setHasMoreReviews(false);
-      }
-
-      if (reviewPage === 1) {
-        setReviews(data);
-      } else {
-        setReviews(prev => [...prev, ...data]);
-      }
-      
-      // 리뷰 통계 계산
-      calculateReviewStats();
-    } catch (error) {
-      console.error("리뷰 불러오기 중 오류 발생:", error);
-    }
-  };
-
-  const loadMoreReviews = () => {
-    setReviewPage(prev => prev + 1);
-  };
+  }, [dataLoaded]);
 
   const calculateReviewStats = async () => {
     try {
@@ -171,30 +197,6 @@ export default function App() {
       });
     } catch (error) {
       console.error("리뷰 통계 계산 중 오류 발생:", error);
-    }
-  };
-
-  // 북마크 상태 확인 함수
-  const fetchBookmarkStatus = async () => {
-    try {
-      const { data: user } = await supabase.auth.getUser();
-      
-      if (user && user.user) {
-        const { data: bookmarks, error } = await supabase
-          .from('bookmark')
-          .select('*')
-          .eq('user_id', user.user.id)
-          .eq('gallery_id', id);
-        
-        if (error) {
-          console.error('북마크 정보를 가져오는 중 오류 발생:', error);
-          return;
-        }
-        
-        setIsBookmarked(bookmarks && bookmarks.length > 0);
-      }
-    } catch (error) {
-      console.error('북마크 상태 확인 중 오류 발생:', error);
     }
   };
 
@@ -267,7 +269,7 @@ export default function App() {
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen">
       {isLoading ? (
-        <Spinner variant="wave" color="danger" className="w-full h-screen flex justify-center items-center" />
+        <Spinner variant="wave" color="primary" className="w-full h-screen flex justify-center items-center" />
       ) : (
       <>
       {/* 상단 네비게이션 바 */}
@@ -450,7 +452,7 @@ export default function App() {
                 {hasMoreReviews ? (
                   <FaPlusCircle 
                     className="text-red-500 text-2xl font-bold hover:cursor-pointer" 
-                    onClick={loadMoreReviews}
+                    onClick={loadMoreNotifications}
                   />
                 ) : (
                   <p className="text-gray-500">더 이상 리뷰가 없습니다.</p>
