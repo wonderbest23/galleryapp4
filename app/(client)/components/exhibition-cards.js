@@ -190,7 +190,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-4 w-full justify-center">
+      <div className="flex flex-col items-center gap-4 w-full justify-center px-5">
         <div className="grid gap-4 w-full max-w-[900px] mx-auto justify-center items-center">
           {loading && page === 1
             ? // 처음 로딩 중 스켈레톤 UI 표시

@@ -5,11 +5,12 @@ import { FaRegBookmark } from "react-icons/fa";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
-import debounce from 'lodash/debounce';
+import debounce from "lodash/debounce";
 import Image from "next/image";
-
+import { useRouter } from "next/navigation";
 export default function Navbar() {
   const supabase = createClient();
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [exhibitions, setExhibitions] = useState([]);
   const [gallery, setGallery] = useState([]);
@@ -17,42 +18,43 @@ export default function Navbar() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUser(user);
     };
     fetchUser();
-  }, []);   
+  }, []);
   // 링크 클릭 시 검색창 초기화 함수 추가
   const handleLinkClick = () => {
     setSearch("");
     setExhibitions([]);
     setGallery([]);
   };
-  
+
   // useCallback 제거하고 단순화된 접근 방식 사용
   const handleSearch = async (searchTerm) => {
-    
     try {
       // 전시회 데이터 검색
       const { data, error } = await supabase
         .from("exhibition")
         .select("*")
         .ilike("contents", `%${searchTerm}%`) // title 컬럼으로 변경
-        .gte('end_date', new Date().toISOString());
-      
+        .gte("end_date", new Date().toISOString());
+
       if (error) {
         console.error("전시회 데이터 검색 오류:", error);
       } else {
         console.log("가져온 전시회 데이터:", data);
         setExhibitions(data || []);
       }
-      
+
       // 갤러리 데이터 검색
       const { data: galleryData, error: galleryError } = await supabase
         .from("gallery")
         .select("*")
         .ilike("name", `%${searchTerm}%`); // title 컬럼으로 변경
-      
+
       if (galleryError) {
         console.error("갤러리 데이터 검색 오류:", galleryError);
       } else {
@@ -63,7 +65,7 @@ export default function Navbar() {
       console.error("검색 중 예외 발생:", e);
     }
   };
-  
+
   // 디바운스 함수 직접 생성
   const debouncedSearch = debounce((term) => {
     handleSearch(term);
@@ -76,46 +78,62 @@ export default function Navbar() {
       setExhibitions([]);
       setGallery([]);
     }
-    
+
     // 컴포넌트 언마운트 시 디바운스 취소
     return () => {
       debouncedSearch.cancel();
     };
   }, [search]); // useCallback 제거했으므로 의존성을 search로 변경
 
-  console.log('search:',search)
+  const handleLogoClick = () => {
+    router.push("/");
+  };
   return (
     <div className="relative">
-      <div className="flex justify-center items-center gap-x-4 h-6 mt-6 mb-2 mx-4">
-        <Link href="/">
-          <img src="/logo/logo.png" alt="logo" className="w-16 h-10" />
-        </Link>
+      <div className="flex justify-center items-center gap-x-4 h-[50px] px-4 mt-4">
+        <img
+          onClick={handleLogoClick}
+          src="/logo/logomain.png"
+          alt="logo"
+          className="w-[37px] h-[37px]"
+        />
 
         <Input
-          placeholder="검색하기"
+          classNames={{ 
+            input: "text-[10px]"
+          }}
+          placeholder="갤러리, 전시회를 검색해보세요!"
           startContent={
             <Icon icon="lucide:search" className="text-default-400" />
           }
           size="sm"
           radius="lg"
-          className="w-full"
+          className=""
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
         <div className="w-8 flex justify-center items-center">
           {user ? (
-            <Link href="/exhibitions?isBookmark=true">
-              <FaRegBookmark className="text-xl text-gray-400" />
-            </Link>
+            <div
+              className="cursor-pointer bg-[#F7F8F9] rounded-full p-2"
+              onClick={() => router.push("/exhibitions?isBookmark=true")}
+            >
+              <FaRegBookmark className="text-sm text-gray-400" />
+            </div>
           ) : (
-            <Link href="/mypage?returnUrl=/exhibitions?isBookmark=true">
-              <FaRegBookmark className="text-xl text-gray-400" />
-            </Link>
+            <div
+              className="cursor-pointer bg-[#F7F8F9] rounded-full p-2"
+              onClick={() =>
+                router.push("/mypage?returnUrl=/exhibitions?isBookmark=true")
+              }
+            >
+              <FaRegBookmark className="text-sm text-gray-400" />
+            </div>
           )}
         </div>
       </div>
-      
+
       {/* 검색 결과 배너 */}
       {search && ( // 검색어가 있을 때 항상 검색 결과 배너 표시
         <div className="absolute w-full bg-white shadow-md rounded-b-lg p-4 z-10">
@@ -124,18 +142,25 @@ export default function Navbar() {
             {gallery.length > 0 ? (
               <div className="space-y-2">
                 {gallery.slice(0, 3).map((item) => (
-                  <Link href={`/galleries/${item.id}`} key={item.id} onClick={handleLinkClick}>
+                  <Link
+                    href={`/galleries/${item.id}`}
+                    key={item.id}
+                    onClick={handleLinkClick}
+                  >
                     <div className="flex items-center p-2 hover:bg-gray-50 rounded-lg transition">
                       <div className="flex-shrink-0 mr-3">
                         <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
                           {item.thumbnail ? (
-                            <img 
-                              src={item.thumbnail} 
-                              alt={item.name} 
+                            <img
+                              src={item.thumbnail}
+                              alt={item.name}
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <Icon icon="bx:building" className="text-gray-400 text-xl" />
+                            <Icon
+                              icon="bx:building"
+                              className="text-gray-400 text-xl"
+                            />
                           )}
                         </div>
                       </div>
@@ -150,33 +175,44 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <div className="text-sm text-gray-500 p-2">갤러리 검색 결과가 없습니다.</div>
+              <div className="text-sm text-gray-500 p-2">
+                갤러리 검색 결과가 없습니다.
+              </div>
             )}
           </div>
-          
+
           <div className="border-t border-gray-200 my-2"></div>
-          
+
           <div>
             <h3 className="text-sm font-semibold text-gray-600 mb-2">전시회</h3>
             {exhibitions.length > 0 ? (
               <div className="space-y-2">
                 {exhibitions.slice(0, 3).map((item) => (
-                  <Link href={`/exhibition/${item.id}`} key={item.id} onClick={handleLinkClick}>
+                  <Link
+                    href={`/exhibition/${item.id}`}
+                    key={item.id}
+                    onClick={handleLinkClick}
+                  >
                     <div className="flex items-center p-2 hover:bg-gray-50 rounded-lg transition">
                       <div className="flex-shrink-0 mr-3">
                         <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
                           {item.photo ? (
-                            <img 
-                              src={item.photo} 
-                              alt={item.title || item.contents} 
+                            <img
+                              src={item.photo}
+                              alt={item.title || item.contents}
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <Icon icon="bx:image" className="text-gray-400 text-xl" />
+                            <Icon
+                              icon="bx:image"
+                              className="text-gray-400 text-xl"
+                            />
                           )}
                         </div>
                       </div>
-                      <span className="text-sm">{item.title || item.contents}</span>
+                      <span className="text-sm">
+                        {item.title || item.contents}
+                      </span>
                     </div>
                   </Link>
                 ))}
@@ -187,7 +223,9 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <div className="text-sm text-gray-500 p-2">전시회 검색 결과가 없습니다.</div>
+              <div className="text-sm text-gray-500 p-2">
+                전시회 검색 결과가 없습니다.
+              </div>
             )}
           </div>
         </div>

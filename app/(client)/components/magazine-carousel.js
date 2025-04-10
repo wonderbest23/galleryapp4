@@ -51,7 +51,7 @@ export function MagazineCarousel() {
   };
 
   return (
-    <div className="space-y-4 w-full justify-center items-center p-6 mb-12">
+    <div className="space-y-4 w-full justify-center items-center p-6 mb-24">
       <Tabs className="w-full justify-center items-center" aria-label="Magazine options" variant="underlined">
         <Tab key="michelin" title="미슐랭매거진">
           {magazines.length > 0 ? (
@@ -74,12 +74,12 @@ export function MagazineCarousel() {
                   </div>
                 </CardBody>
               </Card>
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+              <div className="flex gap-2 justify-center mt-4">
                 {magazines.map((_, index) => (
                   <button
                     key={index}
                     className={`w-2 h-2 rounded-full ${
-                      currentSlide === index ? "bg-red-500" : "bg-white border border-gray-300"
+                      currentSlide === index ? "bg-[#007AFF]" : "bg-[#B8B8B8]"
                     }`}
                     onClick={() => setCurrentSlide(index)}
                   />

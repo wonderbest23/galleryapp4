@@ -26,6 +26,7 @@ export function ExhibitionCarousel() {
       setLoading(false);
     }
   };
+  console.log
 
   useEffect(() => {
     getBanners();
@@ -51,7 +52,7 @@ export function ExhibitionCarousel() {
 
   return (
     <div 
-      className="relative p-6"
+      className="relative py-5"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -80,20 +81,20 @@ export function ExhibitionCarousel() {
               <img
                 src={banners[currentSlide]?.url || `https://picsum.photos/800/400?random=${currentSlide}`}
                 alt={banners[currentSlide]?.title || `Slide ${currentSlide + 1}`}
-                className="w-[90vw] h-48 object-cover"
+                className="w-[327px] h-[200px] object-cover"
               />
             
           )}
         </CardBody>
       </Card>
       {!loading && (
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        <div className="absolute bottom-7 left-1/2 transform -translate-x-1/2 flex space-x-2">
           {banners.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                currentSlide === index ? 'bg-red-500' : 'bg-white border border-gray-300'
+                currentSlide === index ? 'bg-[#007AFF]' : 'bg-[#B8B8B8]'
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />

@@ -39,7 +39,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col gap-4 justify-center items-center w-full">
+    <div className="flex flex-col gap-3 justify-center items-center w-full">
       {/* Banner Carousel */}
       <ExhibitionCarousel user={user}/>
 

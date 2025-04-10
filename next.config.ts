@@ -5,6 +5,29 @@ const nextConfig: NextConfig = {
   images: {
     domains: ["img1.kakaocdn.net", "t1.kakaocdn.net","k.kakaocdn.net"],
   },
+  webpack(config) {
+    // SVG 파일을 컴포넌트로 가져올 수 있도록 설정
+    config.module.rules.push({
+      test: /\.svg$/,
+      use: [{ 
+        loader: '@svgr/webpack',
+        options: { 
+          svgoConfig: {
+            plugins: [{
+              name: 'preset-default',
+              params: {
+                overrides: {
+                  removeViewBox: false
+                },
+              },
+            }],
+          }
+        }
+      }],
+    });
+
+    return config;
+  },
 };
 
 export default nextConfig;

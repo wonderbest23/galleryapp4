@@ -8,60 +8,71 @@ import { createClient } from "@/utils/supabase/client";
 function MyPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get('returnUrl') || '/mypage/success';
+  const returnUrl = searchParams.get("returnUrl") || "/mypage/success";
   const [loading, setLoading] = useState(false);
-  
+
   // 컴포넌트 마운트 시 로그인 상태 확인
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
         setLoading(true);
         const supabase = createClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
         if (session) {
           // 로그인 정보가 있으면 returnUrl로 리다이렉트 (없으면 success 페이지로)
           router.push(returnUrl);
         }
       } catch (error) {
-        console.error('로그인 상태 확인 중 오류 발생:', error);
+        console.error("로그인 상태 확인 중 오류 발생:", error);
       } finally {
         setLoading(false);
       }
     };
-    
+
     checkLoginStatus();
   }, [router, returnUrl]);
-  
+
   const handleKakaoLogin = async () => {
     try {
       setLoading(true);
       const supabase = createClient();
-      
+
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'kakao',
+        provider: "kakao",
         options: {
           redirectTo: `${window.location.origin}/auth/callback?redirect_to=${encodeURIComponent(returnUrl)}`,
         },
       });
-      
+
       if (error) {
-        console.error('카카오 로그인 오류:', error);
+        console.error("카카오 로그인 오류:", error);
         throw error;
       }
     } catch (error) {
-      console.error('로그인 처리 중 오류가 발생했습니다:', error);
-      alert('로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+      console.error("로그인 처리 중 오류가 발생했습니다:", error);
+      alert("로그인 중 오류가 발생했습니다. 다시 시도해주세요.");
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="w-full flex justify-center items-centerh-full">
-      <div className="w-[90vw] flex justify-center items-center h-[90vh]">
+      <div className="w-full flex flex-col justify-center items-center h-[90vh] px-4">
+        <div className=" text-[24px] font-bold text-[#121212] text-start w-full">
+          새로운 미술플랫폼👋
+        </div>
+        <div className=" text-[16px] text-[#A6A6A6] text-start w-full">
+          대한민국 전시회,갤러리 정보
+        </div>
+        <div className="text-[16px]  text-[#A6A6A6] w-full text-start mb-4">
+          아티스트 작품 직거래
+        </div>
         <Button
-          className="w-full flex items-center justify-center gap-2 bg-[#FEE500] text-black font-medium py-2 rounded-md hover:bg-[#F6D33F] transition-colors"
+          className="w-full flex rounded-none items-center justify-center gap-2 bg-[#FEE500] text-black font-medium py-2 hover:bg-[#F6D33F] transition-colors"
           onPress={handleKakaoLogin}
           isDisabled={loading}
         >
@@ -82,6 +93,18 @@ function MyPageContent() {
           )}
           {loading ? "로그인 중..." : "카카오톡 로그인"}
         </Button>
+
+        {/* 가로선과 or 텍스트 추가 */}
+        <div className="w-full flex items-center justify-center my-4">
+          <div className="flex-grow h-px bg-gray-300"></div>
+          <div className="px-4 text-sm text-gray-500">or with </div>
+          <div className="flex-grow h-px bg-gray-300"></div>
+        </div>
+        <img
+          className="w-[50px] h-[50px]"
+          src="/login/loginlogo.png"
+          alt="google"
+        />
       </div>
     </div>
   );

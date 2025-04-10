@@ -3,10 +3,12 @@ import { Card, CardBody, Divider, Skeleton, Spinner } from "@heroui/react";
 import { FaRegCalendar } from "react-icons/fa";
 import { IoMdPin } from "react-icons/io";
 import { FaRegStar } from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
-import { useEffect, useState, useCallback } from "react";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import useBookmarkStore from "./bookmarkStore";
 import { addToast } from "@heroui/react";
@@ -16,8 +18,15 @@ export default function GalleryCards({ selectedTab, user }) {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const PAGE_SIZE = 5;
+  const PAGE_SIZE = 10;
   const supabase = createClient();
+
+  // 이전 탭 저장을 위한 ref 추가
+  const prevTabRef = useRef(selectedTab);
+  // 데이터 로딩 상태를 추적하는 ref
+  const isLoadingRef = useRef(false);
+  // 슬라이더 ref
+  const sliderRef = useRef(null);
 
   // Zustand 북마크 스토어에서 상태와 함수 가져오기
   const { bookmarks, setBookmarks } = useBookmarkStore();
@@ -99,13 +108,28 @@ export default function GalleryCards({ selectedTab, user }) {
     }
   };
 
+  // 슬라이더 이동 함수
+  const slideLeft = () => {
+    if (sliderRef.current) {
+      // 카드 너비(250px)와 갭(16px)을 고려한 스크롤
+      const scrollAmount = -(250 + 16) * 2; // 2개 카드만큼 이동
+      sliderRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
+
+  const slideRight = () => {
+    if (sliderRef.current) {
+      // 카드 너비(250px)와 갭(16px)을 고려한 스크롤
+      const scrollAmount = (250 + 16) * 2; // 2개 카드만큼 이동
+      sliderRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
+
   // 사용자의 북마크 목록 가져오기
-  const fetchBookmarks = async () => {
+  const fetchBookmarks = useCallback(async () => {
     if (!user) return;
 
     try {
-      setLoading(true);
-
       const { data, error } = await supabase
         .from("bookmark")
         .select("*")
@@ -117,20 +141,22 @@ export default function GalleryCards({ selectedTab, user }) {
       setBookmarks(data || []);
     } catch (error) {
       console.error("북마크 로드 에러:", error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [user, supabase, setBookmarks]);
 
   // 컴포넌트 마운트 시 북마크 로드
   useEffect(() => {
     fetchBookmarks();
-  }, [user]);
+  }, [fetchBookmarks]);
 
   const getGallerys = useCallback(
     async (pageNum = 1, append = false) => {
+      // 이미 로딩 중이면 중복 호출 방지
+      if (isLoadingRef.current) return;
+
       try {
         setLoading(true);
+        isLoadingRef.current = true;
 
         // 페이지네이션을 위한 범위 계산
         const from = (pageNum - 1) * PAGE_SIZE;
@@ -167,12 +193,13 @@ export default function GalleryCards({ selectedTab, user }) {
 
         // 데이터 설정 (추가 또는 덮어쓰기)
         if (append) {
-          setGallerys((prev) => [...prev, ...(data || [])]);
+          setGallerys((prevGallerys) => [...prevGallerys, ...(data || [])]);
         } else {
           setGallerys(data || []);
         }
       } finally {
         setLoading(false);
+        isLoadingRef.current = false;
       }
     },
     [selectedTab, supabase, PAGE_SIZE]
@@ -180,7 +207,7 @@ export default function GalleryCards({ selectedTab, user }) {
 
   // 더 많은 데이터 로드하는 함수
   const loadMore = useCallback(() => {
-    if (loading || !hasMore) return;
+    if (loading || !hasMore || isLoadingRef.current) return;
 
     const nextPage = page + 1;
     setPage(nextPage);
@@ -188,107 +215,165 @@ export default function GalleryCards({ selectedTab, user }) {
   }, [loading, hasMore, page, getGallerys]);
 
   useEffect(() => {
-    // 탭이 변경되면 페이지를 1로 리셋하고 데이터를 다시 불러옵니다
-    setPage(1);
-    getGallerys(1);
-  }, [getGallerys]);
+    // 탭이 변경된 경우에만 데이터를 다시 불러옵니다
+    if (prevTabRef.current !== selectedTab) {
+      setPage(1);
+      getGallerys(1, false);
+      prevTabRef.current = selectedTab;
+    } else if (page === 1 && gallerys.length === 0) {
+      // 첫 로드 시에만 데이터를 불러옵니다
+      getGallerys(1, false);
+    }
+  }, [selectedTab, getGallerys, page, gallerys.length]);
 
-  // 실제 데이터가 없을 경우 대비 기본 데이터 (실제 데이터가 있으면 사용하지 않음)
-  const defaultExhibitions = Array(5).fill({
-    title: "수원 갤러리",
-    subtitle: "전국 최대 규모 갤러리",
-    date: "2024.03.15 - 2024.04.15",
-    location: "서울 강남구",
-    review: "4.0(225)",
-  });
+
+
+  // 로딩 상태에서 사용할 스켈레톤 UI 컴포넌트
+  const SkeletonCard = () => (
+    <div className="w-[200px] h-[300px] ">
+          <Card className="w-[200px] space-y-5 p-4" radius="lg" shadow="none">
+      <Skeleton className="rounded-lg">
+        <div className="h-24 rounded-lg bg-default-300" />
+      </Skeleton>
+      <div className="space-y-3">
+        <Skeleton className="w-3/5 rounded-lg">
+          <div className="h-3 w-3/5 rounded-lg bg-default-200" />
+        </Skeleton>
+        <Skeleton className="w-4/5 rounded-lg">
+          <div className="h-3 w-4/5 rounded-lg bg-default-200" />
+        </Skeleton>
+        <Skeleton className="w-2/5 rounded-lg">
+          <div className="h-3 w-2/5 rounded-lg bg-default-300" />
+        </Skeleton>
+      </div>
+    </Card>
+    </div>
+  );
+
+  // 갤러리 카드 컴포넌트 - 메모이제이션을 위해 내부 로직과 분리
+  const GalleryCard = useCallback(
+    ({ gallery }) => (
+      <Link
+        href={`/galleries/${gallery.id}`}
+        className="flex-shrink-0 w-[200px] h-[247px] block"
+      >
+        <Card className="h-[247px] overflow-hidden shadow hover:shadow-lg transition-shadow rounded-3xl">
+          <div className="relative">
+            <img
+              src={gallery.thumbnail || "/images/noimage.jpg"}
+              alt={gallery.name || "갤러리 이미지"}
+              className="h-[153px] w-full object-cover"
+            />
+            <div
+              className="absolute top-2 right-2 z-10 p-1 rounded-full bg-white/70"
+              onClick={(e) => toggleBookmark(e, gallery)}
+            >
+              {isBookmarked(gallery.id) ? (
+                <FaBookmark className="text-red-500 text-lg" />
+              ) : (
+                <FaRegBookmark className="text-gray-600 text-lg" />
+              )}
+            </div>
+          </div>
+          <CardBody className="flex flex-col justify-between h-full">
+            <div className="text-[16px] font-bold">{gallery.name}</div>
+            <div className="text-[10px] text-gray-600">
+              <p className="line-clamp-1">
+                {gallery.address || "주소 정보 없음"}
+              </p>
+            </div>
+            <div className="flex text-sm justify-between items-center">
+              <div className=" rounded-md text-[10px] ">평균별점</div>
+              <div className="flex items-center gap-x-1">
+                
+                <span className="text-[10px] text-[#007AFF]">{gallery.visitor_rating || "평점 없음"}</span>
+                <FaStar className="text-[#007AFF] " />
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      </Link>
+    ),
+    [isBookmarked, toggleBookmark]
+  );
+
+  // 탭에 따른 제목 표시
+  const getTabTitle = () => {
+    switch (selectedTab) {
+      case "recommended":
+        return "추천 갤러리";
+      case "new":
+        return "신규 갤러리";
+      case "now":
+        return "전시 갤러리";
+      default:
+        return "모든 갤러리";
+    }
+  };
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full justify-center">
-      <div className="grid gap-4 w-full max-w-[900px] mx-auto justify-items-center">
-        {loading && page === 1
-          ? // 처음 로딩 중 스켈레톤 UI 표시
-            Array(PAGE_SIZE)
+    <div className="w-full max-w-[360px] mx-auto sm:max-w-[720px] md:max-w-[960px] lg:max-w-full">
+      {loading && page === 1 ? (
+        // 로딩 중 스켈레톤 UI - 이제 하나의 슬라이더로 표시
+        <div className="w-full">
+          <div
+            className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide"
+            style={{ scrollBehavior: "smooth" }}
+          >
+            {Array(8)
               .fill()
               .map((_, index) => (
-                <div
-                  key={index}
-                  className="w-full max-w-[600px] flex items-center gap-3 justify-center mx-auto"
-                >
-                  <div>
-                    <Skeleton className="flex rounded-full w-12 h-12" />
-                  </div>
-                  <div className="w-full flex flex-col gap-2">
-                    <Skeleton className="h-3 w-36 rounded-lg" />
-                    <Skeleton className="h-3 w-24 rounded-lg" />
-                  </div>
-                </div>
-              ))
-          : // 데이터 로드 완료 후 실제 갤러리 목록 표시
-            gallerys.map((gallery, index) => (
-              <Card key={index} className="w-full max-w-[600px] mx-auto">
-                <Link
-                  href={`/galleries/${gallery.id || index + 1}`}
-                  className="w-full"
-                >
-                  <CardBody className="flex gap-4 flex-row w-full h-full">
-                    <img
-                      src={gallery.thumbnail || "/images/noimage.jpg"}
-                      alt={gallery.name || "갤러리 이미지"}
-                      className="w-24 h-24 object-cover rounded"
-                    />
-                    <div className="flex flex-col w-full">
-                      <div className="flex flex-row justify-between items-start">
-                        <div className="flex flex-col">
-                          <div className="text-lg font-bold">
-                            {gallery.name || ""}
-                          </div>
-                        </div>
-                        <div onClick={(e) => toggleBookmark(e, gallery)}>
-                          {isBookmarked(gallery.id) ? (
-                            <FaBookmark className="text-red-500 text-medium cursor-pointer" />
-                          ) : (
-                            <FaRegBookmark className="text-gray-500 text-medium cursor-pointer" />
-                          )}
-                        </div>
-                      </div>
-
-                      <Divider
-                        orientation="horizontal"
-                        className=" bg-gray-300"
-                      />
-                      <div className="text-xs flex flex-col my-2">
-                        <div className="flex flex-row gap-1">
-                          <IoMdPin />
-                          {gallery.address || "서울 강남구"}
-                        </div>
-                        <div className="flex flex-row gap-1">
-                          <FaRegStar />
-                          {gallery.visitor_rating || "없음"}(
-                          {gallery.blog_review_count || "없음"})
-                        </div>
-                      </div>
-                    </div>
-                  </CardBody>
-                </Link>
-              </Card>
-            ))}
-
-        {/* 추가 데이터 로딩 중 표시 */}
-        {loading && page > 1 && (
-          <div className="flex justify-center w-full py-4">
-            <Spinner variant="wave" size="lg" color="danger" />
+                <SkeletonCard key={index} />
+              ))}
           </div>
-        )}
-      </div>
-
-      {hasMore ? (
-        <FaPlusCircle
-          className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-8"
-          onClick={loadMore}
-        />
+        </div>
       ) : (
-        <div className="text-gray-500 text-sm mb-8">
-          모든 갤러리를 불러왔습니다
+        // 단일 캐러셀로 변경된 갤러리 표시
+        <div className="w-full relative">
+          {/* 갤러리 슬라이더 */}
+          <div
+            ref={sliderRef}
+            className="flex overflow-x-auto gap-4 pb-6 scrollbar-hide h-full px-5"
+            style={{
+              scrollBehavior: "smooth",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              WebkitOverflowScrolling: "touch",
+              cursor: "grab",
+            }}
+            onMouseDown={(e) => {
+              if (sliderRef.current) {
+                sliderRef.current.style.cursor = "grabbing";
+                const slider = sliderRef.current;
+                let startX = e.pageX;
+                let scrollLeft = slider.scrollLeft;
+
+                const onMouseMove = (e) => {
+                  const x = e.pageX;
+                  const walk = (x - startX) * 2; // 스크롤 속도 조절
+                  slider.scrollLeft = scrollLeft - walk;
+                };
+
+                const onMouseUp = () => {
+                  slider.style.cursor = "grab";
+                  document.removeEventListener("mousemove", onMouseMove);
+                  document.removeEventListener("mouseup", onMouseUp);
+                };
+
+                document.addEventListener("mousemove", onMouseMove);
+                document.addEventListener("mouseup", onMouseUp);
+              }
+            }}
+          >
+            {gallerys.length > 0
+              ? gallerys.map((gallery, index) => (
+                  <GalleryCard key={index} gallery={gallery} />
+                ))
+              : // 샘플 데이터 (실제 데이터가 없을 경우)
+                sampleGalleries.map((gallery, index) => (
+                  <GalleryCard key={index} gallery={gallery} />
+                ))}
+          </div>
         </div>
       )}
     </div>
