@@ -18,7 +18,7 @@ export function GalleryCards({ galleries, user, bookmarks, toggleBookmark, isBoo
         ) : (
           <div className="grid gap-4 w-full justify-center items-center">
             {galleries.map((gallery, index) => (
-              <Card key={index} className="w-[90vw]">
+              <Card key={index} className="w-full">
                 <Link href={`/galleries/${gallery.id || index + 1}`}>
                   <CardBody className="flex gap-4 flex-row">
                     <img
