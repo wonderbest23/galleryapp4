@@ -59,7 +59,7 @@ export function ExhibitionCarousel() {
       <Card className="w-full" shadow="none">
         <CardBody className="p-0">
           {loading ? (
-            <Card className="w-[90vw] space-y-5 p-4" radius="lg" >
+            <Card className="w-[300px]  space-y-5 p-4" radius="lg" shadow="none" >
               <Skeleton className="rounded-lg">
                 <div className="h-48 rounded-lg bg-default-300" />
               </Skeleton>

@@ -313,7 +313,7 @@ function GalleryListContent() {
                 isBookmarked={isBookmarked}
               />
               {hasMore ? (
-                <div className="flex justify-center items-center my-4">
+                <div className="flex justify-center items-center my-4 mb-12">
                   <FaPlusCircle 
                     className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4" 
                     onClick={loadMore}
@@ -328,7 +328,7 @@ function GalleryListContent() {
             <Tab
               key="now"
               title="전시중"
-              className="w-full justify-center items-center"
+              className="w-full justify-center items-center "
             >
               <GalleryCards 
                 galleries={galleries} 
@@ -338,7 +338,7 @@ function GalleryListContent() {
                 isBookmarked={isBookmarked}
               />
               {hasMore ? (
-                <div className="flex justify-center items-center my-4">
+                <div className="flex justify-center items-center my-4 mb-12">
                   <FaPlusCircle 
                     className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4" 
                     onClick={loadMore}
@@ -363,7 +363,7 @@ function GalleryListContent() {
                 isBookmarked={isBookmarked}
               />
               {hasMore ? (
-                <div className="flex justify-center items-center my-4">
+                <div className="flex justify-center items-center my-4 mb-12">
                   <FaPlusCircle 
                     className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4" 
                     onClick={loadMore}

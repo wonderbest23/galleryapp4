@@ -88,7 +88,7 @@ export function MagazineCarousel() {
             </div>
           ) : (
             <div className="flex justify-center items-center h-[300px]">
-              <Skeleton className="w-[90vw] h-[300px]"></Skeleton>
+              <Skeleton className="w-full h-[300px]"></Skeleton>
             </div>
           )}
         </Tab>
