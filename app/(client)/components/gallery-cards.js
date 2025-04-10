@@ -27,6 +27,10 @@ export default function GalleryCards({ selectedTab, user }) {
   const isLoadingRef = useRef(false);
   // 슬라이더 ref
   const sliderRef = useRef(null);
+  // 드래그 상태를 추적하는 ref
+  const isDraggingRef = useRef(false);
+  // 슬라이더 요소에서만 동작하도록 체크하는 ref
+  const isSliderClickRef = useRef(false);
 
   // Zustand 북마크 스토어에서 상태와 함수 가져오기
   const { bookmarks, setBookmarks } = useBookmarkStore();
@@ -108,21 +112,13 @@ export default function GalleryCards({ selectedTab, user }) {
     }
   };
 
-  // 슬라이더 이동 함수
+  // 슬라이더 이동 함수 - 강제 이동 대신 자연스러운 스와이핑만 사용
   const slideLeft = () => {
-    if (sliderRef.current) {
-      // 카드 너비(250px)와 갭(16px)을 고려한 스크롤
-      const scrollAmount = -(250 + 16) * 2; // 2개 카드만큼 이동
-      sliderRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    }
+    // 슬라이더의 자연스러운 스와이핑만 사용하고 강제 이동은 제거
   };
 
   const slideRight = () => {
-    if (sliderRef.current) {
-      // 카드 너비(250px)와 갭(16px)을 고려한 스크롤
-      const scrollAmount = (250 + 16) * 2; // 2개 카드만큼 이동
-      sliderRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    }
+    // 슬라이더의 자연스러운 스와이핑만 사용하고 강제 이동은 제거
   };
 
   // 사용자의 북마크 목록 가져오기
@@ -226,8 +222,6 @@ export default function GalleryCards({ selectedTab, user }) {
     }
   }, [selectedTab, getGallerys, page, gallerys.length]);
 
-
-
   // 로딩 상태에서 사용할 스켈레톤 UI 컴포넌트
   const SkeletonCard = () => (
     <div className="w-[200px] h-[300px] ">
@@ -256,6 +250,12 @@ export default function GalleryCards({ selectedTab, user }) {
       <Link
         href={`/galleries/${gallery.id}`}
         className="flex-shrink-0 w-[200px] h-[247px] block"
+        onClick={(e) => {
+          // 드래그 중에는 링크 이동을 방지
+          if (isDraggingRef.current) {
+            e.preventDefault();
+          }
+        }}
       >
         <Card className="h-[247px] overflow-hidden shadow hover:shadow-lg transition-shadow rounded-3xl">
           <div className="relative">
@@ -311,8 +311,93 @@ export default function GalleryCards({ selectedTab, user }) {
     }
   };
 
+  // 마우스 이벤트 핸들러 개선
+  const handleMouseDown = useCallback((e) => {
+    isSliderClickRef.current = true;
+    e.preventDefault();
+    
+    if (sliderRef.current) {
+      isDraggingRef.current = false;
+      sliderRef.current.style.cursor = "grabbing";
+      
+      const slider = sliderRef.current;
+      const startX = e.pageX;
+      const scrollLeft = slider.scrollLeft;
+      
+      // 마우스 이동 이벤트 핸들러
+      const onMouseMove = (e) => {
+        if (!isSliderClickRef.current) return;
+        
+        e.preventDefault();
+        isDraggingRef.current = true;
+        
+        const x = e.pageX;
+        // 감속 효과를 줄이고 1:1 이동으로 변경
+        const walk = (startX - x) * 1.0;
+        slider.scrollLeft = scrollLeft + walk;
+      };
+      
+      // 마우스 업 이벤트 핸들러
+      const onMouseUp = (e) => {
+        isSliderClickRef.current = false;
+        slider.style.cursor = "grab";
+        
+        // 드래그 상태 해제 시간 더 단축
+        setTimeout(() => {
+          isDraggingRef.current = false;
+        }, 10);
+        
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+      };
+      
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    }
+  }, []);
+
+  // 터치 이벤트 핸들러 개선
+  const handleTouchStart = useCallback((e) => {
+    isSliderClickRef.current = true;
+    
+    if (sliderRef.current) {
+      isDraggingRef.current = false;
+      const slider = sliderRef.current;
+      const startX = e.touches[0].clientX;
+      const scrollLeft = slider.scrollLeft;
+      
+      // 터치 이동 이벤트 핸들러
+      const onTouchMove = (e) => {
+        if (!isSliderClickRef.current) return;
+        
+        isDraggingRef.current = true;
+        
+        const x = e.touches[0].clientX;
+        // 더 자연스러운 터치 이동을 위한 1:1 매핑
+        const walk = (startX - x) * 1.0;
+        slider.scrollLeft = scrollLeft + walk;
+      };
+      
+      // 터치 종료 이벤트 핸들러
+      const onTouchEnd = () => {
+        isSliderClickRef.current = false;
+        
+        // 지연시간 최소화
+        setTimeout(() => {
+          isDraggingRef.current = false;
+        }, 10);
+        
+        slider.removeEventListener("touchmove", onTouchMove);
+        slider.removeEventListener("touchend", onTouchEnd);
+      };
+      
+      slider.addEventListener("touchmove", onTouchMove, { passive: false });
+      slider.addEventListener("touchend", onTouchEnd);
+    }
+  }, []);
+
   return (
-    <div className="w-full max-w-[360px] mx-auto sm:max-w-[720px] md:max-w-[960px] lg:max-w-full">
+    <div className="w-full max-w-[340px]  overflow-hidden">
       {loading && page === 1 ? (
         // 로딩 중 스켈레톤 UI - 이제 하나의 슬라이더로 표시
         <div className="w-full">
@@ -329,50 +414,34 @@ export default function GalleryCards({ selectedTab, user }) {
         </div>
       ) : (
         // 단일 캐러셀로 변경된 갤러리 표시
-        <div className="w-full relative">
+        <div className="w-full relative overflow-hidden">
           {/* 갤러리 슬라이더 */}
           <div
             ref={sliderRef}
-            className="flex overflow-x-auto gap-4 pb-6 scrollbar-hide h-full px-5"
+            className="flex overflow-x-auto gap-4 pb-1 scrollbar-hide h-full px-2 slider-container"
             style={{
-              scrollBehavior: "smooth",
+              scrollSnapType: "x mandatory",
+              scrollBehavior: "auto",
               scrollbarWidth: "none",
               msOverflowStyle: "none",
               WebkitOverflowScrolling: "touch",
               cursor: "grab",
+              touchAction: "pan-x", 
             }}
-            onMouseDown={(e) => {
-              if (sliderRef.current) {
-                sliderRef.current.style.cursor = "grabbing";
-                const slider = sliderRef.current;
-                let startX = e.pageX;
-                let scrollLeft = slider.scrollLeft;
-
-                const onMouseMove = (e) => {
-                  const x = e.pageX;
-                  const walk = (x - startX) * 2; // 스크롤 속도 조절
-                  slider.scrollLeft = scrollLeft - walk;
-                };
-
-                const onMouseUp = () => {
-                  slider.style.cursor = "grab";
-                  document.removeEventListener("mousemove", onMouseMove);
-                  document.removeEventListener("mouseup", onMouseUp);
-                };
-
-                document.addEventListener("mousemove", onMouseMove);
-                document.addEventListener("mouseup", onMouseUp);
-              }
-            }}
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
           >
-            {gallerys.length > 0
-              ? gallerys.map((gallery, index) => (
-                  <GalleryCard key={index} gallery={gallery} />
-                ))
-              : // 샘플 데이터 (실제 데이터가 없을 경우)
-                sampleGalleries.map((gallery, index) => (
-                  <GalleryCard key={index} gallery={gallery} />
-                ))}
+            {/* 슬라이더 배경 div 제거하고 직접 이벤트 적용 */}
+            <div className="flex gap-4 relative z-10">
+              {gallerys.length > 0
+                ? gallerys.map((gallery, index) => (
+                    <GalleryCard key={index} gallery={gallery} />
+                  ))
+                : // 샘플 데이터 (실제 데이터가 없을 경우)
+                  sampleGalleries.map((gallery, index) => (
+                    <GalleryCard key={index} gallery={gallery} />
+                  ))}
+            </div>
           </div>
         </div>
       )}

@@ -9,7 +9,7 @@ import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
 import { createClient } from "@/utils/supabase/client";
 import useBookmarkStore from "./bookmarkStore";
-
+import Image from "next/image";
 export function ExhibitionCards({ exhibitionCategory, user }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [exhibitions, setExhibitions] = useState([]);
@@ -190,8 +190,8 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-4 w-full justify-center px-5">
-        <div className="grid gap-4 w-full max-w-[900px] mx-auto justify-center items-center">
+      <div className="flex flex-col items-center gap-4 w-full justify-center px-3">
+        <div className="w-full flex flex-col justify-center items-center gap-y-4">
           {loading && page === 1
             ? // 처음 로딩 중 스켈레톤 UI 표시
               Array(5)
@@ -209,54 +209,57 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
                 ))
             : // 데이터 로드 완료 후 실제 전시회 목록 표시
               exhibitions.map((exhibition, index) => (
-                <Card key={index} className="w-full max-w-[600px] mx-auto">
-                  <Link href={`/exhibition/${exhibition.id}`} className="w-full">
-                    <CardBody className="flex gap-4 flex-row w-full h-full">
+                <Card classNames={{'body':"p-2 justify-center items-center"}} key={index} className="w-full max-w-[600px] " shadow="sm">
+                  
+                    <CardBody  className="flex gap-4 flex-row w-full h-full justify-center items-center">
                       <div className="flex w-1/2 aspect-square overflow-hidden rounded justify-center items-center">
                         <img
                           src={exhibition.photo || "/images/noimage.jpg"}
                           alt={exhibition.name}
-                          className="w-full h-full object-cover"
+                          className="w-[72px] h-[82px] object-cover"
                         />
                       </div>
-                      <div className="flex flex-col w-full justify-center items-center h-auto">
+                      <div className="flex flex-col w-full justify-center items-center h-full">
                         <div className="flex flex-row justify-between items-start w-full">
                           <div className="flex flex-col">
-                            <div className="text-xs ">{exhibition.name}</div>
-                            <div className="text-medium font-bold">
+                            <div className="text-[10px] ">{exhibition.name||"없음"}</div>
+                            <div className="text-[12px] font-bold">
                               {exhibition.contents}
                             </div>
-                          </div>
-                          <div onClick={(e) => toggleBookmark(e, exhibition)}>
-                            {isBookmarked(exhibition.id) ? (
-                              <FaBookmark className="text-red-500 text-medium cursor-pointer" />
-                            ) : (
-                              <FaRegBookmark className="text-gray-500 text-medium cursor-pointer" />
-                            )}
                           </div>
                         </div>
 
                         <Divider
                           orientation="horizontal"
-                          className=" bg-gray-300"
+                          className=" bg-gray-300 mt-2"
                         />
                         <div className="text-xs flex flex-col my-2 w-full">
                           <div className="flex flex-row gap-1">
-                            <FaRegCalendar />
-                            {exhibition.date}
-                          </div>
-                          {/* <div className="flex flex-row gap-1">
-                            <IoMdPin />
-                            {exhibition.location}
+                            <Image src="/exhibitioncard/미니달력.svg" alt="미니달력" width={15} height={15} />
+                            <span className="text-[10px]">
+                            {exhibition.start_date?.replace(/(\d{4})(\d{2})(\d{2})/, '$1년$2월$3일')} ~ {exhibition.end_date?.replace(/(\d{4})(\d{2})(\d{2})/, '$1년$2월$3일')}
+                            </span>
                           </div>
                           <div className="flex flex-row gap-1">
-                            <FaRegStar />
-                            {exhibition.review}
-                          </div> */}
+                            <Image src="/exhibitioncard/미니가격.png" alt="미니달력" width={15} height={15} />
+                            <span className="text-[10px]">
+                            {exhibition.price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}원
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 북마크 아이콘을 카드 우측 하단으로 이동 */}
+                      <div className="absolute bottom-2 right-2">
+                        <div className="bg-[#606060]/60 rounded-3xl p-1" onClick={(e) => toggleBookmark(e, exhibition)}>
+                          {isBookmarked(exhibition.id) ? (
+                            <FaBookmark className="text-red-500 text-xs cursor-pointer font-bold" />
+                          ) : (
+                            <FaRegBookmark className="text-white text-xs cursor-pointer font-bold" />
+                          )}
                         </div>
                       </div>
                     </CardBody>
-                  </Link>
                 </Card>
               ))}
               
