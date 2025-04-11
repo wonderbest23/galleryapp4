@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Card, CardBody, Divider,addToast } from "@heroui/react";
+import { Card, CardBody, Divider, addToast } from "@heroui/react";
 import { FaRegCalendar } from "react-icons/fa";
 import { IoMdPin } from "react-icons/io";
 import { FaRegStar } from "react-icons/fa";
@@ -8,7 +8,13 @@ import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
 
-export function ExhibitionCards({ exhibitions, user, bookmarks, toggleBookmark, isBookmarked }) {
+export function ExhibitionCards({
+  exhibitions,
+  user,
+  bookmarks,
+  toggleBookmark,
+  isBookmarked,
+}) {
   const [currentIndex, setCurrentIndex] = useState(0);
   // const exhibitions = Array(5).fill({
   //   title: "수원 갤러리",
@@ -20,22 +26,25 @@ export function ExhibitionCards({ exhibitions, user, bookmarks, toggleBookmark, 
 
   return (
     <>
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-4 ">
         <div className="grid gap-4 w-full justify-center items-center">
           {exhibitions.map((exhibition, index) => (
-            <Card key={index} className="w-full ">
+            <Card classNames={{body: 'px-2 py-1'}} key={index} className="w-full " shadow="sm">
               <Link href={`/exhibition/${exhibition.id}`}>
-                <CardBody className="flex gap-4 flex-row items-center justify-center">
-                  <img
-                    src={exhibition.photo||"/images/noimage.jpg"}
-                    alt={exhibition.title}
-                    className="w-24 h-24 object-cover rounded"
-                  />
-                  <div className="flex flex-col w-full">
+                <CardBody className="grid grid-cols-7 items-center justify-center gap-x-3">
+                  <div className="col-span-2">
+                    <img
+                      src={exhibition.photo || "/images/noimage.jpg"}
+                      alt={exhibition.title}
+                      className="w-20 h-20 object-cover rounded"
+                    />
+                  </div>
+
+                  <div className="flex flex-col col-span-5">
                     <div className="flex flex-row justify-between items-start">
                       <div className="flex flex-col">
-                        <div className="text-xs ">{exhibition.name}</div>
-                        <div className="text-lg font-bold">
+                        <div className="text-[10px]">{exhibition.name||'없음'}</div>
+                        <div className="text-[12px] font-bold">
                           {exhibition.contents}
                         </div>
                       </div>
@@ -52,18 +61,42 @@ export function ExhibitionCards({ exhibitions, user, bookmarks, toggleBookmark, 
                       orientation="horizontal"
                       className=" bg-gray-300"
                     />
-                    <div className="text-xs flex flex-col my-2">
-                      <div className="flex flex-row gap-1">
-                        <FaRegCalendar />
-                        {exhibition.date}
+                    <div className="text-xs flex flex-col mt-2">
+                      <div className="flex flex-row gap-1 text-[10px]">
+                        <img
+                          src="/exhibition/미니달력.svg"
+                          alt="미니달력"
+                          className="w-4 h-4"
+                        />
+                        {exhibition.start_date?.replace(
+                          /(\d{4})(\d{2})(\d{2})/,
+                          "$1년$2월$3일"
+                        )}{" "}
+                        ~{" "}
+                        {exhibition.end_date?.replace(
+                          /(\d{4})(\d{2})(\d{2})/,
+                          "$1년$2월$3일"
+                        )}
                       </div>
-                      <div className="flex flex-row gap-1">
-                        <IoMdPin />
-                        {exhibition.gallery.address}
+                      <div className="flex flex-row gap-1 text-[10px]">
+                        <img
+                          src="/exhibition/미니가격.png"
+                          alt="미니가격"
+                          className="w-4 h-4"
+                        />
+                        {exhibition.price
+                          ?.toString()
+                          .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
+                        원
                       </div>
-                      <div className="flex flex-row gap-1">
-                        <FaRegStar />
-                        {exhibition.review_average} ({exhibition.review_count})
+                      <div className="flex flex-row gap-1 text-[10px]">
+                        <img
+                          src="/exhibition/미니별점.png"
+                          alt="미니별점"
+                          className="w-4 h-4"
+                        />
+                        {exhibition.review_average?.toFixed(1) || "0.0"} (
+                        {exhibition.review_count || 0})
                       </div>
                     </div>
                   </div>
@@ -72,7 +105,6 @@ export function ExhibitionCards({ exhibitions, user, bookmarks, toggleBookmark, 
             </Card>
           ))}
         </div>
-        
       </div>
     </>
   );

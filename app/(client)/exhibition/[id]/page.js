@@ -23,7 +23,7 @@ import { createClient } from "@/utils/supabase/client";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 import { HiOutlineCurrencyDollar } from "react-icons/hi2";
 import CardReview from "./components/card-review";
-
+import { FaArrowLeft } from "react-icons/fa";
 export default function App() {
   const { id } = useParams();
   const [selected, setSelected] = useState("home");
@@ -259,7 +259,7 @@ export default function App() {
               className="mr-2"
               onPress={() => router.back()}
             >
-              <FaChevronLeft className="text-xl" />
+              <FaArrowLeft className="text-xl" />
             </Button>
             <h2 className="text-lg font-medium"></h2>
           </div>

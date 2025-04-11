@@ -1,6 +1,7 @@
 "use client";
 import React, { Suspense } from "react";
 import { ExhibitionCards } from "./components/exhibition-cards";
+import ExhibitionCarousel from "./components/exhibition-carousel";
 import {
   Tabs,
   Tab,
@@ -10,13 +11,18 @@ import {
   Spinner,
   Checkbox,
   addToast,
-  Skeleton
+  Skeleton,
+  Divider,
 } from "@heroui/react";
 import { FaChevronLeft, FaPlus } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { FaPlusCircle } from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa6";
+import Link from "next/link";
+import { FaRegStar, FaStar } from "react-icons/fa";
+import { FiPlusCircle } from "react-icons/fi";
 
 // useSearchParams를 사용하는 별도의 클라이언트 컴포넌트
 function ExhibitionListContent() {
@@ -36,6 +42,8 @@ function ExhibitionListContent() {
   const [user, setUser] = useState(null);
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [popularExhibitions, setPopularExhibitions] = useState([]);
+  const [highRatingExhibitions, setHighRatingExhibitions] = useState([]);
 
   const supabase = createClient();
 
@@ -73,12 +81,47 @@ function ExhibitionListContent() {
           return; // 북마크 데이터가 로드될 때까지 대기
         }
 
+        const { data: popularExhibitionsData, error: popularExhibitionsError } =
+          await supabase
+            .from("exhibition")
+            .select("*,gallery:naver_gallery_url(*)")
+            .eq("isRecommended", true)
+            .gte("end_date", new Date().toISOString())
+            .limit(5);
+
+        if (popularExhibitionsError) {
+          console.error(
+            "인기 전시회 데이터 로드 오류:",
+            popularExhibitionsError
+          );
+        } else {
+          setPopularExhibitions(popularExhibitionsData);
+        }
+        const {
+          data: highRatingExhibitionsData,
+          error: highRatingExhibitionsError,
+        } = await supabase
+          .from("exhibition")
+          .select("*,gallery:naver_gallery_url(*)")
+          .not("gallery", "is", null)
+          .order("review_average", { ascending: false })
+          .gte("end_date", new Date().toISOString())
+          .limit(9);
+        if (highRatingExhibitionsError) {
+          console.error(
+            "인기 전시회 데이터 로드 오류:",
+            highRatingExhibitionsError
+          );
+        } else {
+          setHighRatingExhibitions(highRatingExhibitionsData);
+        }
+
         let query = supabase
           .from("exhibition")
           .select("*,gallery:naver_gallery_url(*)")
           .not("gallery", "is", null)
           .order("review_count", { ascending: false })
-          .gte('end_date', new Date().toISOString());
+          .gte("end_date", new Date().toISOString());
 
         // 선택된 탭에 따라 필터 적용
         if (selectedTab === "free") {
@@ -287,7 +330,7 @@ function ExhibitionListContent() {
     }
     window.history.pushState({}, "", url);
   };
-
+  console.log("popularExhibitions", popularExhibitions);
   return (
     <div className="flex flex-col items-center justify-center">
       {isLoading ? (
@@ -318,146 +361,159 @@ function ExhibitionListContent() {
               className="mr-2"
               onPress={() => router.push("/")}
             >
-              <FaChevronLeft className="text-xl" />
+              <FaArrowLeft className="text-xl" />
             </Button>
             <h2 className="text-lg font-bold text-center flex-grow">전시회</h2>
             <div className="w-10"></div>
           </div>
 
-          <div className="flex justify-between items-center w-[90%] mb-4">
-            <Checkbox
-              color="primary"
-              value={isBookmark}
-              isSelected={isBookmark}
-              onChange={(e) => {
-                setIsBookmark(e.target.checked);
-                updateBookmarkUrlParam(e.target.checked);
-              }}
-              size="md"
-            >
-              북마크
-            </Checkbox>
-            <Select
-              selectedKeys={selectedRegion ? [selectedRegion] : []}
-              onChange={(e) => setSelectedRegion(e.target.value)}
-              className="w-1/3"
-              placeholder="지역"
-            >
-              <SelectItem key="서울" value="서울">
-                서울
-              </SelectItem>
-              <SelectItem key="인천" value="인천">
-                인천
-              </SelectItem>
-              <SelectItem key="경기" value="경기">
-                경기
-              </SelectItem>
-              <SelectItem key="충청" value="충청">
-                충청
-              </SelectItem>
-              <SelectItem key="경상" value="경상">
-                경상
-              </SelectItem>
-              <SelectItem key="전라" value="전라">
-                전라
-              </SelectItem>
-              <SelectItem key="강원" value="강원">
-                강원
-              </SelectItem>
-              <SelectItem key="제주" value="제주">
-                제주
-              </SelectItem>
-            </Select>
+          {/* 가로 방향 캐러셀 추가 */}
+          <div className="w-[90%] mt-4 mb-2 ">
+            <div className="flex justify-between items-center mb-1">
+              <h3 className="text-[18px] font-bold">인기 전시회</h3>
+            </div>
+            <ExhibitionCarousel
+              exhibitions={popularExhibitions}
+              user={user}
+              bookmarks={bookmarks}
+              toggleBookmark={toggleBookmark}
+              isBookmarked={isBookmarked}
+            />
           </div>
-          <Tabs
-            aria-label="Exhibition options"
-            variant="underlined"
-            className="w-full flex justify-center items-center"
-            selectedKey={selectedTab}
-            onSelectionChange={setSelectedTab}
-          >
-            <Tab
-              key="all"
-              title="전시회"
-              className="w-full justify-center items-center"
-            >
-              <ExhibitionCards
-                exhibitions={exhibitions}
-                user={user}
-                bookmarks={bookmarks}
-                toggleBookmark={toggleBookmark}
-                isBookmarked={isBookmarked}
-              />
-              {hasMore ? (
-                <div className="flex justify-center items-center my-4">
-                  <FaPlusCircle
-                    className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4"
-                    onClick={loadMore}
-                  />
+
+          {/* 커스텀 탭바 및 필터 영역 */}
+          <div className="w-[90%] flex flex-col mb-4">
+            {/* 커스텀 탭바 - 전체 폭의 2/3 크기로 중앙 정렬 */}
+            <div className="flex w-full border-t border-gray-200 mb-2">
+              <div className="w-1/6"></div>
+              <div className="flex w-2/3">
+                <button
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "all" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  onClick={() => setSelectedTab("all")}
+                >
+                  전시회
+                </button>
+                <button
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "free" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  onClick={() => setSelectedTab("free")}
+                >
+                  무료전시
+                </button>
+                <button
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "recommended" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  onClick={() => setSelectedTab("recommended")}
+                >
+                  추천전시
+                </button>
+              </div>
+              <div className="w-1/6"></div>
+            </div>
+
+            {/* 필터 영역 */}
+            <div className="flex justify-between items-center w-full bg-white mb-4">
+              <Select
+                selectedKeys={selectedRegion ? [selectedRegion] : []}
+                onChange={(e) => setSelectedRegion(e.target.value)}
+                className="w-1/4"
+                placeholder="지역"
+                size="sm"
+              >
+                <SelectItem key="서울" value="서울">
+                  서울
+                </SelectItem>
+                <SelectItem key="인천" value="인천">
+                  인천
+                </SelectItem>
+                <SelectItem key="경기" value="경기">
+                  경기
+                </SelectItem>
+                <SelectItem key="충청" value="충청">
+                  충청
+                </SelectItem>
+                <SelectItem key="경상" value="경상">
+                  경상
+                </SelectItem>
+                <SelectItem key="전라" value="전라">
+                  전라
+                </SelectItem>
+                <SelectItem key="강원" value="강원">
+                  강원
+                </SelectItem>
+                <SelectItem key="제주" value="제주">
+                  제주
+                </SelectItem>
+              </Select>
+
+              <Checkbox
+                size="sm"
+                color="primary"
+                value={isBookmark}
+                isSelected={isBookmark}
+                onChange={(e) => {
+                  setIsBookmark(e.target.checked);
+                  updateBookmarkUrlParam(e.target.checked);
+                }}
+              >
+                북마크
+              </Checkbox>
+            </div>
+            {/* 전시회 카드 */}
+            <ExhibitionCards
+              exhibitions={exhibitions}
+              user={user}
+              bookmarks={bookmarks}
+              toggleBookmark={toggleBookmark}
+              isBookmarked={isBookmarked}
+            />
+
+            {hasMore ? (
+              <div className="flex justify-center items-center mt-4">
+                <FiPlusCircle
+                  className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
+                  onClick={loadMore}
+                />
+              </div>
+            ) : (
+              <div className="flex justify-center items-center">
+                <p className="text-gray-500 my-4">모든 전시회를 불러왔습니다</p>
+              </div>
+            )}
+          </div>
+
+          <Divider
+            orientation="horizontal"
+            className="w-[90%] my-4 bg-[#eee]"
+          />
+          <div className="w-[90%] flex flex-col justify-center items-center mb-24">
+            <div className="w-full flex justify-between items-center">
+              <h1 className="text-[18px] font-bold">별점높은순</h1>
+            </div>
+
+            <div className="w-full grid grid-cols-3 gap-4 mt-6">
+              {highRatingExhibitions.map((exhibition) => (
+                <div key={exhibition.id}>
+                  <Link href={`/exhibition/${exhibition.id}`}>
+                    <img
+                      src={exhibition.photo}
+                      alt={exhibition.name}
+                      className="w-full h-[100px] aspect-square object-cover rounded-lg"
+                    />
+                    <div className="text-[14px] font-bold line-clamp-1">
+                      {exhibition.contents || "없음음"}
+                    </div>
+                    <div className="text-[13px] text-gray-500 flex items-center justify-start flex gap-1">
+                      <span className="text-yellow-500">
+                        <FaStar className="text-[#007AFF]" />
+                      </span>
+                      <span>
+                        {exhibition.review_average} ({exhibition.review_count})
+                      </span>
+                    </div>
+                  </Link>
                 </div>
-              ) : (
-                <div className="flex justify-center items-center my-4">
-                  <p className="text-gray-500 mb-4">
-                    모든 전시회를 불러왔습니다
-                  </p>
-                </div>
-              )}
-            </Tab>
-            <Tab
-              key="free"
-              title="무료전시"
-              className="w-full justify-center items-center"
-            >
-              <ExhibitionCards
-                exhibitions={exhibitions}
-                user={user}
-                bookmarks={bookmarks}
-                toggleBookmark={toggleBookmark}
-                isBookmarked={isBookmarked}
-              />
-              {hasMore ? (
-                <div className="flex justify-center items-center my-4">
-                  <FaPlusCircle
-                    className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4"
-                    onClick={loadMore}
-                  />
-                </div>
-              ) : (
-                <div className="flex justify-center items-center my-4">
-                  <p className="text-gray-500 mb-4">
-                    모든 전시회를 불러왔습니다
-                  </p>
-                </div>
-              )}
-            </Tab>
-            <Tab
-              key="recommended"
-              title="추천전시"
-              className="w-full justify-center items-center"
-            >
-              <ExhibitionCards
-                exhibitions={exhibitions}
-                user={user}
-                bookmarks={bookmarks}
-                toggleBookmark={toggleBookmark}
-                isBookmarked={isBookmarked}
-              />
-              {hasMore ? (
-                <div className="flex justify-center items-center my-4">
-                  <FaPlusCircle
-                    className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4"
-                    onClick={loadMore}
-                  />
-                </div>
-              ) : (
-                <div className="flex justify-center items-center my-4">
-                  <p className="text-gray-500 mb-4">
-                    모든 전시회를 불러왔습니다
-                  </p>
-                </div>
-              )}
-            </Tab>
-          </Tabs>
+              ))}
+            </div>
+          </div>
         </>
       )}
     </div>

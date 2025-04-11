@@ -8,7 +8,7 @@ import { FaPlusCircle } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useSearchParams } from "next/navigation";
-
+import { FaArrowLeft } from "react-icons/fa6";
 function GalleryListContent() {
   const router = useRouter();
   const searchParams = useSearchParams({ suspense: true });
@@ -262,7 +262,7 @@ function GalleryListContent() {
               className="mr-2"
               onPress={() => router.back()}
             >
-              <FaChevronLeft className="text-xl" />
+              <FaArrowLeft className="text-xl" />
             </Button>
             <h2 className="text-lg font-bold text-center flex-grow">갤러리</h2>
             <div className="w-10"></div>

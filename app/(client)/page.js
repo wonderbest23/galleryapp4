@@ -110,7 +110,7 @@ export default function Home() {
 
       {/* Magazine Section */}
       <MagazineCarousel />
-      <div className="flex flex-row gap-4 pb-20 bg-[hsl(0,0%,93%)] w-full justify-center items-center pt-4">
+      <div className="flex flex-row gap-4 pb-20 bg-[hsl(0,0%,93%)] w-full justify-center items-center">
         <div className="w-[30%] h-full flex justify-center items-center ">
           <Image
             src="/footer/footer.png"
@@ -119,7 +119,7 @@ export default function Home() {
             height={37}
           />
         </div>
-        <div className="w-[70%] h-full text-[6px] flex flex-col justify-start">
+        <div className="w-[70%] h-full text-[6px] flex flex-col justify-">
           <p>(주) 아트앤브릿지  대표 : 박명서</p>
           <p>
             서울특별시 금천구 가산디지털 1 로 19, 16 층 1609-엘 04호 (가산동,
