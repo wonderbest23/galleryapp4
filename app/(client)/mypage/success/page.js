@@ -133,7 +133,7 @@ const Success = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen w-full">
-        <Spinner variant="wave" color="danger" />
+        <Spinner variant="wave" color="primary" />
       </div>
     );
   }

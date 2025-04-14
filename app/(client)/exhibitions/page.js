@@ -536,7 +536,7 @@ export default function ExhibitionList() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center w-full h-screen">
-          <Spinner variant="wave" size="lg" color="danger" />
+          <Spinner variant="wave" size="lg" color="primary" />
         </div>
       }
     >

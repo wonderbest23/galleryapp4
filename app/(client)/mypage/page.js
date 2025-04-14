@@ -77,7 +77,7 @@ function MyPageContent() {
           isDisabled={loading}
         >
           {loading ? (
-            <Spinner variant="wave" color="danger" />
+            <Spinner variant="wave" color="primary" />
           ) : (
             <svg
               width="20"
@@ -114,7 +114,7 @@ function MyPageContent() {
 function LoadingComponent() {
   return (
     <div className="w-full flex justify-center items-center h-[90vh]">
-      <Spinner variant="wave" color="danger" />
+      <Spinner variant="wave" color="primary" />
     </div>
   );
 }

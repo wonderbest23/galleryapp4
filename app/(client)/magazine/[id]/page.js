@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import MagazineCarousel from "./components/magazine-carousel";
 import { useEffect, useState, use } from "react";
 import { createClient } from "@/utils/supabase/client";
+import {FaArrowLeft} from "react-icons/fa";
 export default function page({params}) {
   const magazineId = use(params)['id'];
   const [magazine, setMagazine] = useState(null);
@@ -32,13 +33,13 @@ export default function page({params}) {
   if (loading) {
     return (
       <div className="flex items-center justify-center w-full h-screen">
-        <Spinner variant="wave" size="lg" color="danger" />
+        <Spinner variant="wave" size="lg" color="primary" />
       </div>
     );
   }
   
   return (
-    <div className="flex flex-col items-center justify-center px-2">
+    <div className="flex flex-col items-center justify-center">
       <div className="bg-white flex items-center w-[100%] justify-between">
         <Button
           isIconOnly
@@ -46,7 +47,7 @@ export default function page({params}) {
           className="mr-2"
           onPress={() => router.back()}
         >
-          <FaChevronLeft className="text-xl" />
+          <FaArrowLeft className="text-xl" />
         </Button>
         <h2 className="text-lg font-bold text-center flex-grow">매거진</h2>
         <div className="w-10"></div>
@@ -54,11 +55,12 @@ export default function page({params}) {
       <div className="w-[100%] flex flex-col gap-4">
         <MagazineCarousel magazine={magazine}/>
       </div>
-      <div className="flex flex-col gap-2 my-4 w-[100%] mb-24">
-        <div className="text-2xl font-bold">{magazine.title}</div>
-        <div className="text-lg font-medium text-gray-500">{magazine.subtitle}</div>
-        <div className="text-end text-sm text-gray-500">{new Date(magazine.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
-        <div className="text-sm text-gray-500">
+      <div className="flex flex-col gap-2 my-4 w-[100%] mb-24 px-8">
+        <div className="text-[20px] font-bold">{magazine.title}</div>
+        <div className="text-[15px] font-medium text-gray-500">{magazine.subtitle}</div>
+        <div className="text-end text-[10px] text-[#494949]">작성일 :{" "}{new Date(magazine.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+        <Divider orientation="horizontal" className="w-full my-2"/>
+        <div className="text-[12px] text-black">
           {magazine.contents}
         </div>
       </div>

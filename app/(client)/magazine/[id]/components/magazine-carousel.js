@@ -38,7 +38,7 @@ export default function MagazineCarousel({magazine}) {
       onTouchEnd={handleTouchEnd}
     >
       {slides.length > 0 ? (
-        <Card className="w-full">
+        <Card classNames={{base: "w-full rounded-none p-0"}} className="w-full rounded-none" >
           <CardBody className="p-0">
             <Link href={`/gallery/${magazine?.id || currentSlide + 1}`}>
               <img

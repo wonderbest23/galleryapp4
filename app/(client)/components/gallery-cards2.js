@@ -313,7 +313,7 @@ export default function GalleryCards({ selectedTab, user }) {
       {/* 추가 데이터 로딩 중 표시 */}
       {loading && page > 1 && (
         <div className="flex justify-center w-full py-4">
-          <Spinner variant="wave" size="lg" color="danger" />
+          <Spinner variant="wave" size="lg" color="primary" />
         </div>
       )}
 

@@ -74,19 +74,20 @@ export default function MagazineList() {
           </div>
           <div className="w-full flex flex-col gap-4 justify-center items-center">
             {magazines.slice(0, visibleCount).map((item, index) => (
-              <React.Fragment className="w-[90%]" key={item.id}>
-                <div className="w-full" onClick={() => router.push(`/magazine/${item.id}`)}>
+              <React.Fragment className="" key={item.id}>
+                <div className="w-[90%]" onClick={() => router.push(`/magazine/${item.id}`)}>
                   <div
                     className="w-full mt-6"
                     
                   >
                     <div className="w-full flex gap-4 flex-row justify-between">
                       <div className="flex flex-col space-y-2">
-                        <h3 className="text-sm text-default-500">
+                        <h3 className="text-[15px] text-default-500">
                           {item.title}
                         </h3>
-                        <p className="text-lg font-medium">{item.subtitle}</p>
-                        <p className="text-sm text-default-400">
+                        <p className="text-[15px] font-medium">{item.subtitle}</p>
+                        <p className="text-[10px] text-[#494949]">
+                          작성일 :{" "}
                           {new Date(item.created_at).getFullYear()}년{" "}
                           {new Date(item.created_at).getMonth() + 1}월{" "}
                           {new Date(item.created_at).getDate()}일
@@ -94,7 +95,7 @@ export default function MagazineList() {
                       </div>
                       <Image
                         alt="Card thumbnail"
-                        className="object-cover w-24 h-24 rounded-lg"
+                        className="object-cover w-24 h-24 rounded-3xl"
                         src={item.photo[0].url}
                       />
                     </div>

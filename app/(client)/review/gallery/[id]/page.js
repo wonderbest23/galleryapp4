@@ -123,7 +123,7 @@ export default function page() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-y-4 w-full max-w-[375px] px-2">
+    <div className="flex flex-col items-center justify-center gap-y-4 w-full max-w-[375px] px-4 ">
       {user && (
         <>
           <div className="bg-white flex items-center w-full justify-between">
@@ -138,7 +138,7 @@ export default function page() {
             <h2 className="text-lg font-bold text-center flex-grow">리뷰</h2>
             <div className="w-10"></div>
           </div>
-          <div className="w-full flex flex-col gap-4 font-bold text-xl text-center">
+          <div className="w-full flex flex-col gap-4 font-bold text-[20px] text-start">
             여기는 어떠셨나요?
           </div>
           {isLoading ? (
@@ -189,10 +189,10 @@ export default function page() {
               setHoverRating={setHoverRating}
             />
           </div>
-          <div className="w-full flex flex-col gap-4 font-bold text-xl text-center">
+          {/* <div className="w-full flex flex-col gap-4 font-bold text-xl text-center">
             어떤 부분이 느껴졌나요?
-          </div>
-          <div className="w-full flex flex-wrap gap-2 justify-center mb-6">
+          </div> */}
+          {/* <div className="w-full flex flex-wrap gap-2 justify-center mb-6">
             {[
               "쾌적함",
               "프라이빗",
@@ -213,22 +213,23 @@ export default function page() {
                 {feeling}
               </Button>
             ))}
-          </div>
-          <div className="w-full flex flex-col gap-4 font-bold text-xl text-center">
-            리뷰를 작성해주세요
+          </div> */}
+          <div className="w-full flex flex-col gap-4 font-bold text-[15px] text-start">
+            의견을 남겨주세요(선택)
           </div>
           <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="리뷰 내용"
+            placeholder="내용을 작성해주세요"
+            variant="bordered"
           />
           <div className="w-full flex flex-col gap-4 font-bold text-xl text-center mb-24">
             <Button
-              color="primary"
-              className="w-full font-bold"
+              color=""
+              className="w-full font-bold bg-black text-white"
               onPress={handleReviewSubmit}
             >
-              리뷰작성하기
+              리뷰 작성완료
             </Button>
           </div>
         </>

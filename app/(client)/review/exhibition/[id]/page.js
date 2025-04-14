@@ -34,7 +34,7 @@ export default function page() {
   const getUser = async () => {
     const { data, error } = await supabase.auth.getUser();
     console.log("data:", data);
-    if(!data.user){
+    if (!data.user) {
       router.push("/mypage?returnUrl=/review/exhibition/" + id);
     }
     if (error) {
@@ -123,79 +123,79 @@ export default function page() {
   // }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-y-4 w-full max-w-[375px] px-2">
+    <div className="flex flex-col items-center justify-center gap-y-4 w-full max-w-[375px] px-4 ">
       {user && (
         <>
-      <div className="bg-white flex items-center w-full justify-between">
-        <Button
-          isIconOnly
-          variant="light"
-          className="mr-2"
-          onPress={() => router.back()}
-        >
-          <IoClose className="text-xl" />
-        </Button>
-        <h2 className="text-lg font-bold text-center flex-grow">리뷰</h2>
-        <div className="w-10"></div>
-      </div>
-      <div className="w-full flex flex-col gap-4 font-bold text-xl text-center">
-        여기는 어떠셨나요?
-      </div>
-      {isLoading ? (
-        <div className="max-w-[300px] w-full flex items-center gap-3 justify-center">
-          <div>
-            <Skeleton className="flex rounded-full w-12 h-12" />
+          <div className="bg-white flex items-center w-full justify-between">
+            <Button
+              isIconOnly
+              variant="light"
+              className="mr-2"
+              onPress={() => router.back()}
+            >
+              <IoClose className="text-xl" />
+            </Button>
+            <h2 className="text-lg font-bold text-center flex-grow">리뷰</h2>
+            <div className="w-10"></div>
           </div>
-          <div className="w-full flex flex-col gap-2">
-            <Skeleton className="h-3 w-3/5 rounded-lg" />
-            <Skeleton className="h-3 w-full rounded-lg" />
+          <div className="w-full flex flex-col gap-4 font-bold text-[20px] text-start">
+            여기는 어떠셨나요?
           </div>
-        </div>
-      ) : (
-        <Card className="w-full m-0">
-          <CardBody className="flex gap-4 flex-row">
-            <img
-              src={exhibition?.photo}
-              alt={exhibition?.title}
-              className="w-24 h-24 object-cover rounded"
-            />
-            <div className="flex flex-col w-full">
-              <div className="flex flex-col justify-between items-start">
-                <div className="flex flex-col">
-                  <div className="text-sm font-bold text-gray-500">
-                    {exhibition?.name}
-                  </div>
-                </div>
-                <div className="flex flex-col">
-                  <div className="text-lg font-bold">
-                    {exhibition?.contents}
-                  </div>
-                </div>
+          {isLoading ? (
+            <div className="max-w-[300px] w-full flex items-center gap-3 justify-center">
+              <div>
+                <Skeleton className="flex rounded-full w-12 h-12" />
               </div>
-
-              <Divider orientation="horizontal" className=" bg-gray-300" />
-              <div className="text-xs flex flex-col my-2">
-                <div className="flex flex-row gap-1">
-                  <FaRegStar />
-                  {exhibition?.review_average}({exhibition?.review_count})
-                </div>
+              <div className="w-full flex flex-col gap-2">
+                <Skeleton className="h-3 w-3/5 rounded-lg" />
+                <Skeleton className="h-3 w-full rounded-lg" />
               </div>
             </div>
-          </CardBody>
-        </Card>
-      )}
-      <div className="w-full flex flex-col gap-4">
-        <Star
-          rating={rating}
-          hoverRating={hoverRating}
-          setRating={setRating}
-          setHoverRating={setHoverRating}
-        />
-      </div>
-      <div className="w-full flex flex-col gap-4 font-bold text-xl text-center">
+          ) : (
+            <Card className="w-full m-0">
+              <CardBody className="flex gap-4 flex-row">
+                <img
+                  src={exhibition?.photo}
+                  alt={exhibition?.title}
+                  className="w-24 h-24 object-cover rounded"
+                />
+                <div className="flex flex-col w-full">
+                  <div className="flex flex-col justify-between items-start">
+                    <div className="flex flex-col">
+                      <div className="text-sm font-bold text-gray-500">
+                        {exhibition?.name}
+                      </div>
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="text-lg font-bold">
+                        {exhibition?.contents}
+                      </div>
+                    </div>
+                  </div>
+
+                  <Divider orientation="horizontal" className=" bg-gray-300" />
+                  <div className="text-xs flex flex-col my-2">
+                    <div className="flex flex-row gap-1">
+                      <FaRegStar />
+                      {exhibition?.review_average}({exhibition?.review_count})
+                    </div>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+          )}
+          <div className="w-full flex flex-col gap-4">
+            <Star
+              rating={rating}
+              hoverRating={hoverRating}
+              setRating={setRating}
+              setHoverRating={setHoverRating}
+            />
+          </div>
+          {/* <div className="w-full flex flex-col gap-4 font-bold text-xl text-center">
         어떤 부분이 느껴졌나요?
-      </div>
-      <div className="w-full flex flex-wrap gap-2 justify-center mb-6">
+      </div> */}
+          {/* <div className="w-full flex flex-wrap gap-2 justify-center mb-6">
         {[
           "쾌적함",
           "프라이빗",
@@ -216,25 +216,26 @@ export default function page() {
             {feeling}
           </Button>
         ))}
-      </div>
-      <div className="w-full flex flex-col gap-4 font-bold text-xl text-center">
-        리뷰를 작성해주세요
-      </div>
-      <Textarea
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="리뷰 내용"
-      />
-      <div className="w-full flex flex-col gap-4 font-bold text-xl text-center mb-24">
-        <Button
-          color="primary"
-          className="w-full font-bold"
-          onPress={handleReviewSubmit}
-        >
-          리뷰작성하기
-        </Button>
-      </div>
-      </>
+      </div> */}
+          <div className="w-full flex flex-col gap-4 font-bold text-[15px] text-start">
+            의견을 남겨주세요(선택)
+          </div>
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="내용을 작성해주세요"
+            variant="bordered"
+          />
+          <div className="w-full flex flex-col gap-4 font-bold text-xl text-center mb-24">
+            <Button
+              
+              className="w-full font-bold bg-black text-white"
+              onPress={handleReviewSubmit}
+            >
+              리뷰 작성완료
+            </Button>
+          </div>
+        </>
       )}
     </div>
   );

@@ -319,7 +319,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
           {loading && page > 1 && (
             <div className="flex justify-center w-full py-4">
               {/* <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div> */}
-              <Spinner variant="wave" size="lg" color="danger" />
+              <Spinner variant="wave" size="lg" color="primary" />
             </div>
           )}
         </div>
