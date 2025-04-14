@@ -1,7 +1,9 @@
 "use client";
 import React, { Suspense } from "react";
 import { GalleryCards } from "./components/gallery-cards";
-import { Tabs, Tab, Button, Select, SelectItem, Spinner, Checkbox, addToast, Skeleton } from "@heroui/react";
+import { GallerySlider } from "./components/gallery-slider";
+import { GalleryBanner } from "./components/gallery-banner";
+import { Tabs, Tab, Button, Select, SelectItem, Spinner, Checkbox, addToast, Skeleton, Divider } from "@heroui/react";
 import { FaChevronLeft } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { FaPlusCircle } from "react-icons/fa";
@@ -9,6 +11,10 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useSearchParams } from "next/navigation";
 import { FaArrowLeft } from "react-icons/fa6";
+import { FiPlusCircle } from "react-icons/fi";
+import { FaRegStar, FaStar } from "react-icons/fa";
+import Link from "next/link";
+
 function GalleryListContent() {
   const router = useRouter();
   const searchParams = useSearchParams({ suspense: true });
@@ -16,7 +22,9 @@ function GalleryListContent() {
   
   const [selectedTab, setSelectedTab] = useState("all");
   const [galleries, setGalleries] = useState([]);
+  const [featuredGalleries, setFeaturedGalleries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [selectedRegion, setSelectedRegion] = useState("");
@@ -24,6 +32,8 @@ function GalleryListContent() {
   const [bookmarks, setBookmarks] = useState([]);
   const [user, setUser] = useState(null);
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
+  const [highRatingGalleries, setHighRatingGalleries] = useState([]);
+  const [tabLoading, setTabLoading] = useState(false);
 
   useEffect(() => {
     if (isBookmarkParam) {
@@ -37,7 +47,47 @@ function GalleryListContent() {
     // 탭이 변경될 때 페이지 초기화
     setPage(1);
     setGalleries([]);
+    setTabLoading(true); // 탭 변경 시 로딩 상태 활성화
   }, [selectedTab, isBookmark, selectedRegion]);
+
+  // 추천 갤러리 데이터 가져오기 (슬라이더용)
+  useEffect(() => {
+    const fetchFeaturedGalleries = async () => {
+      setLoadingFeatured(true);
+      
+      try {
+        let query = supabase
+          .from("gallery")
+          .select("*")
+          .order("blog_review_count", { ascending: false })
+          .limit(10);
+        
+        const { data, error } = await query;
+        
+        if (error) throw error;
+        
+        setFeaturedGalleries(data);
+
+        // 별점 높은 갤러리 가져오기
+        const { data: highRatingData, error: highRatingError } = await supabase
+          .from("gallery")
+          .select("*")
+          .order("visitor_rating", { ascending: false })
+          .limit(9);
+          
+        if (highRatingError) throw highRatingError;
+        
+        setHighRatingGalleries(highRatingData || []);
+      } catch (error) {
+        console.error("갤러리 데이터를 가져오는 중 오류 발생:", error);
+      } finally {
+        setLoadingFeatured(false);
+      }
+    };
+    
+    fetchFeaturedGalleries();
+  }, []);
+  console.log('galleries', galleries)
 
   useEffect(() => {
     const fetchGalleries = async () => {
@@ -49,6 +99,7 @@ function GalleryListContent() {
           setGalleries([]);
           setHasMore(false);
           setLoading(false);
+          setTabLoading(false); // 탭 로딩 상태 비활성화 추가
           return;
         }
         
@@ -109,6 +160,7 @@ function GalleryListContent() {
         console.error("갤러리 데이터를 가져오는 중 오류 발생:", error);
       } finally {
         setLoading(false);
+        setTabLoading(false); // 탭 로딩 상태 비활성화 추가
       }
     };
     
@@ -235,9 +287,21 @@ function GalleryListContent() {
     }
   }, [user]);
 
+  // URL 매개변수 업데이트 함수
+  const updateBookmarkUrlParam = (isBookmarked) => {
+    const url = new URL(window.location);
+    if (isBookmarked) {
+      url.searchParams.set("isBookmark", "true");
+    } else {
+      url.searchParams.delete("isBookmark");
+    }
+    window.history.pushState({}, "", url);
+  };
+  console.log('highRatingGalleries', highRatingGalleries)
+
   return (
-    <div className="flex flex-col items-center justify-center">
-      {loading && page === 1 ? (
+    <div className="flex flex-col items-center justify-center w-full">
+      {loading && loadingFeatured && page === 1 ? (
         <div className="flex flex-col items-center justify-center w-full h-full gap-y-6 mt-12">
           {Array(5)
             .fill(null)
@@ -260,7 +324,7 @@ function GalleryListContent() {
               isIconOnly
               variant="light"
               className="mr-2"
-              onPress={() => router.back()}
+              onPress={() => router.push("/")}
             >
               <FaArrowLeft className="text-xl" />
             </Button>
@@ -268,43 +332,86 @@ function GalleryListContent() {
             <div className="w-10"></div>
           </div>
           
-          <div className="flex justify-between items-center w-[90%] mb-4">
-            <Checkbox 
-              color="primary" 
-              isSelected={isBookmark} 
-              onChange={(e)=>setIsBookmark(e.target.checked)}
-              size="md"
-            >
-              북마크
-            </Checkbox>
-            <Select
-              selectedKeys={[selectedRegion]}
-              onChange={(e)=>setSelectedRegion(e.target.value)}
-              className="w-1/3"
-              placeholder="지역"
-            >
-              <SelectItem key="서울" value="서울">서울</SelectItem>
-              <SelectItem key="인천" value="인천">인천</SelectItem>
-              <SelectItem key="경기" value="경기">경기</SelectItem>
-              <SelectItem key="충청" value="충청">충청</SelectItem>
-              <SelectItem key="경상" value="경상">경상</SelectItem>
-              <SelectItem key="전라" value="전라">전라</SelectItem>
-              <SelectItem key="강원" value="강원">강원</SelectItem>
-              <SelectItem key="제주" value="제주">제주</SelectItem>
-            </Select>
+          {/* 상단 갤러리 슬라이더 - 가로 스크롤 형태 */}
+          <div className="w-[90%] mt-4 mb-2">
+            <div className="flex justify-between items-center mb-1">
+              <h3 className="text-[18px] font-bold">인기 갤러리</h3>
+            </div>
+            <GallerySlider 
+              galleries={featuredGalleries} 
+              loading={loadingFeatured}
+              user={user}
+              toggleBookmark={toggleBookmark}
+              isBookmarked={isBookmarked}
+            />
           </div>
-          <Tabs
-            aria-label="Exhibition options"
-            variant="underlined"
-            className="w-full flex justify-center items-center"
-            selectedKey={selectedTab}
-            onSelectionChange={setSelectedTab}
-          >
-            <Tab
-              key="all"
-              title="전체"
-              className="w-full justify-center items-center"
-            >
+          
+          {/* 커스텀 탭바 및 필터 영역 */}
+          <div className="w-[90%] flex flex-col mb-4">
+            {/* 커스텀 탭바 - 전체 폭의 2/3 크기로 중앙 정렬 */}
+            <div className="flex w-full border-t border-gray-200 mb-2">
+              <div className="w-1/6"></div>
+              <div className="flex w-2/3">
+                <button
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "all" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  onClick={() => setSelectedTab("all")}
+                >
+                  전체
+                </button>
+                <button
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "now" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  onClick={() => setSelectedTab("now")}
+                >
+                  전시중
+                </button>
+                <button
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "new" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  onClick={() => setSelectedTab("new")}
+                >
+                  신규
+                </button>
+              </div>
+              <div className="w-1/6"></div>
+            </div>
+            
+            {/* 필터 영역 */}
+            <div className="flex justify-between items-center w-full bg-white mb-4">
+              <Select
+                selectedKeys={selectedRegion ? [selectedRegion] : []}
+                onChange={(e)=>setSelectedRegion(e.target.value)}
+                className="w-1/4"
+                placeholder="지역"
+                size="sm"
+              >
+                <SelectItem key="서울" value="서울">서울</SelectItem>
+                <SelectItem key="인천" value="인천">인천</SelectItem>
+                <SelectItem key="경기" value="경기">경기</SelectItem>
+                <SelectItem key="충청" value="충청">충청</SelectItem>
+                <SelectItem key="경상" value="경상">경상</SelectItem>
+                <SelectItem key="전라" value="전라">전라</SelectItem>
+                <SelectItem key="강원" value="강원">강원</SelectItem>
+                <SelectItem key="제주" value="제주">제주</SelectItem>
+              </Select>
+              
+              <Checkbox 
+                size="sm"
+                color="primary" 
+                isSelected={isBookmark} 
+                onChange={(e) => {
+                  setIsBookmark(e.target.checked);
+                  updateBookmarkUrlParam(e.target.checked);
+                }}
+              >
+                북마크
+              </Checkbox>
+            </div>
+            
+            {/* 갤러리 카드 */}
+            {tabLoading ? (
+              <div className="flex justify-center items-center w-full my-8">
+                <Spinner variant="wave" size="lg" color="primary" />
+              </div>
+            ) : (
               <GalleryCards 
                 galleries={galleries} 
                 user={user} 
@@ -312,70 +419,58 @@ function GalleryListContent() {
                 toggleBookmark={toggleBookmark}
                 isBookmarked={isBookmarked}
               />
-              {hasMore ? (
-                <div className="flex justify-center items-center my-4 mb-12">
-                  <FaPlusCircle 
-                    className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4" 
-                    onClick={loadMore}
-                  />
+            )}
+            
+            {!tabLoading && hasMore ? (
+              <div className="flex justify-center items-center mt-4">
+                <FiPlusCircle 
+                  className="text-gray-500 text-2xl font-bold hover:cursor-pointer" 
+                  onClick={loadMore}
+                />
+              </div>
+            ) : !tabLoading && (
+              <div className="flex justify-center items-center">
+                <p className="text-gray-500 my-4">모든 갤러리를 불러왔습니다</p>
+              </div>
+            )}
+          </div>
+          
+          {/* 별점 높은 갤러리 섹션 */}
+          <Divider
+            orientation="horizontal"
+            className="w-[90%] my-4 bg-[#eee]"
+          />
+          <div className="w-[90%] flex flex-col justify-center items-center mb-24">
+            <div className="w-full flex justify-between items-center">
+              <h1 className="text-[18px] font-bold">별점높은순</h1>
+            </div>
+
+            <div className="w-full grid grid-cols-3 gap-4 mt-6">
+              {highRatingGalleries.map((gallery) => (
+                <div key={gallery.id}>
+                  <Link href={`/gallery/${gallery.id}`}>
+                    <img
+                      src={gallery.thumbnail || "/placeholder-gallery.jpg"}
+                      alt={gallery.name}
+                      className="w-full h-[100px] aspect-square object-cover rounded-lg"
+                    />
+                    <div className="text-[14px] font-bold line-clamp-1">
+                      {gallery.name || "이름 없음"}
+                    </div>
+                    <div className="text-[13px] text-gray-500 flex items-center justify-start gap-1">
+                      <span className="text-[#007AFF]">
+                        <FaStar />
+                      </span>
+                      <span>
+                        {gallery.visitor_rating || "0"} ({gallery.blog_review_count || "0"})
+                      </span>
+                    </div>
+                  </Link>
                 </div>
-              ) : (
-                <div className="flex justify-center items-center my-4">
-                  <p className="text-gray-500 mb-4">모든 갤러리를 불러왔습니다</p>
-                </div>
-              )}
-            </Tab>
-            <Tab
-              key="now"
-              title="전시중"
-              className="w-full justify-center items-center "
-            >
-              <GalleryCards 
-                galleries={galleries} 
-                user={user} 
-                bookmarks={bookmarks}
-                toggleBookmark={toggleBookmark}
-                isBookmarked={isBookmarked}
-              />
-              {hasMore ? (
-                <div className="flex justify-center items-center my-4 mb-12">
-                  <FaPlusCircle 
-                    className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4" 
-                    onClick={loadMore}
-                  />
-                </div>
-              ) : (
-                <div className="flex justify-center items-center my-4">
-                  <p className="text-gray-500 mb-4">모든 갤러리를 불러왔습니다</p>
-                </div>
-              )}
-            </Tab>
-            <Tab
-              key="new"
-              title="신규"
-              className="w-full justify-center items-center"
-            >
-              <GalleryCards 
-                galleries={galleries} 
-                user={user} 
-                bookmarks={bookmarks}
-                toggleBookmark={toggleBookmark}
-                isBookmarked={isBookmarked}
-              />
-              {hasMore ? (
-                <div className="flex justify-center items-center my-4 mb-12">
-                  <FaPlusCircle 
-                    className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-4" 
-                    onClick={loadMore}
-                  />
-                </div>
-              ) : (
-                <div className="flex justify-center items-center my-4">
-                  <p className="text-gray-500 mb-4">모든 갤러리를 불러왔습니다</p>
-                </div>
-              )}
-            </Tab>
-          </Tabs>
+              ))}
+            </div>
+          </div>
+          
         </>
       )}
     </div>

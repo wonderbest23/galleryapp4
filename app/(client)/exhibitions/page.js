@@ -44,6 +44,7 @@ function ExhibitionListContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [popularExhibitions, setPopularExhibitions] = useState([]);
   const [highRatingExhibitions, setHighRatingExhibitions] = useState([]);
+  const [tabLoading, setTabLoading] = useState(false);
 
   const supabase = createClient();
 
@@ -51,6 +52,7 @@ function ExhibitionListContent() {
     // 북마크 필터 상태가 변경될 때마다 전시회 목록 초기화 및 다시 불러오기
     setPage(1);
     setExhibitions([]);
+    setTabLoading(true); // 탭 변경 시 로딩 상태 활성화
     // 데이터를 즉시 다시 불러오기 위해 useEffect 의존성 배열에 isBookmark 추가됨
   }, [selectedTab, isBookmark, selectedRegion]);
 
@@ -175,6 +177,8 @@ function ExhibitionListContent() {
         console.error("전시회 데이터를 가져오는 중 오류 발생:", error);
       } finally {
         setIsLoading(false);
+        setLoading(false);
+        setTabLoading(false); // 데이터 로드 완료 시 탭 로딩 상태 비활성화
       }
     };
 
@@ -458,22 +462,28 @@ function ExhibitionListContent() {
               </Checkbox>
             </div>
             {/* 전시회 카드 */}
-            <ExhibitionCards
-              exhibitions={exhibitions}
-              user={user}
-              bookmarks={bookmarks}
-              toggleBookmark={toggleBookmark}
-              isBookmarked={isBookmarked}
-            />
+            {tabLoading ? (
+              <div className="flex justify-center items-center w-full my-8">
+                <Spinner variant="wave" size="lg" color="primary" />
+              </div>
+            ) : (
+              <ExhibitionCards
+                exhibitions={exhibitions}
+                user={user}
+                bookmarks={bookmarks}
+                toggleBookmark={toggleBookmark}
+                isBookmarked={isBookmarked}
+              />
+            )}
 
-            {hasMore ? (
+            {!tabLoading && hasMore ? (
               <div className="flex justify-center items-center mt-4">
                 <FiPlusCircle
                   className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
                   onClick={loadMore}
                 />
               </div>
-            ) : (
+            ) : !tabLoading && (
               <div className="flex justify-center items-center">
                 <p className="text-gray-500 my-4">모든 전시회를 불러왔습니다</p>
               </div>

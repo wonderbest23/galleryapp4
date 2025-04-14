@@ -8,7 +8,7 @@ import { FaPlusCircle } from "react-icons/fa";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
-
+import { FaArrowLeft } from "react-icons/fa";
 export default function MagazineList() {
   const [magazines, setMagazines] = useState([]);
   const [visibleCount, setVisibleCount] = useState(5);
@@ -67,22 +67,20 @@ export default function MagazineList() {
               className="mr-2"
               onPress={() => router.back()}
             >
-              <FaChevronLeft className="text-xl" />
+              <FaArrowLeft className="text-xl" />
             </Button>
             <h2 className="text-lg font-bold text-center flex-grow">매거진</h2>
             <div className="w-10"></div>
           </div>
-          <div className="w-full flex flex-col gap-4">
+          <div className="w-full flex flex-col gap-4 justify-center items-center">
             {magazines.slice(0, visibleCount).map((item, index) => (
-              <React.Fragment key={item.id}>
-                <Link href={`/magazine/${item.id}`}>
-                  <Card
-                    className="w-full"
-                    isPressable
-                    isHoverable
-                    shadow="none"
+              <React.Fragment className="w-[90%]" key={item.id}>
+                <div className="w-full" onClick={() => router.push(`/magazine/${item.id}`)}>
+                  <div
+                    className="w-full mt-6"
+                    
                   >
-                    <CardBody className="flex gap-4 flex-row justify-between">
+                    <div className="w-full flex gap-4 flex-row justify-between">
                       <div className="flex flex-col space-y-2">
                         <h3 className="text-sm text-default-500">
                           {item.title}
@@ -99,10 +97,10 @@ export default function MagazineList() {
                         className="object-cover w-24 h-24 rounded-lg"
                         src={item.photo[0].url}
                       />
-                    </CardBody>
-                  </Card>
-                </Link>
-                {index < visibleCount - 1 && <Divider className="my-2" />}
+                    </div>
+                  </div>
+                </div>
+                {index < visibleCount - 1 && <Divider orientation="horizontal" className="w-[90%]" />}
               </React.Fragment>
             ))}
           </div>

@@ -50,9 +50,9 @@ export function ExhibitionCards({
                       </div>
                       <div onClick={(e) => toggleBookmark(e, exhibition)}>
                         {isBookmarked(exhibition.id) ? (
-                          <FaBookmark className="text-red-500 text-medium cursor-pointer" />
+                          <FaBookmark className="text-red-500 text-lg bg-gray-300 rounded-full p-1 cursor-pointer font-bold" />
                         ) : (
-                          <FaRegBookmark className="text-gray-500 text-medium cursor-pointer" />
+                          <FaRegBookmark className="text-white font-bold text-lg bg-gray-300 rounded-full p-1 cursor-pointer" />
                         )}
                       </div>
                     </div>

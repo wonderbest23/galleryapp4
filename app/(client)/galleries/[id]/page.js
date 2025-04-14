@@ -11,7 +11,9 @@ import { createClient } from "@/utils/supabase/client";
 import { FiMapPin } from "react-icons/fi";
 import { LuClock4 } from "react-icons/lu";
 import { IoMdInformationCircleOutline } from "react-icons/io";
-
+import { FaArrowLeft } from "react-icons/fa";
+import { LuSend } from "react-icons/lu";
+import { Divider } from "@heroui/react";
 
 export default function App() {
   const [selected, setSelected] = useState("home");
@@ -281,7 +283,7 @@ export default function App() {
           className="mr-2"
           onPress={() => router.back()}
         >
-          <FaChevronLeft className="text-xl" />
+          <FaArrowLeft className="text-xl" />
         </Button>
         <h2 className="text-lg font-medium"></h2>
       </div>
@@ -294,12 +296,15 @@ export default function App() {
           className="w-full h-full object-cover"
         />
         <div className="absolute bottom-4 right-4 flex gap-2">
-          <Button isIconOnly variant="flat" className="bg-white/80" onPress={toggleBookmark}>
+          <div className="bg-white/80 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center" onPress={toggleBookmark}>
             <Icon 
               icon={isBookmarked ? "mdi:bookmark" : "mdi:bookmark-outline"} 
               className="text-xl text-red-500" 
             />
-          </Button>
+          </div>
+          <div className="bg-white/80 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center">
+            <LuSend className="text-xl text-white" />
+          </div>
           
         </div>
       </div>
@@ -311,35 +316,26 @@ export default function App() {
             <h1 className="text-2xl font-bold">{gallery?.name}</h1>
             <div className="flex items-center gap-2 mt-1">
               <div className="flex items-center">
-                <Icon icon="lucide:star" className="text-yellow-400" />
+                <img src="/exhibition/미니별점.png" alt="별점" className="w-4 h-4" />
                 <span className="ml-1">{gallery?.visitor_rating === 0 ? "1.0" : gallery?.visitor_rating?.toFixed(1)}</span>
                 <span className="text-gray-500">({gallery?.blog_review_count})</span>
               </div>
             </div>
           </div>
         </div>
+        <Divider orientation="horizontal" className="my-2" />
 
         <div className="mt-4 space-y-2 text-sm text-gray-600">
           <div className="flex items-center gap-2">
             <div>
-            <FiMapPin className="text-lg text-gray-500" />
+            <img src="/exhibition/미니지도.svg" alt="지도" className="w-4 h-4" />
             </div>
             <span>{gallery?.address}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div>
-            <LuClock4 className="text-lg text-gray-500" />
-            </div>
-            
-            <span>{gallery?.workinghour}</span>
-          </div>
-          {/* <div className="flex items-center gap-2">
-            <Icon icon="lucide:info" />
-            <span>평일/주말: 오후12:00부터 오후 6시까지(1시간 평균 소요)</span>
-          </div> */}
+          
         </div>
 
-        <Button onPress={() => router.push(gallery?.homepage_url)} className="w-full mt-4" color="primary" size="lg">
+        <Button onPress={() => router.push(gallery?.homepage_url)} className="w-full mt-4 bg-[#004BFE] text-white text-[13px] font-bold" size="lg">
           사이트연결
         </Button>
       </div>

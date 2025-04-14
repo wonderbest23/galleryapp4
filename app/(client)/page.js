@@ -51,62 +51,67 @@ export default function Home() {
       <CategoryButtons />
 
       {/* Exhibition Tabs */}
-      <Tabs
-        aria-label="Exhibition options"
-        variant="underlined"
-        className="w-full flex justify-center items-center"
-        onSelectionChange={(key) => setExhibitionCategory(key.toString())}
-      >
-        <Tab
-          key="all"
-          title="전체전시"
-          className="w-full justify-center items-center"
-        >
-          <ExhibitionCards
-            exhibitionCategory={exhibitionCategory}
-            user={user}
-          />
-        </Tab>
-        <Tab
-          key="free"
-          title="무료전시"
-          className="w-full justify-center items-center"
-        >
-          <ExhibitionCards
-            exhibitionCategory={exhibitionCategory}
-            user={user}
-          />
-        </Tab>
-        <Tab
-          key="recommended"
-          title="추천전시"
-          className="w-full justify-center items-center"
-        >
-          <ExhibitionCards
-            exhibitionCategory={exhibitionCategory}
-            user={user}
-          />
-        </Tab>
-      </Tabs>
+      <div className="w-full flex flex-col mb-4 justify-center items-center">
+        <div className="flex w-[90%] border-t border-gray-200 mb-2">
+          <div className="w-1/6"></div>
+          <div className="flex w-2/3">
+            <button
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${exhibitionCategory === "all" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+              onClick={() => setExhibitionCategory("all")}
+            >
+              전체전시
+            </button>
+            <button
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${exhibitionCategory === "free" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+              onClick={() => setExhibitionCategory("free")}
+            >
+              무료전시
+            </button>
+            <button
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${exhibitionCategory === "recommended" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+              onClick={() => setExhibitionCategory("recommended")}
+            >
+              추천전시
+            </button>
+          </div>
+          <div className="w-1/6"></div>
+        </div>
+        
+        <ExhibitionCards
+          exhibitionCategory={exhibitionCategory}
+          user={user}
+        />
+      </div>
 
       {/* Gallery Section */}
-      <Tabs
-        className="w-full max-w-md flex justify-center items-center"
-        aria-label="Gallery options"
-        variant="underlined"
-        selectedKey={selectedTab}
-        onSelectionChange={(key) => setSelectedTab(key.toString())}
-      >
-        <Tab key="recommended" title="추천갤러리">
-          <GalleryCards selectedTab={selectedTab} user={user} />
-        </Tab>
-        <Tab key="new" title="신규갤러리">
-          <GalleryCards selectedTab={selectedTab} user={user} />
-        </Tab>
-        <Tab key="now" title="전시갤러리">
-          <GalleryCards selectedTab={selectedTab} user={user} />
-        </Tab>
-      </Tabs>
+      <div className="w-full flex flex-col mb-4 justify-center items-center">
+        <div className="flex w-[90%] border-t border-gray-200 mb-2">
+          <div className="w-1/6"></div>
+          <div className="flex w-2/3">
+            <button
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "recommended" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+              onClick={() => setSelectedTab("recommended")}
+            >
+              추천갤러리
+            </button>
+            <button
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "new" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+              onClick={() => setSelectedTab("new")}
+            >
+              신규갤러리
+            </button>
+            <button
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "now" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+              onClick={() => setSelectedTab("now")}
+            >
+              전시갤러리
+            </button>
+          </div>
+          <div className="w-1/6"></div>
+        </div>
+        
+        <GalleryCards selectedTab={selectedTab} user={user} />
+      </div>
 
       {/* Magazine Section */}
       <MagazineCarousel />

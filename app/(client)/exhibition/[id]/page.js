@@ -9,7 +9,8 @@ import {
   Badge,
   Spinner,
   addToast,
-  ToastProvider
+  ToastProvider,
+  Divider
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
@@ -24,6 +25,8 @@ import { IoMdInformationCircleOutline } from "react-icons/io";
 import { HiOutlineCurrencyDollar } from "react-icons/hi2";
 import CardReview from "./components/card-review";
 import { FaArrowLeft } from "react-icons/fa";
+import { LuSend } from "react-icons/lu";
+
 export default function App() {
   const { id } = useParams();
   const [selected, setSelected] = useState("home");
@@ -272,12 +275,17 @@ export default function App() {
               className="w-full h-full object-cover"
             />
             <div className="absolute bottom-4 right-4 flex gap-2">
-              <Button isIconOnly variant="flat" className="bg-white/80" onPress={toggleBookmark}>
+              <div className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center" onPress={toggleBookmark}>
                 <Icon 
                   icon={isBookmarked ? "mdi:bookmark" : "mdi:bookmark-outline"} 
-                  className="text-xl text-red-500" 
+                  className="text-lg text-red-500 font-bold " 
                 />
-              </Button>
+              </div>
+              <div className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center" onPress={toggleBookmark}>
+                <LuSend 
+                  className="text-lg text-white font-bold " 
+                />
+              </div>
               
             </div>
           </div>
@@ -286,18 +294,13 @@ export default function App() {
           <div className="p-4">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="text-sm text-gray-500">{gallery?.name}</h3>
-                <h1 className="text-2xl font-bold">{exhibition?.contents}</h1>
-                {/* <div className="flex items-center gap-2 mt-1">
-                <div className="flex items-center">
-                  <Icon icon="lucide:star" className="text-yellow-400" />
-                  <span className="ml-1">4.5</span>
-                  <span className="text-gray-500">(91)</span>
-                </div>
-              </div> */}
+                <h3 className="text-[10px] text-[#494949]">{exhibition?.gallery?.name}</h3>
+                <h1 className="text-[20px] font-bold text-[#333333]">{exhibition?.contents}</h1>
+                
                 <div className="flex items-center gap-1 mt-1">
                   <div className="flex items-center">
-                    <Icon icon="lucide:star" className="text-yellow-400" />
+                    {/* <Icon icon="lucide:star" className="text-yellow-400" /> */}
+                    <img src="/exhibition/미니별점.png" alt="별점" className="w-4 h-4" />
                     <span className="ml-1">
                       {exhibition?.review_average?.toFixed(1) || "0.0"}
                     </span>
@@ -308,31 +311,28 @@ export default function App() {
                 </div>
               </div>
             </div>
+            <Divider orientation="horizontal" className="my-2" />
 
             <div className="mt-4 space-y-2 text-sm text-gray-600">
               <div className="flex items-center gap-2">
-                <FiMapPin className="text-lg text-gray-500" />
-                <span>{exhibition?.name?.address}</span>
+                <img src="/exhibition/미니달력.svg" alt="달력" className="w-4 h-4" />
+                <span>{exhibition?.start_date?.replace(/(\d{4})(\d{2})(\d{2})/, "$1년$2월$3일")} ~ {exhibition?.end_date?.replace(/(\d{4})(\d{2})(\d{2})/, "$1년$2월$3일")}</span>
               </div>
               <div className="flex items-center gap-2">
-                <LuClock4 className="text-lg text-gray-500" />
-                <span>{exhibition?.date}</span>
+                <img src="/exhibition/미니지도.svg" alt="지도" className="w-4 h-4" />
+                <span>{exhibition?.gallery?.address}</span>
               </div>
               <div className="flex items-center gap-2">
-                <IoMdInformationCircleOutline className="text-lg text-gray-500" />
-                <span>{exhibition?.working_hour}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <HiOutlineCurrencyDollar className="text-lg text-gray-500" />
-                <span>{exhibition?.price}</span>
+                <img src="/exhibition/미니가격.png" alt="가격" className="w-4 h-4" />
+                <span>{exhibition?.price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원</span>
               </div>
             </div>
 
             <Button
               target="_blank"
               onPress={() => router.push(exhibition?.homepage_url)}
-              className="w-full mt-4"
-              color="primary"
+              className="w-full mt-4 bg-[#004BFE] text-white text-[13px] font-bold"
+              
               size="lg"
             >
               사이트연결

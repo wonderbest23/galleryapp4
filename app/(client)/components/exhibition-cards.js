@@ -298,7 +298,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
                       </div>
 
                       {/* 북마크 아이콘을 카드 우측 하단으로 이동 */}
-                      <div className="absolute bottom-2 right-2">
+                      <div className="absolute top-2 right-2">
                         <div
                           className="bg-[#606060]/60 rounded-3xl p-1"
                           onClick={(e) => toggleBookmark(e, exhibition)}

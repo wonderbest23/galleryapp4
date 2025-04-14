@@ -8,6 +8,7 @@ import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 import Link from "next/link";
 
 export function GalleryCards({ galleries, user, bookmarks, toggleBookmark, isBookmarked }) {
+  console.log('galleries333', galleries)
   return (
     <>
       <div className="flex flex-col items-center gap-4">
@@ -27,10 +28,10 @@ export function GalleryCards({ galleries, user, bookmarks, toggleBookmark, isBoo
                       className="w-24 h-24 object-cover rounded"
                     />
                     <div className="flex flex-col w-full">
-                      <div className="flex flex-row justify-between items-start">
+                      <div className="flex flex-row justify-between items-start mb-2">
                         <div className="flex flex-col">
                           
-                          <div className="text-lg font-bold">
+                          <div className="text-[12px] font-bold">
                             {gallery.name || gallery.subtitle}
                           </div>
                         </div>
@@ -39,9 +40,9 @@ export function GalleryCards({ galleries, user, bookmarks, toggleBookmark, isBoo
                           className="cursor-pointer"
                         >
                           {user && isBookmarked && isBookmarked(gallery.id) ? (
-                            <FaBookmark className="text-red-500 text-medium" />
+                            <FaBookmark className="text-red-500 text-lg bg-gray-500 rounded-full p-1 font-bold" />
                           ) : (
-                            <FaRegBookmark className="text-gray-500 text-medium" />
+                            <FaRegBookmark className="text-white text-lg bg-gray-500 rounded-full p-1 font-bold" />
                           )}
                         </div>
                       </div>
@@ -51,12 +52,20 @@ export function GalleryCards({ galleries, user, bookmarks, toggleBookmark, isBoo
                         className=" bg-gray-300"
                       />
                       <div className="text-xs flex flex-col my-2">
-                        <div className="flex flex-row gap-1">
-                          <IoMdPin />
+                        <div className="flex flex-row gap-1 text-[10px]">
+                          <img
+                            src="/exhibition/미니지도.svg"
+                            alt="미니지도"
+                            className="w-4 h-4"
+                          />
                           {gallery.address || gallery.location}
                         </div>
-                        <div className="flex flex-row gap-1">
-                          <FaRegStar />
+                        <div className="flex flex-row gap-1 text-[10px]">
+                          <img
+                            src="/exhibition/미니별점.png"
+                            alt="미니별점"
+                            className="w-4 h-4"
+                          />
                           {gallery.visitor_rating || "1.0"}({gallery.blog_review_count || 0})
                         </div>
                       </div>
