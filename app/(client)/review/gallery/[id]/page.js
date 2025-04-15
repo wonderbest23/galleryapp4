@@ -42,7 +42,7 @@ export default function page() {
       setUser(data.user);
     }
   };
-  
+
   useEffect(() => {
     getUser();
   }, []);
@@ -153,7 +153,7 @@ export default function page() {
             </div>
           ) : (
             <Card className="w-full m-0">
-              <CardBody className="flex gap-4 flex-row">
+              <CardBody className="flex gap-4 flex-row justify-center items-center">
                 <img
                   src={gallery?.thumbnail}
                   alt={gallery?.title}
@@ -168,14 +168,44 @@ export default function page() {
 
                   <Divider orientation="horizontal" className=" bg-gray-300" />
                   <div className="text-xs flex flex-col my-2">
-                    <div className="flex flex-row gap-1">
-                      <IoMdPin />
-                      {gallery?.address}
-                    </div>
-                    <div className="flex flex-row gap-1">
-                      <FaRegStar />
-                      {gallery?.visitor_rating}({gallery?.blog_review_count})
-                    </div>
+                    {gallery.start_date ? (
+                      <>
+                        <div className="flex flex-row gap-1">
+                          <img
+                            className="w-4 h-4"
+                            src="/exhibition/미니달력.svg"
+                            alt=""
+                          />
+                          {gallery?.start_date?.slice(0, 10)} ~{" "}
+                          {gallery?.end_date?.slice(0, 10)}
+                        </div>
+                        <div className="flex flex-row gap-1">
+                          <img
+                            className="w-4 h-4"
+                            src="/exhibition/미니지도.svg"
+                            alt=""
+                          />
+                          {gallery?.address}
+                        </div>
+                        <div className="flex flex-row gap-1">
+                          <img
+                            className="w-4 h-4"
+                            src="/exhibition/미니가격.png"
+                            alt=""
+                          />
+                          {gallery?.price}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-row gap-1">
+                        <img
+                          className="w-4 h-4"
+                          src="/exhibition/미니지도.svg"
+                          alt=""
+                        />
+                        {gallery?.address}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardBody>

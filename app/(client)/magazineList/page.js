@@ -60,7 +60,7 @@ export default function MagazineList() {
         </div>
       ) : (
         <>
-          <div className="bg-white flex items-center w-[90vw] justify-between">
+          <div className="bg-white flex items-center w-[90%] justify-between">
             <Button
               isIconOnly
               variant="light"

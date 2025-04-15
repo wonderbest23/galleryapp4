@@ -49,7 +49,7 @@ export default function page() {
   const fetchExhibition = async () => {
     const { data, error } = await supabase
       .from("exhibition")
-      .select("*")
+      .select("*, gallery(*)")
       .eq("id", id)
       .single();
     if (error) {
@@ -62,6 +62,7 @@ export default function page() {
   useEffect(() => {
     fetchExhibition();
   }, [id]);
+  console.log("exhibition:", exhibition);
 
   const handleFeelingClick = (feeling) => {
     if (selectedFeelings.includes(feeling)) {
@@ -153,7 +154,7 @@ export default function page() {
             </div>
           ) : (
             <Card className="w-full m-0">
-              <CardBody className="flex gap-4 flex-row">
+              <CardBody className="flex gap-4 flex-row justify-center items-center">
                 <img
                   src={exhibition?.photo}
                   alt={exhibition?.title}
@@ -175,10 +176,44 @@ export default function page() {
 
                   <Divider orientation="horizontal" className=" bg-gray-300" />
                   <div className="text-xs flex flex-col my-2">
-                    <div className="flex flex-row gap-1">
-                      <FaRegStar />
-                      {exhibition?.review_average}({exhibition?.review_count})
-                    </div>
+                    {exhibition?.start_date ? (
+                      <>
+                        <div className="flex flex-row gap-1">
+                          <img
+                            className="w-4 h-4"
+                            src="/exhibition/미니달력.svg"
+                            alt=""
+                          />
+                          {exhibition?.start_date?.slice(0, 10)} ~{" "}
+                          {exhibition?.end_date?.slice(0, 10)}
+                        </div>
+                        <div className="flex flex-row gap-1">
+                          <img
+                            className="w-4 h-4"
+                            src="/exhibition/미니지도.svg"
+                            alt=""
+                          />
+                          {exhibition?.gallery?.address}
+                        </div>
+                        <div className="flex flex-row gap-1">
+                          <img
+                            className="w-4 h-4"
+                            src="/exhibition/미니가격.png"
+                            alt=""
+                          />
+                          {exhibition?.price}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-row gap-1">
+                        <img
+                          className="w-4 h-4"
+                          src="/exhibition/미니지도.svg"
+                          alt=""
+                        />
+                        {gallery?.address}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardBody>
@@ -228,7 +263,6 @@ export default function page() {
           />
           <div className="w-full flex flex-col gap-4 font-bold text-xl text-center mb-24">
             <Button
-              
               className="w-full font-bold bg-black text-white"
               onPress={handleReviewSubmit}
             >

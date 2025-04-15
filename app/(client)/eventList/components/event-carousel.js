@@ -31,7 +31,7 @@ export default function EventCarousel({ events }) {
 
   return (
     <div 
-      className="relative p-6"
+      className="relative p-6 w-full"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -39,12 +39,12 @@ export default function EventCarousel({ events }) {
       <Card className="w-full">
         <CardBody className="p-0">
           <Link 
-            href={`/events/${events[currentSlide].id}`}
+            href={`/event/${events[currentSlide].id}`}
             aria-label={`${events[currentSlide].title || `이벤트 ${currentSlide + 1}`} 상세보기`}
           >
             <div 
               className="relative w-full" 
-              style={{ height: '300px', width: '300px', margin: '0 auto' }}
+              
               role="img"
               aria-label={events[currentSlide].title || `이벤트 ${currentSlide + 1}`}
             >
@@ -52,11 +52,7 @@ export default function EventCarousel({ events }) {
                 src={events[currentSlide].photo}
                 alt={events[currentSlide].title || `이벤트 ${currentSlide + 1}`}
                 className="w-full h-full object-cover"
-                style={{ 
-                  objectPosition: 'center center',
-                  width: '300px', 
-                  height: '300px'
-                }}
+
               />
               
             </div>

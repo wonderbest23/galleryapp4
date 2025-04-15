@@ -95,7 +95,7 @@ export default function Navbar() {
           onClick={handleLogoClick}
           src="/logo/logomain.png"
           alt="logo"
-          className="w-[37px] h-[37px]"
+          className="w-[37px] h-[37px] hover:cursor-pointer"
         />
 
         <Input

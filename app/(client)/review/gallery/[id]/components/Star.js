@@ -34,7 +34,7 @@ import { Icon } from "@iconify/react";
               icon="lucide:star"
               className={`w-8 h-8 ${
                 value <= (hoverRating || rating)
-                  ? "text-warning-500 fill-warning-500"
+                  ? "text-blue-500 fill-blue-500"
                   : "text-default-300"
               }`}
             />

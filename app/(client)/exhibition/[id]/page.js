@@ -227,7 +227,7 @@ export default function App() {
       try {
         const { data: reviewData, error: reviewError } = await supabase
           .from("exhibition_review")
-          .select("*")
+          .select("*,exhibition_id(*)")
           .eq("exhibition_id", id);
 
         if (reviewError) {
@@ -275,13 +275,13 @@ export default function App() {
               className="w-full h-full object-cover"
             />
             <div className="absolute bottom-4 right-4 flex gap-2">
-              <div className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center" onPress={toggleBookmark}>
+              <div className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center" onClick={toggleBookmark}>
                 <Icon 
                   icon={isBookmarked ? "mdi:bookmark" : "mdi:bookmark-outline"} 
                   className="text-lg text-red-500 font-bold " 
                 />
               </div>
-              <div className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center" onPress={toggleBookmark}>
+              <div className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center" onClick={toggleBookmark}>
                 <LuSend 
                   className="text-lg text-white font-bold " 
                 />
@@ -339,120 +339,121 @@ export default function App() {
             </Button>
           </div>
 
-          {/* Tabs Section */}
-          <div className="mt-4 pb-16">
-            <Tabs
-              aria-label="Options"
-              selectedKey={selected}
-              onSelectionChange={setSelected}
-              variant="underlined"
-              fullWidth
-            >
-              <Tab key="home" title="홈">
+          {/* 커스텀 탭바 섹션 */}
+          <div className="mt-4 pb-16 flex flex-col items-center justify-start">
+            {/* 커스텀 탭바 - 전체 폭의 2/3 크기로 중앙 정렬 */}
+            <div className="flex w-[90%] border-t border-gray-200 mb-2">
+              <div className="w-1/6"></div>
+              <div className="flex w-2/3">
+                <button
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "home" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  onClick={() => setSelected("home")}
+                >
+                  홈
+                </button>
+                <button
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "gallery" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  onClick={() => setSelected("gallery")}
+                >
+                  전시회 공지
+                </button>
+                <button
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "reviews" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  onClick={() => setSelected("reviews")}
+                >
+                  리뷰
+                </button>
+              </div>
+              <div className="w-1/6"></div>
+            </div>
+            
+            {/* 탭 컨텐츠 */}
+            <div className="px-2 w-full">
+              {selected === "home" && (
                 <Card className="my-4 mx-2">
                   <CardBody>
                     <h3 className="text-lg font-bold mb-2">전시회 안내</h3>
                     <p>{exhibition?.add_info}</p>
                   </CardBody>
                 </Card>
-              </Tab>
-              <Tab key="gallery" title="전시회 공지">
-                {notice &&
-                  notice.slice(0, displayedNoticeCount).map((item, i) => (
-                    <Card key={item.id || i} className="my-4 mx-2">
-                      <CardBody>
-                        <h3 className="text-lg font-bold">
-                          {item.title || `공지사항 ${i + 1}`}
-                        </h3>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {new Date(item.created_at).toLocaleDateString()}
-                        </p>
-                        <p className="mt-2">
-                          {item.content ||
-                            "전시회 관람 시간 안내 및 주의사항입니다."}
-                        </p>
-                      </CardBody>
-                    </Card>
-                  ))}
-                {notice && notice.length > displayedNoticeCount && (
-                  <div className="flex justify-center items-center my-4">
-                    <Button
-                      isIconOnly
-                      variant="light"
-                      onPress={handleLoadMoreNotices}
-                      className="hover:cursor-pointer"
-                    >
-                      <FaPlusCircle className="text-red-500 text-2xl font-bold" />
-                    </Button>
-                  </div>
-                )}
-              </Tab>
-              <Tab key="reviews" title="리뷰">
-                <Card className="my-4 mx-2">
-                  <CardBody>
-                    <div className="flex flex-col items-center gap-4">
-                      <h3 className="text-lg font-bold mb-2">전시회 리뷰</h3>
-                      <div className="flex items-center justify-center mb-2">
-                        <div className="flex text-yellow-400 items-center">
-                          {exhibition?.review_average &&
-                            [...Array(5)].map((_, i) => (
-                              <Icon
-                                key={i}
-                                icon="lucide:star"
-                                className={`w-8 h-8 ${i < Math.floor(exhibition.review_average) ? "text-yellow-400" : "text-gray-300"}`}
-                              />
-                            ))}
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-3xl font-bold">
-                          {exhibition?.review_average?.toFixed(1) || "0.0"}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {exhibition?.review_count || 0}개의 리뷰
-                        </p>
-                      </div>
-                    </div>
-                  </CardBody>
-                </Card>
-                <div className="flex flex-col items-center gap-2 mx-2">
-                  {reviews.slice(0, displayedReviewCount).map((review, index) => (
-                    <CardReview
-                      key={index}
-                      content={review.description}
-                      createdAt={review.created_at}
-                      rating={review.rating}
-                      title={review.title}
-                      user={{
-                        name: review.name,
-                        avatar:
-                          "https://i.pravatar.cc/150?u=a04258114e29026708c",
-                      }}
-                    />
-                  ))}
-                </div>
-                {reviews.length === 0 && (
-                  <div className="flex justify-center items-center my-4">
-                    <p className="text-gray-500">리뷰가 없습니다.</p>
-                  </div>
-                )}
+              )}
 
-                <div className="flex justify-center items-center my-4">
-                  {reviews.length > displayedReviewCount ? (
-                    <Button
-                      isIconOnly
-                      variant="light"
-                      onPress={handleLoadMoreReviews}
-                      className="hover:cursor-pointer"
-                    >
-                      <FaPlusCircle className="text-red-500 text-2xl font-bold" />
-                    </Button>
-                  ) : reviews.length > 0 && reviews.length <= displayedReviewCount ? (
-                    <p className="text-gray-500">더 이상 리뷰가 없습니다.</p>
-                  ) : null}
-                </div>
-              </Tab>
-            </Tabs>
+              {selected === "gallery" && (
+                <>
+                  {notice &&
+                    notice.slice(0, displayedNoticeCount).map((item, i) => (
+                      <Card key={item.id || i} className="my-4 mx-2">
+                        <CardBody>
+                          <h3 className="text-lg font-bold">
+                            {item.title || `공지사항 ${i + 1}`}
+                          </h3>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {new Date(item.created_at).toLocaleDateString()}
+                          </p>
+                          <p className="mt-2">
+                            {item.content ||
+                              "전시회 관람 시간 안내 및 주의사항입니다."}
+                          </p>
+                        </CardBody>
+                      </Card>
+                    ))}
+                  {notice && notice.length > displayedNoticeCount && (
+                    <div className="flex justify-center items-center my-4">
+                      <Button
+                        isIconOnly
+                        variant="light"
+                        onPress={handleLoadMoreNotices}
+                        className="hover:cursor-pointer"
+                      >
+                        <FaPlusCircle className="text-gray-500 text-2xl font-bold" />
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {selected === "reviews" && (
+                <>
+                  <div className="flex flex-col items-center gap-2 mx-2">
+                    {reviews.slice(0, displayedReviewCount).map((review, index) => (
+                      <CardReview
+                        review={review}
+                        key={index}
+                        content={review.description}
+                        createdAt={review.created_at}
+                        rating={review.rating}
+                        title={review.title}
+                        user={{
+                          name: review.name,
+                          avatar:
+                            "https://i.pravatar.cc/150?u=a04258114e29026708c",
+                        }}
+                      />
+                    ))}
+                  </div>
+                  {reviews.length === 0 && (
+                    <div className="flex justify-center items-center my-4">
+                      <p className="text-gray-500">리뷰가 없습니다.</p>
+                    </div>
+                  )}
+
+                  <div className="flex justify-center items-center my-4">
+                    {reviews.length > displayedReviewCount ? (
+                      <Button
+                        isIconOnly
+                        variant="light"
+                        onPress={handleLoadMoreReviews}
+                        className="hover:cursor-pointer"
+                      >
+                        <FaPlusCircle className="text-gray-500 text-2xl font-bold" />
+                      </Button>
+                    ) : reviews.length > 0 && reviews.length <= displayedReviewCount ? (
+                      <p className="text-gray-500">더 이상 리뷰가 없습니다.</p>
+                    ) : null}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

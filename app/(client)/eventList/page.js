@@ -8,6 +8,7 @@ import { FaPlusCircle } from "react-icons/fa";
 import EventCarousel from "./components/event-carousel";
 import { createClient } from "@/utils/supabase/client";
 import {useState,useEffect} from 'react'
+import {FaArrowLeft} from "react-icons/fa";
 export default function GalleryList() {
   const router = useRouter();
   const supabase = createClient();
@@ -53,19 +54,19 @@ export default function GalleryList() {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="bg-white flex items-center w-[90vw] justify-between">
+      <div className="bg-white flex items-center w-[90%] justify-between">
         <Button
           isIconOnly
           variant="light"
           className="mr-2"
           onPress={() => router.back()}
         >
-          <FaChevronLeft className="text-xl" />
+          <FaArrowLeft className="text-xl" />
         </Button>
         <h2 className="text-lg font-bold text-center flex-grow">이벤트</h2>
         <div className="w-10"></div>
       </div>
-      <div className="w-[90vw] flex justify-center items-center mt-4">
+      <div className="w-[90%] flex justify-center items-center mt-4">
         <Select  placeholder="2025" className="w-1/3" selectedKeys={[selectedYear]} onChange={(e) => setSelectedYear(e.target.value)}>
             <SelectItem key="2025" value="2025">2025</SelectItem>
             <SelectItem key="2024" value="2024">2024</SelectItem>
