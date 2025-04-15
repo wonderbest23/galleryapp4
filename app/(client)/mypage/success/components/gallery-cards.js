@@ -9,6 +9,7 @@ import { FaPlusCircle } from "react-icons/fa";
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { addToast } from "@heroui/react";
+import Image from "next/image";
 
 export default function GalleryCards({ selectedTab, user }) {
   const [gallerys, setGallerys] = useState([]);
@@ -92,7 +93,7 @@ export default function GalleryCards({ selectedTab, user }) {
 
   return (
     <div className="flex flex-col items-center gap-4 w-full justify-center">
-      <div className="grid gap-4 w-full max-w-[900px] mx-auto justify-items-center">
+      <div className="grid gap-4 w-full justify-items-center">
         {loading && page === 1
           ? // 처음 로딩 중 스켈레톤 UI 표시
             <div className="w-full max-w-[600px] flex items-center gap-3 justify-center mx-auto">
@@ -106,9 +107,9 @@ export default function GalleryCards({ selectedTab, user }) {
             </div>
           : // 데이터 로드 완료 후 실제 갤러리 목록 표시
             gallerys.map((gallery, index) => (
-              <Card key={index} className="w-full max-w-[600px] mx-auto">
+              <Card key={index} className="w-full ">
                 <Link
-                  href={`/gallery/${gallery.id || index + 1}`}
+                  href={`/galleries/${gallery.id || index + 1}`}
                   className="w-full"
                 >
                   <CardBody className="flex gap-4 flex-row w-full h-full">
@@ -130,13 +131,8 @@ export default function GalleryCards({ selectedTab, user }) {
                       />
                       <div className="text-xs flex flex-col my-2">
                         <div className="flex flex-row gap-1">
-                          <IoMdPin />
+                          <Image src="/exhibition/미니지도.svg" alt="calendar" width={15} height={15} />
                           {gallery.address || "서울 강남구"}
-                        </div>
-                        <div className="flex flex-row gap-1">
-                          <FaRegStar />
-                          {gallery.visitor_rating || "없음"}(
-                          {gallery.blog_review_count || "없음"})
                         </div>
                       </div>
                     </div>
@@ -155,9 +151,9 @@ export default function GalleryCards({ selectedTab, user }) {
 
       {/* 플러스 버튼을 항상 중앙에 고정하고 마진 추가 */}
       {hasMore ? (
-        <div className="flex justify-center w-full my-8">
+        <div className="flex justify-center w-full my-1">
           <FaPlusCircle
-            className="text-red-500 text-3xl font-bold hover:cursor-pointer hover:scale-110 transition-transform"
+            className="text-gray-500 text-3xl font-bold hover:cursor-pointer hover:scale-110 transition-transform"
             onClick={loadMore}
           />
         </div>

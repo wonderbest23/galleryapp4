@@ -8,6 +8,8 @@ import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
 import { createClient } from "@/utils/supabase/client";
+import Image from "next/image";
+
 export default function BookmarkedExhibition({ user }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [bookmarkedExhibitions, setBookmarkedExhibitions] = useState([]);
@@ -87,13 +89,13 @@ export default function BookmarkedExhibition({ user }) {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-4 w-full px-2">
+      <div className="flex flex-col items-center gap-4 w-full px-2 justify-center">
         <div className="grid gap-4 w-full justify-center items-center">
           {bookmarkedExhibitions.length > 0 ? (
             bookmarkedExhibitions.slice(0, displayCount).map((exhibition, index) => (
               <Card key={index} className="w-full">
-                <Link href={`/gallery/${exhibition.id}`}>
-                  <CardBody className="flex gap-4 flex-row">
+                <Link href={`/exhibitions/${exhibition.id}`}>
+                  <CardBody className="flex gap-4 flex-row justify-center items-center">
                     <img
                       src={exhibition.photo}
                       alt={exhibition.title}
@@ -116,16 +118,16 @@ export default function BookmarkedExhibition({ user }) {
                       />
                       <div className="text-xs flex flex-col my-2">
                         <div className="flex flex-row gap-1">
-                          <FaRegCalendar />
-                          {exhibition.date}
+                          <Image src="/exhibition/미니달력.svg" alt="calendar" width={15} height={15} />
+                          {new Date(exhibition.start_date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })} ~ {new Date(exhibition.end_date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
                         </div>
                         <div className="flex flex-row gap-1">
-                          <IoMdPin />
+                          <Image src="/exhibition/미니지도.svg" alt="calendar" width={15} height={15} />
                           {exhibition.gallery.address}
                         </div>
                         <div className="flex flex-row gap-1">
-                          <FaRegStar />
-                          {exhibition.visitor_rating}({exhibition.blog_review_count})
+                          <Image src="/exhibition/미니가격.png" alt="calendar" width={15} height={15} />
+                          {exhibition.price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원
                         </div>
                       </div>
                     </div>
@@ -139,10 +141,10 @@ export default function BookmarkedExhibition({ user }) {
         </div>
         
         {bookmarkedExhibitions.length > 0 && (
-          <div className="flex flex-col items-center mt-4 mb-6">
+          <div className="flex flex-col items-center my-2">
             {hasMore && displayCount < bookmarkedExhibitions.length ? (
               <FaPlusCircle 
-                className="text-red-500 text-2xl font-bold hover:cursor-pointer" 
+                className="text-gray-500 text-2xl font-bold hover:cursor-pointer" 
                 onClick={loadMoreExhibitions}
               />
             ) : displayCount > 0 && !hasMore && bookmarkedExhibitions.length > 5 ? (

@@ -25,7 +25,7 @@ import { createClient } from "@/utils/supabase/client";
 import BookmarkedExhibition from "./components/BookmarkedExhibition";
 import Reviews from "./components/Reviews";
 import GalleryCards from "./components/gallery-cards";
-
+import {FaArrowLeft} from "react-icons/fa";
 const Success = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const router = useRouter();
@@ -36,7 +36,8 @@ const Success = () => {
   const [title, setTitle] = useState(null);
   const [content, setContent] = useState(null);
   const [selectedModal, setSelectedModal] = useState(null);
-  const [selectedTab, setSelectedTab] = useState("recommended");
+  const [selectedTab, setSelectedTab] = useState("favorite");
+  const [selectedGalleryTab, setSelectedGalleryTab] = useState("recommended");
 
   const getPolicy = async () => {
     const supabase = createClient();
@@ -147,7 +148,7 @@ const Success = () => {
           className="mr-2"
           onPress={() => router.push("/")}
         >
-          <FaChevronLeft className="text-xl" />
+          <FaArrowLeft className="text-xl" />
         </Button>
         <h2 className="text-lg font-bold text-center flex-grow">마이페이지</h2>
         <div className="w-10"></div>
@@ -168,41 +169,62 @@ const Success = () => {
           {user?.user_metadata?.full_name || user?.email || "사용자"}
         </div>
       </div>
-
-      <Tabs
-        aria-label="Exhibition options"
-        variant="underlined"
-        className="w-full flex justify-center items-center"
-      >
-        <Tab
-          key="favorite"
-          title="나의즐겨찾기"
-          className="w-full justify-center items-center"
-        >
-          <BookmarkedExhibition user={user} />
-        </Tab>
-        <Tab
-          key="review"
-          title="리뷰"
-          className="w-full justify-center items-center"
-        >
-          <Reviews user={user} />
-          {/* <ExhibitionCards user={user} /> */}
-        </Tab>
-      </Tabs>
-      <Tabs className="w-full flex justify-center items-center" aria-label="Gallery options" variant="underlined" selectedKey={selectedTab} onSelectionChange={setSelectedTab}>
-      <Tab key="recommended" title="추천갤러리">
-        <GalleryCards selectedTab={selectedTab} />
-      </Tab>
-      <Tab key="new" title="신규갤러리">
-        <GalleryCards selectedTab={selectedTab} />
-      </Tab>
-      <Tab key="now" title="전시갤러리">
-        <GalleryCards selectedTab={selectedTab} />
-      </Tab>
-    </Tabs>
       
-
+      {/* 첫 번째 커스텀 탭바 */}
+      <div className="flex w-[90%] border-t border-gray-200 mb-2">
+        <div className="w-1/6"></div>
+        <div className="flex w-2/3">
+          <button
+            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "favorite" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+            onClick={() => setSelectedTab("favorite")}
+          >
+            나의즐겨찾기
+          </button>
+          <button
+            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "review" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+            onClick={() => setSelectedTab("review")}
+          >
+            리뷰
+          </button>
+        </div>
+        <div className="w-1/6"></div>
+      </div>
+      
+      <div className="w-full px-2">
+        {selectedTab === "favorite" && <BookmarkedExhibition user={user} />}
+        {selectedTab === "review" && <Reviews user={user} />}
+      </div>
+      
+      {/* 두 번째 커스텀 탭바 */}
+      <div className="flex w-[90%] border-t border-gray-200 mb-2 mt-4">
+        <div className="w-1/6"></div>
+        <div className="flex w-2/3">
+          <button
+            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedGalleryTab === "recommended" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+            onClick={() => setSelectedGalleryTab("recommended")}
+          >
+            추천갤러리
+          </button>
+          <button
+            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedGalleryTab === "new" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+            onClick={() => setSelectedGalleryTab("new")}
+          >
+            신규갤러리
+          </button>
+          <button
+            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedGalleryTab === "now" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+            onClick={() => setSelectedGalleryTab("now")}
+          >
+            전시갤러리
+          </button>
+        </div>
+        <div className="w-1/6"></div>
+      </div>
+      
+      <div className="w-full px-2">
+        <GalleryCards selectedTab={selectedGalleryTab} />
+      </div>
+      
       <div className="w-full h-auto flex justify-center items-center flex-col gap-y-4 mb-24 px-4">
         <div
           onClick={() => {
