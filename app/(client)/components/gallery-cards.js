@@ -433,14 +433,9 @@ export default function GalleryCards({ selectedTab, user }) {
           >
             {/* 슬라이더 배경 div 제거하고 직접 이벤트 적용 */}
             <div className="flex gap-4 relative z-10">
-              {gallerys.length > 0
-                ? gallerys.map((gallery, index) => (
-                    <GalleryCard key={index} gallery={gallery} />
-                  ))
-                : // 샘플 데이터 (실제 데이터가 없을 경우)
-                  sampleGalleries.map((gallery, index) => (
-                    <GalleryCard key={index} gallery={gallery} />
-                  ))}
+              {gallerys.map((gallery, index) => (
+                <GalleryCard key={index} gallery={gallery} />
+              ))}
             </div>
           </div>
         </div>
