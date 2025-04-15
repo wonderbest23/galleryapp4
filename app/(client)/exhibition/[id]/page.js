@@ -346,19 +346,19 @@ export default function App() {
               <div className="w-1/6"></div>
               <div className="flex w-2/3">
                 <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "home" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "home" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
                   onClick={() => setSelected("home")}
                 >
                   홈
                 </button>
                 <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "gallery" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "gallery" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
                   onClick={() => setSelected("gallery")}
                 >
                   전시회 공지
                 </button>
                 <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "reviews" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "reviews" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
                   onClick={() => setSelected("reviews")}
                 >
                   리뷰

@@ -175,13 +175,13 @@ const Success = () => {
         <div className="w-1/6"></div>
         <div className="flex w-2/3">
           <button
-            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "favorite" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "favorite" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
             onClick={() => setSelectedTab("favorite")}
           >
             나의즐겨찾기
           </button>
           <button
-            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "review" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "review" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
             onClick={() => setSelectedTab("review")}
           >
             리뷰
@@ -200,19 +200,19 @@ const Success = () => {
         <div className="w-1/6"></div>
         <div className="flex w-2/3">
           <button
-            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedGalleryTab === "recommended" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedGalleryTab === "recommended" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
             onClick={() => setSelectedGalleryTab("recommended")}
           >
             추천갤러리
           </button>
           <button
-            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedGalleryTab === "new" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedGalleryTab === "new" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
             onClick={() => setSelectedGalleryTab("new")}
           >
             신규갤러리
           </button>
           <button
-            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedGalleryTab === "now" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedGalleryTab === "now" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
             onClick={() => setSelectedGalleryTab("now")}
           >
             전시갤러리

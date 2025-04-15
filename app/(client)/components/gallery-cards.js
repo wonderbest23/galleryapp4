@@ -397,7 +397,7 @@ export default function GalleryCards({ selectedTab, user }) {
   }, []);
 
   return (
-    <div className="w-full max-w-[340px]  overflow-hidden">
+    <div className="w-[90%] max-w-md  overflow-hidden">
       {loading && page === 1 ? (
         // 로딩 중 스켈레톤 UI - 이제 하나의 슬라이더로 표시
         <div className="w-full">

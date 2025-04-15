@@ -353,19 +353,19 @@ function GalleryListContent() {
               <div className="w-1/6"></div>
               <div className="flex w-2/3">
                 <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "all" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "all" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
                   onClick={() => setSelectedTab("all")}
                 >
                   전체
                 </button>
                 <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "now" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "now" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
                   onClick={() => setSelectedTab("now")}
                 >
                   전시중
                 </button>
                 <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "new" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "new" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
                   onClick={() => setSelectedTab("new")}
                 >
                   신규

@@ -406,7 +406,7 @@ export default function App() {
             {hasMoreNotifications && notifications.length > 0 && (
               <div className="flex justify-center items-center my-4">
                 <FaPlusCircle 
-                  className="text-red-500 text-2xl font-bold hover:cursor-pointer" 
+                  className="text-gray-500 text-2xl font-bold hover:cursor-pointer" 
                   onClick={() => setNotificationPage(prev => prev + 1)}
                 />
               </div>
@@ -472,7 +472,7 @@ export default function App() {
               <div className="flex justify-center items-center my-4">
                 {hasMoreReviews ? (
                   <FaPlusCircle 
-                    className="text-red-500 text-2xl font-bold hover:cursor-pointer" 
+                    className="text-gray-500 text-2xl font-bold hover:cursor-pointer" 
                     onClick={() => setReviewPage(prev => prev + 1)}
                   />
                 ) : (

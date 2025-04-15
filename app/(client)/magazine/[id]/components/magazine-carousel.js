@@ -40,13 +40,13 @@ export default function MagazineCarousel({magazine}) {
       {slides.length > 0 ? (
         <Card classNames={{base: "w-full rounded-none p-0"}} className="w-full rounded-none" >
           <CardBody className="p-0">
-            <Link href={`/gallery/${magazine?.id || currentSlide + 1}`}>
+            
               <img
                 src={slides[currentSlide]?.url || `https://picsum.photos/800/400?random=${currentSlide}`}
                 alt={`${magazine?.title || ''} - 이미지 ${currentSlide + 1}`}
                 className="w-full h-48 object-cover"
               />
-            </Link>
+            
           </CardBody>
         </Card>
       ) : (

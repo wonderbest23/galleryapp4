@@ -112,7 +112,7 @@ export default function Reviews({ user }) {
           <div className="flex flex-col items-center mt-4 ">
             {hasMore && displayCount < reviews.length ? (
               <FaPlusCircle
-                className="text-red-500 text-2xl font-bold hover:cursor-pointer"
+                className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
                 onClick={loadMoreReviews}
               />
             ) : displayCount > 0 && !hasMore && reviews.length > 5 ? (

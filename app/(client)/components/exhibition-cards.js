@@ -207,7 +207,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-4 w-full justify-center px-3">
+      <div className="flex flex-col items-center gap-4 w-[90%] justify-center">
         <div className="w-full flex flex-col justify-center items-center gap-y-4">
           {loading && page === 1
             ? // 처음 로딩 중 스켈레톤 UI 표시
@@ -325,7 +325,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
         </div>
         {hasMore && !loading ? (
           <FaPlusCircle
-            className="text-red-500 text-2xl font-bold hover:cursor-pointer mb-8"
+            className="text-gray-500 text-2xl font-bold hover:cursor-pointer mb-4"
             onClick={loadMore}
           />
         ) : (

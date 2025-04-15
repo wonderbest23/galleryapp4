@@ -392,19 +392,19 @@ function ExhibitionListContent() {
               <div className="w-1/6"></div>
               <div className="flex w-2/3">
                 <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "all" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "all" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
                   onClick={() => setSelectedTab("all")}
                 >
                   전시회
                 </button>
                 <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "free" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "free" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
                   onClick={() => setSelectedTab("free")}
                 >
                   무료전시
                 </button>
                 <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "recommended" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "recommended" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
                   onClick={() => setSelectedTab("recommended")}
                 >
                   추천전시

@@ -10,6 +10,7 @@ export function ExhibitionCarousel() {
   const [touchEnd, setTouchEnd] = useState(0);
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
   const supabase = createClient();
 
   const getBanners = async () => {
@@ -26,13 +27,31 @@ export function ExhibitionCarousel() {
       setLoading(false);
     }
   };
-  console.log
-
+  
   useEffect(() => {
     getBanners();
   }, []);
 
+  // 자동 슬라이딩을 위한 타이머 설정
+  useEffect(() => {
+    let intervalId;
+    
+    if (!loading && banners.length > 0 && !isPaused) {
+      intervalId = setInterval(() => {
+        setCurrentSlide((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
+      }, 2000); // 2초마다 슬라이드 변경
+    }
+    
+    // 컴포넌트가 언마운트되거나 의존성이 변경될 때 타이머 정리
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [loading, banners.length, isPaused]);
+
   const handleTouchStart = (e) => {
+    setIsPaused(true); // 터치 시작할 때 자동 슬라이딩 일시 중지
     setTouchStart(e.touches[0].clientX);
   };
 
@@ -48,17 +67,34 @@ export function ExhibitionCarousel() {
     if (touchStart - touchEnd < -75) { // 오른쪽으로 스와이프
       setCurrentSlide((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
     }
+    
+    // 터치 끝난 후 3초 후에 자동 슬라이딩 재개
+    setTimeout(() => {
+      setIsPaused(false);
+    }, 3000);
+  };
+
+  // 마우스 오버 시 자동 슬라이딩 일시 중지
+  const handleMouseEnter = () => {
+    setIsPaused(true);
+  };
+
+  // 마우스 아웃 시 자동 슬라이딩 재개
+  const handleMouseLeave = () => {
+    setIsPaused(false);
   };
 
   return (
     <div 
-      className="relative py-5"
+      className="relative py-5 w-full flex justify-center items-center"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <Card className="w-full" shadow="none">
-        <CardBody className="p-0">
+        <CardBody className="p-0 w-full flex justify-center items-center">
           {loading ? (
             <Card className="w-[300px]  space-y-5 p-4" radius="lg" shadow="none" >
               <Skeleton className="rounded-lg">
@@ -81,7 +117,7 @@ export function ExhibitionCarousel() {
               <img
                 src={banners[currentSlide]?.url || `https://picsum.photos/800/400?random=${currentSlide}`}
                 alt={banners[currentSlide]?.title || `Slide ${currentSlide + 1}`}
-                className="w-[327px] h-[200px] object-cover"
+                className="w-[90%] h-[200px] object-cover rounded-2xl"
               />
             
           )}

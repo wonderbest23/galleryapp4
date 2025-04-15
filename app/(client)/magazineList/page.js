@@ -75,7 +75,7 @@ export default function MagazineList() {
           <div className="w-full flex flex-col gap-4 justify-center items-center">
             {magazines.slice(0, visibleCount).map((item, index) => (
               <React.Fragment className="" key={item.id}>
-                <div className="w-[90%]" onClick={() => router.push(`/magazine/${item.id}`)}>
+                <div className="w-[90%] hover:cursor-pointer" onClick={() => router.push(`/magazine/${item.id}`)}>
                   <div
                     className="w-full mt-6"
                     
@@ -108,7 +108,7 @@ export default function MagazineList() {
           <div className="flex flex-col justify-center items-center mt-6 mb-24">
             {!allLoaded ? (
               <FaPlusCircle
-                className="text-red-500 text-2xl font-bold hover:cursor-pointer"
+                className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
                 onClick={loadMore}
               />
             ) : (

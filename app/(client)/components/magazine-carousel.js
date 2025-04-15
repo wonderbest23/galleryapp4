@@ -18,6 +18,7 @@ export function MagazineCarousel() {
   const [touchStart, setTouchStart] = React.useState(null);
   const [touchEnd, setTouchEnd] = React.useState(null);
   const [magazines, setMagazines] = React.useState([]);
+  const [selected, setSelected] = React.useState("michelin");
   const supabase = createClient();
   const router = useRouter();
   useEffect(() => {
@@ -70,12 +71,25 @@ export function MagazineCarousel() {
         <div className="text-[12px] text-[#007AFF] font-bold hover:text-[#007AFF]">SEE ALL </div>
         <IoIosArrowForward className="text-[#007AFF] font-bold" />
       </div>
-      <Tabs
-        className="w-full justify-center items-center relative"
-        aria-label="Magazine options"
-        variant="underlined"
-      >
-        <Tab key="michelin" title="미슐랭매거진">
+      <div className="flex w-full border-t border-gray-200 mb-2">
+        <div className="flex w-full justify-center">
+          <button
+            className={`text-[12px] py-3 text-center font-medium ${
+              selected === "michelin" 
+                ? "border-t-4 border-black text-black relative" 
+                : "text-gray-500"
+            }`}
+            onClick={() => setSelected("michelin")}
+          >
+            <span className={`${selected === "michelin" ? "relative" : ""}`}>
+              미슐랭매거진
+              
+            </span>
+          </button>
+        </div>
+      </div>
+      {selected === "michelin" && (
+        <div>
           {magazines.length > 0 ? (
             <div
               className="relative"
@@ -120,8 +134,8 @@ export function MagazineCarousel() {
               <Skeleton className="w-full h-[300px]"></Skeleton>
             </div>
           )}
-        </Tab>
-      </Tabs>
+        </div>
+      )}
     </div>
   );
 }

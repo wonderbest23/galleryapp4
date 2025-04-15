@@ -51,24 +51,24 @@ export default function Home() {
       <CategoryButtons />
 
       {/* Exhibition Tabs */}
-      <div className="w-full flex flex-col mb-4 justify-center items-center">
+      <div className="w-full flex flex-col mb-4 justify-center items-center mt-4">
         <div className="flex w-[90%] border-t border-gray-200 mb-2">
           <div className="w-1/6"></div>
           <div className="flex w-2/3">
             <button
-              className={`text-[12px] flex-1 py-3 text-center font-medium ${exhibitionCategory === "all" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${exhibitionCategory === "all" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
               onClick={() => setExhibitionCategory("all")}
             >
               전체전시
             </button>
             <button
-              className={`text-[12px] flex-1 py-3 text-center font-medium ${exhibitionCategory === "free" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${exhibitionCategory === "free" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
               onClick={() => setExhibitionCategory("free")}
             >
               무료전시
             </button>
             <button
-              className={`text-[12px] flex-1 py-3 text-center font-medium ${exhibitionCategory === "recommended" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${exhibitionCategory === "recommended" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
               onClick={() => setExhibitionCategory("recommended")}
             >
               추천전시
@@ -89,19 +89,19 @@ export default function Home() {
           <div className="w-1/6"></div>
           <div className="flex w-2/3">
             <button
-              className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "recommended" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "recommended" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
               onClick={() => setSelectedTab("recommended")}
             >
               추천갤러리
             </button>
             <button
-              className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "new" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "new" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
               onClick={() => setSelectedTab("new")}
             >
               신규갤러리
             </button>
             <button
-              className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "now" ? "border-t-2 border-black text-black" : "text-gray-500"}`}
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "now" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
               onClick={() => setSelectedTab("now")}
             >
               전시갤러리
