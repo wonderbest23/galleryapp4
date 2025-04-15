@@ -470,6 +470,7 @@ export function GalleryDetail({
       const { data, error } = await supabaseAdmin.auth.admin.createUser({
         email: email,
         password: password,
+        email_confirm: true,
       });
 
       if (error) throw error;
