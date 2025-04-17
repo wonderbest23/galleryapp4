@@ -270,7 +270,7 @@ export function ExhibitionDetail({
             >
               무료 전시회
             </Checkbox>
-            <Checkbox
+            {/* <Checkbox
               isSelected={editedExhibition.isRecommended || false}
               onValueChange={(value) =>
                 handleFieldChange("isRecommended", value)
@@ -278,7 +278,7 @@ export function ExhibitionDetail({
               isDisabled={isReadOnly}
             >
               추천 전시회 (메인 페이지 상단 노출)
-            </Checkbox>
+            </Checkbox> */}
           </div>
         </div>
 

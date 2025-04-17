@@ -386,9 +386,17 @@ function GalleryListContent() {
                 <SelectItem key="서울" value="서울">서울</SelectItem>
                 <SelectItem key="인천" value="인천">인천</SelectItem>
                 <SelectItem key="경기" value="경기">경기</SelectItem>
-                <SelectItem key="충청" value="충청">충청</SelectItem>
-                <SelectItem key="경상" value="경상">경상</SelectItem>
-                <SelectItem key="전라" value="전라">전라</SelectItem>
+                <SelectItem key="대전" value="대전">대전</SelectItem>
+                <SelectItem key="충북" value="충북">충북</SelectItem>
+                <SelectItem key="충남" value="충남">충남</SelectItem>
+                <SelectItem key="대구" value="대구">대구</SelectItem>
+                <SelectItem key="경북" value="경북">경북</SelectItem>
+                <SelectItem key="경남" value="경남">경남</SelectItem>
+                <SelectItem key="부산" value="부산">부산</SelectItem>
+                <SelectItem key="울산" value="울산">울산</SelectItem>
+                <SelectItem key="광주" value="광주">광주</SelectItem>
+                <SelectItem key="전남" value="전남">전남</SelectItem>
+                <SelectItem key="전북" value="전북">전북</SelectItem>
                 <SelectItem key="강원" value="강원">강원</SelectItem>
                 <SelectItem key="제주" value="제주">제주</SelectItem>
               </Select>

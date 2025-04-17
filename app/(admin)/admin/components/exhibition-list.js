@@ -11,11 +11,18 @@ import {
   Pagination,
   Button,
   addToast,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Progress,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { createClient } from "@/utils/supabase/client";
 import { debounce } from "lodash";
 import Link from "next/link";
+import * as XLSX from "xlsx";
 import axios from "axios";
 
 export function ExhibitionList({
@@ -32,8 +39,11 @@ export function ExhibitionList({
   const itemsPerPage = 5;
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(10);
-  const supabase = createClient();
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [progressVisible, setProgressVisible] = useState(false);
+  const [progressStatus, setProgressStatus] = useState(""); // 'processing', 'success', 'failed'
+  const supabase = createClient();
   const fileInputRef = useRef(null);
 
   const GetExhibitions = async () => {
@@ -47,23 +57,23 @@ export function ExhibitionList({
 
     let query = supabase
       .from("exhibition")
-      .select("*,naver_gallery_url(*) ", {
+      .select("*", {
         count: "exact",
       })
       .order("id", { ascending: false })
-      .range(offset, offset + itemsPerPage - 1)
+      .range(offset, offset + itemsPerPage - 1);
 
     // search 값이 있을 경우 필터 추가
     if (search.trim()) {
       query = query.or(
-        `name.ilike.%${search}%, contents.ilike.%${search}%, add_info.ilike.%${search}%`
+        `title.ilike.%${search}%, gallery_name.ilike.%${search}%, artist.ilike.%${search}%, naver_gallery_url.ilike.%${search}%`
       );
     }
 
     const { data, error, count } = await query;
 
     if (error) {
-      console.log("전시회 데이터 조회 중 오류:", error);
+      console.error("전시회 데이터 조회 중 오류:", error);
     }
     console.log(
       "전시회 데이터 조회 결과:",
@@ -73,15 +83,8 @@ export function ExhibitionList({
       "건"
     );
     setExhibitions(data || []);
-    setTotal(Math.ceil((count || 0) / itemsPerPage));
+    setTotal(Math.ceil(count / itemsPerPage));
   };
-  console.log('exhibitions', exhibitions)
-
-  useEffect(() => {
-    console.log("가져오자");
-    GetExhibitions();
-  }, [refreshToggle]);
-  console.log("refreshToggle:", refreshToggle);
 
   // 외부에서 호출할 수 있는 새로고침 함수 추가
   const refreshExhibitions = () => {
@@ -143,47 +146,87 @@ export function ExhibitionList({
     if (!file) return;
 
     // 파일 형식 검사
-    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-      toast.error('파일 형식 오류', 'Excel 파일(.xlsx 또는 .xls)만 업로드 가능합니다.');
+    if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
+      addToast({
+        title: "파일 형식 오류",
+        description: "Excel 파일(.xlsx 또는 .xls)만 업로드 가능합니다.",
+        color: "danger",
+      });
       return;
     }
 
     setUploading(true);
+    setProgressVisible(true);
+    setUploadProgress(0);
+    setProgressStatus("processing");
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
+      // FastAPI 엔드포인트로 요청
       const response = await axios.post(
-        'https://ytuc5hjepdzzvgqeupwg35mxhm0lupwf.lambda-url.ap-northeast-2.on.aws/uploadexhibition',
+        "https://3zggqc3igf.execute-api.ap-northeast-2.amazonaws.com/upload-exhibition/",
         formData,
         {
           headers: {
-            'accept': 'application/json',
-            'Content-Type': 'multipart/form-data',
-          }
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
 
-      const result = response.data;
+      if (!response.data || !response.data.task_id) {
+        throw new Error("업로드 작업 ID를 받지 못했습니다.");
+      }
 
-      // 업로드 성공 시 성공/실패 건수 표시
-      addToast({
-        title: "전시회 업로드 결과",
-        description: `총 ${result.total_length}건 중 ${result.success_length}건 성공, ${result.fail_length}건 실패`,
-        color: "success",
-      });
-      
+      const taskId = response.data.task_id;
+
+      // 폴링 시작
+      let completed = false;
+      while (!completed) {
+        // 0.5초마다 상태 확인
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        const statusResponse = await axios.get(
+          `https://3zggqc3igf.execute-api.ap-northeast-2.amazonaws.com/exhibition-upload-status/${taskId}`
+        );
+        const status = statusResponse.data;
+
+        // 진행 상황 업데이트
+        setUploadProgress(status.percentage || 0);
+
+        if (status.completed) {
+          completed = true;
+          setProgressStatus("completed");
+
+          // 최종 결과 표시
+          addToast({
+            title: "전시회 업로드 결과",
+            description: `총 ${status.total}건 중 ${status.success_count}건 성공, ${status.failed_count}건 실패`,
+            color: status.success_count > 0 ? "success" : "warning",
+          });
+        }
+      }
+
       // 목록 새로고침
       GetExhibitions();
     } catch (error) {
-      console.error('파일 업로드 중 오류 발생:', error);
-      toast.error('업로드 오류', '파일 업로드 중 오류가 발생했습니다.');
+      console.error("파일 업로드 중 오류 발생:", error);
+      addToast({
+        title: "업로드 오류",
+        description: `파일 업로드 중 오류가 발생했습니다: ${error.message}`,
+        color: "danger",
+      });
+      setProgressStatus("failed");
     } finally {
       setUploading(false);
+      // 5초 후 프로그레스 바 숨기기
+      setTimeout(() => {
+        setProgressVisible(false);
+      }, 5000);
       // 파일 인풋 초기화
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     }
   };
@@ -193,45 +236,46 @@ export function ExhibitionList({
     fileInputRef.current?.click();
   };
 
-  // 전시회 엑셀 다운로드 처리 함수
+  // 전시회 전체 데이터를 가져와서 엑셀로 다운로드하는 함수
   const handleExcelDownload = async () => {
     try {
       setUploading(true); // 로딩 상태 활성화
-      
+
       // 모든 전시회 데이터 가져오기
       const { data, error } = await supabase
         .from("exhibition")
         .select("*")
         .order("id", { ascending: false });
-        
+
       if (error) {
         throw error;
       }
-        
+
       if (data && data.length > 0) {
-        // XLSX 라이브러리 동적 로드
-        const XLSX = await import('xlsx');
-        
         // 엑셀 워크시트 생성
         const worksheet = XLSX.utils.json_to_sheet(data);
-        
+
         // 열 너비 설정
         const columnWidths = [
-          { wch: 10 },  // id
-          { wch: 30 },  // name(갤러리명)
-          { wch: 50 },  // contents(전시회 제목)
-          { wch: 50 },  // add_info(추가 정보)
-          { wch: 30 },  // 기타 필드들...
+          { wch: 10 }, // id
+          { wch: 40 }, // title
+          { wch: 30 }, // gallery_name
+          { wch: 30 }, // artist
+          { wch: 40 }, // naver_gallery_url
+          { wch: 30 }, // 기타 필드들...
         ];
-        worksheet['!cols'] = columnWidths;
-        
+        worksheet["!cols"] = columnWidths;
+
         // 워크북 생성 및 워크시트 추가
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "전시회 목록");
-        
+
         // 엑셀 파일로 내보내기
-        XLSX.writeFile(workbook, "전시회목록_" + new Date().toISOString().split('T')[0] + ".xlsx");
-        
+        XLSX.writeFile(
+          workbook,
+          "전시회목록_" + new Date().toISOString().split("T")[0] + ".xlsx"
+        );
+
         addToast({
           title: "다운로드 완료",
           description: `총 ${data.length}건의 전시회 데이터를 다운로드했습니다.`,
@@ -245,14 +289,26 @@ export function ExhibitionList({
         });
       }
     } catch (error) {
-      console.error("엑셀 다운로드 중 오류 발생:", error);
+      console.error("전시회 데이터 다운로드 중 오류:", error);
       addToast({
         title: "다운로드 오류",
-        description: "파일 다운로드 중 오류가 발생했습니다.",
+        description: "전시회 데이터를 다운로드하는 중 오류가 발생했습니다.",
         color: "danger",
       });
     } finally {
       setUploading(false); // 로딩 상태 비활성화
+    }
+  };
+
+  // 프로그레스 바의 색상 설정
+  const getProgressColor = () => {
+    switch (progressStatus) {
+      case "success":
+        return "success";
+      case "failed":
+        return "danger";
+      default:
+        return "primary";
     }
   };
 
@@ -272,9 +328,9 @@ export function ExhibitionList({
         <input
           type="file"
           ref={fileInputRef}
+          onChange={handleFileUpload}
           className="hidden"
           accept=".xlsx,.xls"
-          onChange={handleFileUpload}
         />
         <Button
           className="text-white col-span-4 md:col-span-1"
@@ -284,7 +340,7 @@ export function ExhibitionList({
           isLoading={uploading}
         >
           <Icon icon="lucide:download" className="mr-1" />
-          {uploading ? '처리 중...' : '전시회 엑셀 다운로드'}
+          {uploading ? "처리 중..." : "전시회 엑셀 다운로드"}
         </Button>
         <Button
           className="text-white col-span-4 md:col-span-1"
@@ -300,9 +356,9 @@ export function ExhibitionList({
           color="primary"
           variant="solid"
           onPress={() => {
-            const link = document.createElement('a');
-            link.href = '/sample/exhibitionupload.xlsx';
-            link.download = 'exhibitionupload.xlsx';
+            const link = document.createElement("a");
+            link.href = "/sample/exhibitionupload.xlsx";
+            link.download = "exhibitionupload.xlsx";
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -312,6 +368,28 @@ export function ExhibitionList({
           전시회 엑셀 업로드 양식
         </Button>
       </div>
+      {progressVisible && (
+        <div className="w-full">
+          <div className="flex justify-between mb-1">
+            <span className="text-sm font-medium">
+              {progressStatus === "completed"
+                ? "업로드 완료"
+                : progressStatus === "failed"
+                  ? "업로드 실패"
+                  : "업로드 진행 중..."}
+            </span>
+            <span className="text-sm font-medium">
+              {Math.round(uploadProgress)}%
+            </span>
+          </div>
+          <Progress
+            value={uploadProgress}
+            color={getProgressColor()}
+            size="md"
+            showValueLabel={false}
+          />
+        </div>
+      )}
       <div className="flex items-center gap-4 w-full">
         <Input
           placeholder="전시회 검색..."
@@ -323,7 +401,7 @@ export function ExhibitionList({
           className="w-full"
         />
       </div>
-      <div className="overflow-x-auto w-full">
+      <div className="overflow-x-auto">
         <Table
           classNames={{ wrapper: "p-0" }}
           className="min-w-[600px] "
@@ -335,19 +413,21 @@ export function ExhibitionList({
           onSelectionChange={handleSelectionChange}
         >
           <TableHeader>
-            <TableColumn className="w-1/4">제목</TableColumn>
-            <TableColumn className="w-1/4">갤러리</TableColumn>
-            <TableColumn className="w-1/2">추가정보</TableColumn>
+            <TableColumn>제목</TableColumn>
+            <TableColumn>갤러리</TableColumn>
+            <TableColumn>작가</TableColumn>
+            <TableColumn>URL</TableColumn>
           </TableHeader>
           <TableBody>
             {exhibitions.map((exhibition) => (
               <TableRow key={exhibition.id}>
-                <TableCell>{exhibition.contents}</TableCell>
-                <TableCell>{exhibition.naver_gallery_url.name}</TableCell>
+                <TableCell>{exhibition.title}</TableCell>
+                <TableCell>{exhibition.gallery_name}</TableCell>
+                <TableCell>{exhibition.artist}</TableCell>
                 <TableCell>
-                  <div className="line-clamp-2 overflow-hidden text-ellipsis">
-                    {exhibition.add_info}
-                  </div>
+                  <Link href={exhibition.naver_gallery_url} target="_blank">
+                    {exhibition.naver_gallery_url}
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}

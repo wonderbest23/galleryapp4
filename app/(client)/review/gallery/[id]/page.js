@@ -86,7 +86,6 @@ export default function page() {
 
     if (checkError) {
       console.log("기존 리뷰 확인 중 오류 발생:", checkError);
-      return;
     }
 
     // 이미 리뷰가 존재하는 경우
@@ -155,7 +154,7 @@ export default function page() {
             <Card className="w-full m-0">
               <CardBody className="flex gap-4 flex-row justify-center items-center">
                 <img
-                  src={gallery?.thumbnail}
+                  src={gallery?.thumbnail||"/images/noimage.jpg"}
                   alt={gallery?.title}
                   className="w-24 h-24 object-cover rounded"
                 />

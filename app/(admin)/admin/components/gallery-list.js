@@ -11,6 +11,7 @@ import {
   Pagination,
   Button,
   addToast,
+  Progress,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { createClient } from "@/utils/supabase/client";
@@ -35,6 +36,9 @@ export function GalleryList({
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(10);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [progressVisible, setProgressVisible] = useState(false);
+  const [progressStatus, setProgressStatus] = useState(""); // 'processing', 'success', 'failed'
   const supabase = createClient();
   const fileInputRef = useRef(null);
 
@@ -132,43 +136,81 @@ export function GalleryList({
 
     // 파일 형식 검사
     if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-      toast.error('파일 형식 오류', 'Excel 파일(.xlsx 또는 .xls)만 업로드 가능합니다.');
+      addToast({
+        title: "파일 형식 오류",
+        description: "Excel 파일(.xlsx 또는 .xls)만 업로드 가능합니다.",
+        color: "danger",
+      });
       return;
     }
 
     setUploading(true);
+    setProgressVisible(true);
+    setUploadProgress(0);
+    setProgressStatus("processing");
 
     try {
       const formData = new FormData();
       formData.append('file', file);
 
+      // FastAPI 엔드포인트로 요청 
       const response = await axios.post(
-        'https://ytuc5hjepdzzvgqeupwg35mxhm0lupwf.lambda-url.ap-northeast-2.on.aws/uploadgallery',
+        'https://3zggqc3igf.execute-api.ap-northeast-2.amazonaws.com/upload-gallery/', 
         formData,
         {
           headers: {
-            'accept': 'application/json',
             'Content-Type': 'multipart/form-data',
           }
         }
       );
 
-      const result = response.data;
+      if (!response.data || !response.data.task_id) {
+        throw new Error('업로드 작업 ID를 받지 못했습니다.');
+      }
 
-      // 업로드 성공 시 성공/실패 건수 표시
-      addToast({
-        title: "갤러리 업로드 결과",
-        description: `총 ${result.total_length}건 중 ${result.success_length}건 성공, ${result.fail_length}건 실패`,
-        color: "success",
-      });
+      const taskId = response.data.task_id;
+      
+      // 폴링 시작
+      let completed = false;
+      while (!completed) {
+        // 0.5초마다 상태 확인
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const statusResponse = await axios.get(`https://3zggqc3igf.execute-api.ap-northeast-2.amazonaws.com/upload-status/${taskId}`);
+        const status = statusResponse.data;
+        
+        // 진행 상황 업데이트
+        setUploadProgress(status.percentage || 0);
+        
+        if (status.completed) {
+          completed = true;
+          setProgressStatus("completed");
+          
+          // 최종 결과 표시
+          addToast({
+            title: "갤러리 업로드 결과",
+            description: `총 ${status.total}건 중 ${status.success_count}건 성공, ${status.failed_count}건 실패`,
+            color: status.success_count > 0 ? "success" : "warning",
+          });
+        }
+      }
       
       // 목록 새로고침
       GetGalleries();
     } catch (error) {
       console.error('파일 업로드 중 오류 발생:', error);
-      toast.error('업로드 오류', '파일 업로드 중 오류가 발생했습니다.');
+      addToast({
+        title: "업로드 오류",
+        description: `파일 업로드 중 오류가 발생했습니다: ${error.message}`,
+        color: "danger",
+      });
+      setProgressStatus("failed");
     } finally {
       setUploading(false);
+      // 5초 후 프로그레스 바 숨기기
+      setTimeout(() => {
+        setProgressVisible(false);
+      }, 5000);
       // 파일 인풋 초기화
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -242,6 +284,18 @@ export function GalleryList({
     }
   };
 
+  // 프로그레스 바의 색상 설정
+  const getProgressColor = () => {
+    switch (progressStatus) {
+      case "success":
+        return "success";
+      case "failed":
+        return "danger";
+      default:
+        return "primary";
+    }
+  };
+
   return (
     <div className="space-y-4 GalleryList">
       <div className="grid grid-cols-4 items-center justify-end gap-4">
@@ -298,6 +352,28 @@ export function GalleryList({
           갤러리 엑셀 업로드 양식
         </Button>
       </div>
+      
+      {progressVisible && (
+        <div className="w-full">
+          <div className="flex justify-between mb-1">
+            <span className="text-sm font-medium">
+              {progressStatus === "completed" 
+                ? "업로드 완료" 
+                : progressStatus === "failed" 
+                  ? "업로드 실패" 
+                  : "업로드 진행 중..."}
+            </span>
+            <span className="text-sm font-medium">{Math.round(uploadProgress)}%</span>
+          </div>
+          <Progress 
+            value={uploadProgress} 
+            color={getProgressColor()}
+            size="md"
+            showValueLabel={false}
+          />
+        </div>
+      )}
+      
       <div className="flex items-center gap-4 w-full">
         <Input
           placeholder="갤러리 검색..."
