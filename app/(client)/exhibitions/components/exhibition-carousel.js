@@ -68,7 +68,7 @@ export default function ExhibitionCarousel({ exhibitions, user, bookmarks, toggl
             </div> */}
           </div>
           <CardBody className="flex flex-col justify-between h-[100px] p-3">
-            <div className="text-[16px] font-bold line-clamp-1">{exhibition.name}</div>
+            <div className="text-[16px] font-bold line-clamp-1">{exhibition.contents}</div>
             <div className="text-[10px]">
               <p className="line-clamp-1 text-[#BDBDBD]">
                 {exhibition.gallery?.address || "주소 정보 없음"}

@@ -57,9 +57,7 @@ export function ExhibitionList({
 
     let query = supabase
       .from("exhibition")
-      .select("*", {
-        count: "exact",
-      })
+      .select("*, naver_gallery_url(*)")
       .order("id", { ascending: false })
       .range(offset, offset + itemsPerPage - 1);
 
@@ -415,18 +413,20 @@ export function ExhibitionList({
           <TableHeader>
             <TableColumn>제목</TableColumn>
             <TableColumn>갤러리</TableColumn>
-            <TableColumn>작가</TableColumn>
+            <TableColumn>시작일</TableColumn>
+            <TableColumn>종료일</TableColumn>
             <TableColumn>URL</TableColumn>
           </TableHeader>
           <TableBody>
             {exhibitions.map((exhibition) => (
               <TableRow key={exhibition.id}>
-                <TableCell>{exhibition.title}</TableCell>
-                <TableCell>{exhibition.gallery_name}</TableCell>
-                <TableCell>{exhibition.artist}</TableCell>
+                <TableCell>{exhibition.contents}</TableCell>
+                <TableCell>{exhibition.naver_gallery_url.name}</TableCell>
+                <TableCell>{exhibition.start_date}</TableCell>
+                <TableCell>{exhibition.end_date}</TableCell>
                 <TableCell>
-                  <Link href={exhibition.naver_gallery_url} target="_blank">
-                    {exhibition.naver_gallery_url}
+                  <Link className="text-blue-500 underline" href={exhibition.naver_gallery_url.url} target="_blank">
+                    {exhibition.naver_gallery_url.url}
                   </Link>
                 </TableCell>
               </TableRow>

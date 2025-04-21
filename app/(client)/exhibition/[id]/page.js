@@ -212,6 +212,26 @@ export default function App() {
     }
   };
 
+  const handleShare = async () => {
+    try {
+      const shareData = {
+        title: exhibition?.contents || '전시회 정보',
+        text: `${exhibition?.gallery?.name} - ${exhibition?.contents}`,
+        url: window.location.href
+      };
+
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Web Share API가 지원되지 않는 경우
+        const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareData.text)}&url=${encodeURIComponent(shareData.url)}`;
+        window.open(shareUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('공유 중 오류 발생:', error);
+    }
+  };
+
   // 더 보기 버튼 클릭 핸들러
   const handleLoadMoreNotices = () => {
     setDisplayedNoticeCount((prev) => prev + 3);
@@ -281,12 +301,11 @@ export default function App() {
                   className="text-lg text-red-500 font-bold " 
                 />
               </div>
-              <div className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center" onClick={toggleBookmark}>
+              <div className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center" onClick={handleShare}>
                 <LuSend 
                   className="text-lg text-white font-bold " 
                 />
               </div>
-              
             </div>
           </div>
 

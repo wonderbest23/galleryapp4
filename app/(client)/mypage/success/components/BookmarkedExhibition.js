@@ -57,9 +57,35 @@ export default function BookmarkedExhibition({ user }) {
               };
             })
         );
+
+        // 북마크된 갤러리 정보를 불러옴
+        const galleriesData = await Promise.all(
+          bookmarkData
+            .filter(bookmark => bookmark.gallery_id) // gallery_id가 null이 아닌 항목만 필터링
+            .map(async (bookmark) => {
+              // supabase에서 갤러리 정보 직접 가져오기
+              const { data: gallery, error: galleryError } = await supabase
+                .from('gallery')
+                .select('*')
+                .eq('id', bookmark.gallery_id)
+                .single();
+                
+              if (galleryError || !gallery) {
+                return null;
+              }
+              
+              return {
+                ...gallery,
+                isBookmarked: true,
+                type: 'gallery'
+              };
+            })
+        );
         
         // null 값 제거 후 상태 업데이트
-        setBookmarkedExhibitions(exhibitionsData.filter(item => item !== null));
+        const validExhibitions = exhibitionsData.filter(item => item !== null);
+        const validGalleries = galleriesData.filter(item => item !== null);
+        setBookmarkedExhibitions([...validExhibitions, ...validGalleries]);
       } catch (error) {
         console.error('북마크 가져오기 오류:', error);
         // 오류 발생 시 빈 배열로 설정
@@ -94,19 +120,19 @@ export default function BookmarkedExhibition({ user }) {
           {bookmarkedExhibitions.length > 0 ? (
             bookmarkedExhibitions.slice(0, displayCount).map((exhibition, index) => (
               <Card key={index} className="w-full">
-                <Link href={`/exhibitions/${exhibition.id}`}>
+                <Link href={`/exhibition/${exhibition.id}`}>
                   <CardBody className="flex gap-4 flex-row justify-center items-center">
                     <img
-                      src={exhibition.photo}
+                      src={exhibition.type === 'gallery' ? exhibition.thumbnail : exhibition.photo}
                       alt={exhibition.title}
-                      className="w-24 h-24 object-cover rounded"
+                      className="w-24 h-24 object-cover rounded flex-shrink-0"
                     />
-                    <div className="flex flex-col w-full">
+                    <div className="flex flex-col w-full min-w-0">
                       <div className="flex flex-row justify-between items-start">
-                        <div className="flex flex-col">
-                          <div className="text-xs ">{exhibition.name}</div>
-                          <div className="text-lg font-bold">
-                            {exhibition.contents}
+                        <div className="flex flex-col min-w-0">
+                          <div className="text-xs text-gray-500">{exhibition.type === 'gallery' ? '갤러리' : '전시회'}</div>
+                          <div className="text-lg font-bold truncate">
+                            {exhibition.type === 'gallery' ? exhibition.name : exhibition.contents}
                           </div>
                         </div>
                         
@@ -117,18 +143,27 @@ export default function BookmarkedExhibition({ user }) {
                         className=" bg-gray-300"
                       />
                       <div className="text-xs flex flex-col my-2">
-                        <div className="flex flex-row gap-1">
-                          <Image src="/exhibition/미니달력.svg" alt="calendar" width={15} height={15} />
-                          {new Date(exhibition.start_date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })} ~ {new Date(exhibition.end_date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                        </div>
-                        <div className="flex flex-row gap-1">
-                          <Image src="/exhibition/미니지도.svg" alt="calendar" width={15} height={15} />
-                          {exhibition.gallery.address}
-                        </div>
-                        <div className="flex flex-row gap-1">
-                          <Image src="/exhibition/미니가격.png" alt="calendar" width={15} height={15} />
-                          {exhibition.price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원
-                        </div>
+                        {exhibition.type === 'gallery' ? (
+                          <div className="flex flex-row gap-1">
+                            <Image src="/exhibition/미니지도.svg" alt="calendar" width={15} height={15} />
+                            {exhibition.address}
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex flex-row gap-1">
+                              <Image src="/exhibition/미니달력.svg" alt="calendar" width={15} height={15} />
+                              {exhibition.start_date?.substring(0,4)}년 {exhibition.start_date?.substring(4,6)}월 {exhibition.start_date?.substring(6,8)}일 ~ {exhibition.end_date?.substring(0,4)}년 {exhibition.end_date?.substring(4,6)}월 {exhibition.end_date?.substring(6,8)}일
+                            </div>
+                            <div className="flex flex-row gap-1">
+                              <Image src="/exhibition/미니지도.svg" alt="calendar" width={15} height={15} />
+                              {exhibition.gallery.address}
+                            </div>
+                            <div className="flex flex-row gap-1">
+                              <Image src="/exhibition/미니가격.png" alt="calendar" width={15} height={15} />
+                              {exhibition.price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </CardBody>

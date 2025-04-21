@@ -397,6 +397,24 @@ export default function App() {
     }
   };
 
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: gallery.name,
+          text: gallery.description,
+          url: window.location.href,
+        });
+      } else {
+        // Web Share API를 지원하지 않는 경우 클립보드에 복사
+        await navigator.clipboard.writeText(window.location.href);
+        alert('링크가 클립보드에 복사되었습니다.');
+      }
+    } catch (error) {
+      console.error('공유하기 실패:', error);
+    }
+  };
+
   console.log("gallery:", gallery);
 
   return (
@@ -440,7 +458,10 @@ export default function App() {
                   className="text-xl text-red-500"
                 />
               </div>
-              <div className="bg-white/80 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center">
+              <div 
+                onClick={handleShare}
+                className="bg-black p-2 rounded-full hover:bg-gray-800 transition-colors"
+              >
                 <LuSend className="text-xl text-white" />
               </div>
             </div>

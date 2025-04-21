@@ -11,7 +11,7 @@ export function GalleryCards({ galleries, user, bookmarks, toggleBookmark, isBoo
   console.log('galleries333', galleries)
   return (
     <>
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-4 w-full">
         {galleries.length === 0 ? (
           <div className="text-center py-10">
             <p className="text-gray-500">검색 결과가 없습니다</p>
@@ -19,9 +19,8 @@ export function GalleryCards({ galleries, user, bookmarks, toggleBookmark, isBoo
         ) : (
           <div className="grid gap-4 w-full justify-center items-center">
             {galleries.map((gallery, index) => (
-              <Card key={index} className="w-full">
-                <Link href={`/galleries/${gallery.id || index + 1}`}>
-                  <CardBody className="flex gap-4 flex-row">
+              <Card onPress={() => router.push(`/gallery/${gallery.id}`)} key={index} className="hover:cursor-pointer w-full">
+                  <CardBody className="flex gap-4 flex-row w-full">
                     <img
                       src={gallery.thumbnail || `https://picsum.photos/200/200?random=${index}`}
                       alt={gallery.name || gallery.title}
@@ -71,7 +70,6 @@ export function GalleryCards({ galleries, user, bookmarks, toggleBookmark, isBoo
                       </div>
                     </div>
                   </CardBody>
-                </Link>
               </Card>
             ))}
           </div>
