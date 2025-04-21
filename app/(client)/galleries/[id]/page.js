@@ -460,10 +460,10 @@ export default function App() {
               </div>
               <div 
                 onClick={handleShare}
-                className="bg-black p-2 rounded-full hover:bg-gray-800 transition-colors"
+                className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center"
               >
-                <LuSend className="text-xl text-white" />
-              </div>
+                <LuSend className="text-lg text-white font-bold " />
+                </div>
             </div>
           </div>
 

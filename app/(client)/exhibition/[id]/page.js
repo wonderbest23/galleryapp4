@@ -10,7 +10,7 @@ import {
   Spinner,
   addToast,
   ToastProvider,
-  Divider
+  Divider,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
@@ -43,7 +43,12 @@ export default function App() {
   const supabase = createClient();
 
   useEffect(() => {
-    if (exhibition !== null && notice !== null && reviews !== null && !isLoading) {
+    if (
+      exhibition !== null &&
+      notice !== null &&
+      reviews !== null &&
+      !isLoading
+    ) {
       setAllDataLoaded(true);
     }
   }, [exhibition, notice, reviews, isLoading]);
@@ -128,23 +133,23 @@ export default function App() {
   const fetchBookmarkStatus = async () => {
     try {
       const { data: user } = await supabase.auth.getUser();
-      
+
       if (user && user.user) {
         const { data: bookmarks, error } = await supabase
-          .from('bookmark')
-          .select('*')
-          .eq('user_id', user.user.id)
-          .eq('exhibition_id', id);
-        
+          .from("bookmark")
+          .select("*")
+          .eq("user_id", user.user.id)
+          .eq("exhibition_id", id);
+
         if (error) {
-          console.error('북마크 정보를 가져오는 중 오류 발생:', error);
+          console.error("북마크 정보를 가져오는 중 오류 발생:", error);
           return;
         }
-        
+
         setIsBookmarked(bookmarks && bookmarks.length > 0);
       }
     } catch (error) {
-      console.error('북마크 상태 확인 중 오류 발생:', error);
+      console.error("북마크 상태 확인 중 오류 발생:", error);
     }
   };
 
@@ -152,56 +157,52 @@ export default function App() {
   const toggleBookmark = async () => {
     try {
       const { data: user } = await supabase.auth.getUser();
-      
+
       if (!user || !user.user) {
         // 로그인이 필요한 경우 처리
-        alert('북마크를 위해 로그인이 필요합니다.');
+        alert("북마크를 위해 로그인이 필요합니다.");
         return;
       }
-      
+
       if (isBookmarked) {
         // 북마크 삭제
         const { error } = await supabase
-          .from('bookmark')
+          .from("bookmark")
           .delete()
-          .eq('user_id', user.user.id)
-          .eq('exhibition_id', id);
-          
+          .eq("user_id", user.user.id)
+          .eq("exhibition_id", id);
+
         if (error) throw error;
-        
+
         // 북마크 해제 토스트 메시지
         addToast({
           title: "북마크 해제",
           description: "북마크가 해제되었습니다.",
           color: "primary",
-          
         });
       } else {
         // 북마크 추가
-        const { error } = await supabase
-          .from('bookmark')
-          .insert({
-            user_id: user.user.id,
-            exhibition_id: id,
-            created_at: new Date().toISOString()
-          });
-          
+        const { error } = await supabase.from("bookmark").insert({
+          user_id: user.user.id,
+          exhibition_id: id,
+          created_at: new Date().toISOString(),
+        });
+
         if (error) throw error;
-        
+
         // 북마크 추가 토스트 메시지
         addToast({
           title: "북마크 설정",
           description: "북마크가 설정되었습니다.",
           color: "success",
-          
         });
       }
-      
+
       // 북마크 상태 변경
       setIsBookmarked(!isBookmarked);
     } catch (error) {
-      console.error('북마크 토글 중 오류 발생:', error);
-      
+      console.error("북마크 토글 중 오류 발생:", error);
+
       // 에러 발생 시 토스트 메시지
       addToast({
         title: "오류 발생",
@@ -215,9 +216,9 @@ export default function App() {
   const handleShare = async () => {
     try {
       const shareData = {
-        title: exhibition?.contents || '전시회 정보',
+        title: exhibition?.contents || "전시회 정보",
         text: `${exhibition?.gallery?.name} - ${exhibition?.contents}`,
-        url: window.location.href
+        url: window.location.href,
       };
 
       if (navigator.share) {
@@ -225,10 +226,10 @@ export default function App() {
       } else {
         // Web Share API가 지원되지 않는 경우
         const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareData.text)}&url=${encodeURIComponent(shareData.url)}`;
-        window.open(shareUrl, '_blank');
+        window.open(shareUrl, "_blank");
       }
     } catch (error) {
-      console.error('공유 중 오류 발생:', error);
+      console.error("공유 중 오류 발생:", error);
     }
   };
 
@@ -295,16 +296,20 @@ export default function App() {
               className="w-full h-full object-cover"
             />
             <div className="absolute bottom-4 right-4 flex gap-2">
-              <div className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center" onClick={toggleBookmark}>
-                <Icon 
-                  icon={isBookmarked ? "mdi:bookmark" : "mdi:bookmark-outline"} 
-                  className="text-lg text-red-500 font-bold " 
+              <div
+                className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center"
+                onClick={toggleBookmark}
+              >
+                <Icon
+                  icon={isBookmarked ? "mdi:bookmark" : "mdi:bookmark-outline"}
+                  className="text-lg text-red-500 font-bold "
                 />
               </div>
-              <div className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center" onClick={handleShare}>
-                <LuSend 
-                  className="text-lg text-white font-bold " 
-                />
+              <div
+                className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center"
+                onClick={handleShare}
+              >
+                <LuSend className="text-lg text-white font-bold " />
               </div>
             </div>
           </div>
@@ -313,13 +318,21 @@ export default function App() {
           <div className="p-4">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="text-[10px] text-[#494949]">{exhibition?.gallery?.name}</h3>
-                <h1 className="text-[20px] font-bold text-[#333333]">{exhibition?.contents}</h1>
-                
+                <h3 className="text-[10px] text-[#494949]">
+                  {exhibition?.gallery?.name}
+                </h3>
+                <h1 className="text-[20px] font-bold text-[#333333]">
+                  {exhibition?.contents}
+                </h1>
+
                 <div className="flex items-center gap-1 mt-1">
                   <div className="flex items-center">
                     {/* <Icon icon="lucide:star" className="text-yellow-400" /> */}
-                    <img src="/exhibition/미니별점.png" alt="별점" className="w-4 h-4" />
+                    <img
+                      src="/exhibition/미니별점.png"
+                      alt="별점"
+                      className="w-4 h-4"
+                    />
                     <span className="ml-1">
                       {exhibition?.review_average?.toFixed(1) || "0.0"}
                     </span>
@@ -334,16 +347,43 @@ export default function App() {
 
             <div className="mt-4 space-y-2 text-sm text-gray-600">
               <div className="flex items-center gap-2">
-                <img src="/exhibition/미니달력.svg" alt="달력" className="w-4 h-4" />
-                <span>{exhibition?.start_date?.replace(/(\d{4})(\d{2})(\d{2})/, "$1년$2월$3일")} ~ {exhibition?.end_date?.replace(/(\d{4})(\d{2})(\d{2})/, "$1년$2월$3일")}</span>
+                <img
+                  src="/exhibition/미니달력.svg"
+                  alt="달력"
+                  className="w-4 h-4"
+                />
+                <span>
+                  {exhibition?.start_date?.replace(
+                    /(\d{4})(\d{2})(\d{2})/,
+                    "$1년$2월$3일"
+                  )}{" "}
+                  ~{" "}
+                  {exhibition?.end_date?.replace(
+                    /(\d{4})(\d{2})(\d{2})/,
+                    "$1년$2월$3일"
+                  )}
+                </span>
               </div>
               <div className="flex items-center gap-2">
-                <img src="/exhibition/미니지도.svg" alt="지도" className="w-4 h-4" />
+                <img
+                  src="/exhibition/미니지도.svg"
+                  alt="지도"
+                  className="w-4 h-4"
+                />
                 <span>{exhibition?.gallery?.address}</span>
               </div>
               <div className="flex items-center gap-2">
-                <img src="/exhibition/미니가격.png" alt="가격" className="w-4 h-4" />
-                <span>{exhibition?.price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원</span>
+                <img
+                  src="/exhibition/미니가격.png"
+                  alt="가격"
+                  className="w-4 h-4"
+                />
+                <span>
+                  {exhibition?.price
+                    ?.toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                  원
+                </span>
               </div>
             </div>
 
@@ -351,7 +391,6 @@ export default function App() {
               target="_blank"
               onPress={() => router.push(exhibition?.homepage_url)}
               className="w-full mt-4 bg-[#004BFE] text-white text-[13px] font-bold"
-              
               size="lg"
             >
               사이트연결
@@ -385,7 +424,7 @@ export default function App() {
               </div>
               <div className="w-1/6"></div>
             </div>
-            
+
             {/* 탭 컨텐츠 */}
             <div className="px-2 w-full">
               {selected === "home" && (
@@ -434,21 +473,23 @@ export default function App() {
               {selected === "reviews" && (
                 <>
                   <div className="flex flex-col items-center gap-2 mx-2">
-                    {reviews.slice(0, displayedReviewCount).map((review, index) => (
-                      <CardReview
-                        review={review}
-                        key={index}
-                        content={review.description}
-                        createdAt={review.created_at}
-                        rating={review.rating}
-                        title={review.title}
-                        user={{
-                          name: review.name,
-                          avatar:
-                            "https://i.pravatar.cc/150?u=a04258114e29026708c",
-                        }}
-                      />
-                    ))}
+                    {reviews
+                      .slice(0, displayedReviewCount)
+                      .map((review, index) => (
+                        <CardReview
+                          review={review}
+                          key={index}
+                          content={review.description}
+                          createdAt={review.created_at}
+                          rating={review.rating}
+                          title={review.title}
+                          user={{
+                            name: review.name,
+                            avatar:
+                              "https://i.pravatar.cc/150?u=a04258114e29026708c",
+                          }}
+                        />
+                      ))}
                   </div>
                   {reviews.length === 0 && (
                     <div className="flex justify-center items-center my-4">
@@ -466,7 +507,8 @@ export default function App() {
                       >
                         <FaPlusCircle className="text-gray-500 text-2xl font-bold" />
                       </Button>
-                    ) : reviews.length > 0 && reviews.length <= displayedReviewCount ? (
+                    ) : reviews.length > 0 &&
+                      reviews.length <= displayedReviewCount ? (
                       <p className="text-gray-500">더 이상 리뷰가 없습니다.</p>
                     ) : null}
                   </div>
