@@ -19,7 +19,7 @@ export function GalleryCards({ galleries, user, bookmarks, toggleBookmark, isBoo
         ) : (
           <div className="grid gap-4 w-full justify-center items-center">
             {galleries.map((gallery, index) => (
-              <Card onPress={() => router.push(`/gallery/${gallery.id}`)} key={index} className="hover:cursor-pointer w-full">
+              <Card shadow="sm" onPress={() => router.push(`/gallery/${gallery.id}`)} key={index} className="hover:cursor-pointer w-full">
                   <CardBody className="flex gap-4 flex-row w-full">
                     <img
                       src={gallery.thumbnail || `https://picsum.photos/200/200?random=${index}`}

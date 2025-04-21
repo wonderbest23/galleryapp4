@@ -98,7 +98,7 @@ export function GallerySlider({ galleries, loading, user, toggleBookmark, isBook
   }, []);
 
   return (
-    <div className="w-full px-4">
+    <div className="w-full">
       {loading ? (
         <div className="flex space-x-4 overflow-x-auto pb-4">
           {Array(5)
@@ -136,8 +136,8 @@ export function GallerySlider({ galleries, loading, user, toggleBookmark, isBook
             </div>
           ) : (
             galleries.map((gallery, index) => (
-              <div key={index} className="flex-shrink-0 w-[200px]">
-                <Card className="w-[200px] h-[240px] overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+              <div key={index} className="flex-shrink-0 w-[200px] pl-1">
+                <Card shadow="sm" className="w-[200px] h-[240px] overflow-hidden transition-shadow">
                   <Link 
                     href={`/galleries/${gallery.id}`}
                     onClick={(e) => {

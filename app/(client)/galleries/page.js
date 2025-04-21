@@ -456,7 +456,7 @@ function GalleryListContent() {
             <div className="w-full grid grid-cols-3 gap-4 mt-6">
               {highRatingGalleries.map((gallery) => (
                 <div key={gallery.id}>
-                  <Link href={`/gallery/${gallery.id}`}>
+                  <Link href={`/galleries/${gallery.id}`}>
                     <img
                       src={gallery.thumbnail || "/placeholder-gallery.jpg"}
                       alt={gallery.name}
