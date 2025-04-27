@@ -62,7 +62,9 @@ export default function page({params}) {
         <Divider orientation="horizontal" className="w-full my-2"/>
         <div className="text-[14px] text-black">
           {/<[a-z][\s\S]*>/i.test(magazine.contents) || magazine.contents?.includes('<') ? (
-            <div dangerouslySetInnerHTML={{ __html: magazine.contents }} />
+            <div dangerouslySetInnerHTML={{ __html: magazine.contents
+              .replace(/Powered by/g, '')
+              .replace(/<a[^>]*froala[^>]*>.*?<\/a>/gi, '') }} />
           ) : (
             magazine.contents
           )}
