@@ -533,14 +533,14 @@ function ExhibitionListContent() {
                       className="w-full h-[100px] aspect-square object-cover rounded-lg"
                     />
                     <div className="text-[14px] font-bold line-clamp-1">
-                      {exhibition.contents || "없음음"}
+                      {exhibition.contents || "없음"}
                     </div>
                     <div className="text-[13px] text-gray-500 flex items-center justify-start flex gap-1">
                       <span className="text-yellow-500">
                         <FaStar className="text-[#007AFF]" />
                       </span>
                       <span>
-                        {exhibition.review_average} ({exhibition.review_count})
+                        {exhibition.review_average || "1.0"} ({exhibition.review_count || 0})
                       </span>
                     </div>
                   </Link>

@@ -108,7 +108,7 @@ export default function App() {
         const enhancedData = {
           ...exhibitionData,
           review_count: exhibitionData.review_count || 0,
-          review_average: exhibitionData.review_average || 0,
+          review_average: exhibitionData.review_average || 1.0,
           review_5_count: exhibitionData.review_5_count || 0,
           review_4_count: exhibitionData.review_4_count || 0,
           review_3_count: exhibitionData.review_3_count || 0,
@@ -302,7 +302,7 @@ export default function App() {
               >
                 <Icon
                   icon={isBookmarked ? "mdi:bookmark" : "mdi:bookmark-outline"}
-                  className="text-lg text-red-500 font-bold "
+                  className="text-lg text-white font-bold "
                 />
               </div>
               <div

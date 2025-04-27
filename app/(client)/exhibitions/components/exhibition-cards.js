@@ -27,7 +27,7 @@ export function ExhibitionCards({
   return (
     <>
       <div className="flex flex-col items-center gap-4 ">
-        <div className="grid gap-4 w-full justify-center items-center">
+        <div className="flex flex-col gap-4 w-full justify-center items-center">
           {exhibitions.map((exhibition, index) => (
             <Card classNames={{body: 'px-2 py-1'}} key={index} className="w-full " shadow="sm">
               <Link href={`/exhibition/${exhibition.id}`}>
@@ -95,7 +95,7 @@ export function ExhibitionCards({
                           alt="미니별점"
                           className="w-4 h-4"
                         />
-                        {exhibition.review_average?.toFixed(1) || "0.0"} (
+                        {exhibition.review_average === 0 ? "1.0" : exhibition.review_average?.toFixed(1) || "1.0"} (
                         {exhibition.review_count || 0})
                       </div>
                     </div>

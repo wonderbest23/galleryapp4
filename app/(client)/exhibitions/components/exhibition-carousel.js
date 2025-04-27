@@ -77,7 +77,7 @@ export default function ExhibitionCarousel({ exhibitions, user, bookmarks, toggl
             <div className="flex text-sm justify-between items-center">
               <div className="rounded-md text-[10px] text-[#BDBDBD]">평균별점</div>
               <div className="flex items-center gap-x-1">
-                <span className="text-[10px] text-[#007AFF]">{exhibition.review_average || "평점 없음"}</span>
+                <span className="text-[10px] text-[#007AFF]">{exhibition.review_average || "1.0"}</span>
                 <FaStar className="text-[#007AFF]" />
               </div>
             </div>
