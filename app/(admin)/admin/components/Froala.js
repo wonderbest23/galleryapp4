@@ -162,7 +162,7 @@ const FroalaEditorComponent = ({
     toolbarSticky: true,
     toolbarStickyOffset: 50,
     toolbarButtons: [
-      ['fontSize', 'textColor', 'insertImage', 'align'],
+      ['bold', 'fontSize', 'textColor', 'insertImage', 'align'],
       ['undo', 'redo']
     ],
     fontSizeSelection: true,
@@ -226,7 +226,7 @@ const FroalaEditorComponent = ({
     },
     // 모바일 환경에서의 설정
     pluginsEnabled: [
-      'colors', 'fontSize', 'image', 'align'
+      'colors', 'fontSize', 'image', 'align', 'bold'
     ],
     // preview 기능 비활성화
     htmlAllowedEmptyTags: ['textarea', 'a', 'iframe', 'object', 'video', 'style', 'script'],
