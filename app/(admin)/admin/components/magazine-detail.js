@@ -494,18 +494,18 @@ export function MagazineDetail({
           )}
         </div>
 
-        <Textarea
+        {/* <Textarea
           label="내용 (텍스트 에디터)"
           value={editedMagazine.contents || ''}
           onValueChange={(value) => setEditedMagazine({...editedMagazine, contents: value})}
           className="md:col-span-2"
           minRows={5}
-        />
+        /> */}
         
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          {/* <label className="block text-sm font-medium text-gray-700 mb-2">
             리치 에디터 (Froala)
-          </label>
+          </label> */}
           <Froala value={content} onChange={handleEditorChange}></Froala>
         </div>
 

@@ -1,104 +1,151 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# 미술미슐랭
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+미술미슐랭은 전시회와 갤러리 정보를 한눈에 볼 수 있는 웹 애플리케이션입니다. 사용자는 전시회와 갤러리를 검색하고, 즐겨찾기에 추가하고, 리뷰를 작성할 수 있습니다.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+## 목차
 
-## Features
+- [프로젝트 소개](#프로젝트-소개)
+- [주요 기능](#주요-기능)
+- [기술 스택](#기술-스택)
+- [프로젝트 구조](#프로젝트-구조)
+- [설치 및 실행 방법](#설치-및-실행-방법)
+- [API 문서](#api-문서)
+- [팀 정보](#팀-정보)
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Middleware
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+## 프로젝트 소개
 
-## Demo
+미술미슐랭은 사용자에게 전국의 다양한 전시회와 갤러리 정보를 제공하는 플랫폼입니다. 모든 전시 및 갤러리 정보를 한 곳에서 편리하게 확인하고, 자신의 관심사에 맞는 전시를 찾아볼 수 있습니다.
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+## 주요 기능
 
-## Deploy to Vercel
+### 사용자 기능
+- **전시회 및 갤러리 검색**: 카테고리별로 전시회와 갤러리를 검색하고 필터링할 수 있습니다.
+- **전시회 정보 조회**: 전시회의 상세 정보, 위치, 날짜, 가격 등을 확인할 수 있습니다.
+- **갤러리 정보 조회**: 갤러리의 상세 정보, 위치, 영업시간, 전화번호 등을 확인할 수 있습니다.
+- **즐겨찾기**: 관심 있는 전시회와 갤러리를 즐겨찾기에 추가할 수 있습니다.
+- **리뷰 작성**: 전시회 및 갤러리에 대한 평가와 리뷰를 작성할 수 있습니다.
+- **매거진**: 아트 관련 정보와 소식을 확인할 수 있습니다.
 
-Vercel deployment will guide you through creating a Supabase account and project.
+### 관리자 기능
+- **전시회 관리**: 전시회 정보를 추가, 수정, 삭제할 수 있습니다.
+- **갤러리 관리**: 갤러리 정보를 추가, 수정, 삭제할 수 있습니다.
+- **배너 관리**: 메인 배너와 이벤트 배너를 관리할 수 있습니다.
+- **추천 전시 및 갤러리 관리**: 메인 페이지에 표시될 추천 전시와 갤러리를 설정할 수 있습니다.
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+## 기술 스택
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+### 프론트엔드
+- **Next.js**: React 기반의 프레임워크로, 서버 사이드 렌더링과 정적 사이트 생성을 지원합니다.
+- **React**: 사용자 인터페이스를 구축하기 위한 JavaScript 라이브러리입니다.
+- **Tailwind CSS**: 유틸리티 우선 CSS 프레임워크로, 빠른 UI 개발을 지원합니다.
+- **HeroUI**: 모던하고 반응형인 UI 컴포넌트 라이브러리입니다.
+- **Framer Motion**: 애니메이션 라이브러리입니다.
+- **Zustand**: 상태 관리 라이브러리입니다.
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+### 백엔드
+- **Supabase**: 오픈 소스 Firebase 대안으로, 데이터베이스, 인증, 스토리지 등의 기능을 제공합니다.
+- **FastAPI**: 파이썬 기반의 고성능 웹 프레임워크로, API 개발에 사용됩니다.
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+### 기타 도구
+- **TypeScript**: JavaScript의 정적 타입 검사를 지원하는 프로그래밍 언어입니다.
+- **Axios**: 브라우저와 Node.js를 위한 Promise 기반 HTTP 클라이언트입니다.
+- **XLSX**: Excel 파일을 처리하기 위한 라이브러리입니다.
+- **Froala Editor**: WYSIWYG 텍스트 에디터입니다.
+- **QRCode.react**: QR 코드 생성 라이브러리입니다.
 
-## Clone and run locally
+## 프로젝트 구조
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+```
+/
+├── app/                      # Next.js 앱 디렉토리
+│   ├── (admin)/              # 관리자 관련 페이지
+│   ├── (client)/             # 클라이언트 관련 페이지
+│   ├── (gallery)/            # 갤러리 관련 페이지
+│   ├── api/                  # API 라우트
+│   └── components/           # 공통 컴포넌트
+├── components/               # 프로젝트 전체 공통 컴포넌트
+├── public/                   # 정적 파일 (이미지, 아이콘 등)
+├── utils/                    # 유틸리티 함수
+├── lib/                      # 라이브러리 및 헬퍼 함수
+├── app.py                    # FastAPI 서버
+├── middleware.ts             # Next.js 미들웨어
+├── tailwind.config.ts        # Tailwind CSS 설정
+└── package.json              # 프로젝트 의존성 및 스크립트
+```
 
-2. Create a Next.js app using the Supabase Starter template npx command
+## 설치 및 실행 방법
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
+### 사전 요구사항
+- Node.js 18.17.0 이상
+- npm 또는 yarn
+- Python 3.8 이상 (FastAPI 서버용)
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
+### 설치 방법
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
+1. 저장소 클론하기:
+```bash
+git clone https://github.com/your-username/gallery_web_app.git
+cd gallery_web_app
+```
 
-3. Use `cd` to change into the app's directory
+2. 의존성 설치:
+```bash
+npm install
+# 또는
+yarn install
+```
 
-   ```bash
-   cd with-supabase-app
-   ```
+3. FastAPI 의존성 설치 (선택적):
+```bash
+pip install -r requirements.txt
+```
 
-4. Rename `.env.example` to `.env.local` and update the following:
+4. 환경 변수 설정:
+`.env.local` 파일을 생성하고 다음 변수를 설정하세요:
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=[INSERT SUPABASE PROJECT API ANON KEY]
-   ```
+### 개발 서버 실행
 
-   Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://app.supabase.com/project/_/settings/api)
+1. Next.js 개발 서버 실행:
+```bash
+npm run dev
+# 또는
+yarn dev
+```
 
-5. You can now run the Next.js local development server:
+2. FastAPI 서버 실행 (선택적):
+```bash
+python app.py
+```
 
-   ```bash
-   npm run dev
-   ```
+### 빌드 및 배포
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+프로덕션용 빌드:
+```bash
+npm run build
+npm run start
+# 또는
+yarn build
+yarn start
+```
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+## API 문서
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+FastAPI 서버가 실행 중일 때 다음 URL에서 API 문서를 확인할 수 있습니다:
+```
+http://localhost:8000/docs
+```
 
-## Feedback and issues
+## 팀 정보
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
-
-## More Supabase examples
-
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+(주) 아트앤브릿지
+- 대표: 박명서
+- 주소: 서울특별시 금천구 가산디지털 1로 19, 16층 1609-엘 04호 (가산동, 대륭테크노타운 18차)
+- 사업자번호: 137-87-03464
+- 통신판매업: 제2024-서울금천-2468호
+- 이메일: rena35200@gmail.com
+- 개인정보보호책임자: 김주홍
+- 고객센터/카카오채널: 미술예술랭
