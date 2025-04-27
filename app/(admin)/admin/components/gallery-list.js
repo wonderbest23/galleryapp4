@@ -57,7 +57,8 @@ export function GalleryList({
     // search 값이 있을 경우 필터 추가
     if (search.trim()) {
       query = query.or(
-        `name.ilike.%${search}%, address.ilike.%${search}%, phone.ilike.%${search}%, url.ilike.%${search}%`
+        // `name.ilike.%${search}%, address.ilike.%${search}%, phone.ilike.%${search}%, url.ilike.%${search}%`
+        `name.ilike.%${search}%`,
       );
     }
 

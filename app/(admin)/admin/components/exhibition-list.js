@@ -64,12 +64,14 @@ export function ExhibitionList({
     // search 값이 있을 경우 필터 추가
     if (search.trim()) {
       query = query.or(
-        `title.ilike.%${search}%, gallery_name.ilike.%${search}%, artist.ilike.%${search}%, naver_gallery_url.ilike.%${search}%`
+        `contents.ilike.%${search}%`,
+        `naver_gallery_url.name.ilike.%${search}%`,
+        `naver_gallery_url.url.ilike.%${search}%`
       );
     }
 
     const { data, error, count } = await query;
-
+    console.log("data:", data)
     if (error) {
       console.error("전시회 데이터 조회 중 오류:", error);
     }
