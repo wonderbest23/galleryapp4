@@ -60,8 +60,12 @@ export default function page({params}) {
         <div className="text-[15px] font-medium text-gray-500">{magazine.subtitle}</div>
         <div className="text-end text-[10px] text-[#494949]">작성일 :{" "}{new Date(magazine.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
         <Divider orientation="horizontal" className="w-full my-2"/>
-        <div className="text-[12px] text-black">
-          {magazine.contents}
+        <div className="text-[14px] text-black">
+          {/<[a-z][\s\S]*>/i.test(magazine.contents) || magazine.contents?.includes('<') ? (
+            <div dangerouslySetInnerHTML={{ __html: magazine.contents }} />
+          ) : (
+            magazine.contents
+          )}
         </div>
       </div>
     </div>

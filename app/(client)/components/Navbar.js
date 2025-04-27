@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import debounce from "lodash/debounce";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+
 export default function Navbar() {
   const supabase = createClient();
   const router = useRouter();
@@ -95,7 +96,8 @@ export default function Navbar() {
           onClick={handleLogoClick}
           src="/logo/logomain.png"
           alt="logo"
-          className="w-[37px] h-[37px] hover:cursor-pointer"
+          className="hover:cursor-pointer w-[40px] h-[40px]"
+          
         />
 
         <Input

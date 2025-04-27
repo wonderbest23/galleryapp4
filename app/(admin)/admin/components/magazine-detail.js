@@ -6,7 +6,7 @@ import { Icon } from "@iconify/react";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from 'uuid';
-
+import Froala from "./Froala";
 export function MagazineDetail({
   magazine,
   onUpdate,
@@ -31,6 +31,19 @@ export function MagazineDetail({
   });
   const [imageUploading, setImageUploading] = React.useState(false);
   const [uploadProgress, setUploadProgress] = React.useState(0);
+  const [content, setContent] = useState(magazine.contents || '');
+  const [froalaLoaded, setFroalaLoaded] = useState(false);
+
+  console.log("Froala 에디터 로딩 상태:", froalaLoaded);
+
+  const handleEditorChange = (model) => {
+    setContent(model);
+    // 편집된 내용을 매거진 데이터에도 반영
+    setEditedMagazine({
+      ...editedMagazine,
+      contents: model
+    });
+  };
   // 이전 매거진 ID를 저장하는 ref
   const prevMagazineIdRef = React.useRef(null);
   const supabase = createClient();
@@ -44,6 +57,14 @@ export function MagazineDetail({
       photos: magazine.photos || magazine.photo || [{ url: "" }],
       contents: magazine.contents || "",
     });
+
+    // Froala 에디터 내용도 함께 업데이트
+    setContent(magazine.contents || "");
+    
+    // 매거진이 변경되면 Froala 로딩 상태 초기화
+    setFroalaLoaded(false);
+    
+    console.log('매거진 변경: ', magazine.id, '내용 길이: ', (magazine.contents || "").length);
 
     // 새 매거진이거나 기존 매거진이든 항상 편집 모드로 설정
     setIsEditing(true);
@@ -136,6 +157,8 @@ export function MagazineDetail({
             color: "success",
           });
           setSelectedMagazine(null);
+          // Froala 에디터 내용 초기화
+          setContent('');
         }
       } else {
         // 기존 매거진 데이터 업데이트
@@ -165,6 +188,8 @@ export function MagazineDetail({
           color: "success",
         });
         setSelectedMagazine(null);
+        // Froala 에디터 내용 초기화
+        setContent('');
       }
 
       // 저장 후 편집 모드 종료
@@ -228,6 +253,8 @@ export function MagazineDetail({
     if (isNewMagazine) {
       // 신규 등록 취소 시 목록으로 돌아가기
       onDelete();
+      // Froala 에디터 내용 초기화
+      setContent('');
     } else {
       // 기존 매거진 수정 취소 시 선택 해제하고 목록으로 돌아가기
       setEditedMagazine({
@@ -236,6 +263,9 @@ export function MagazineDetail({
         photos: magazine.photos || magazine.photo || [{ url: "" }],
         contents: magazine.contents || "",
       });
+      
+      // Froala 에디터 내용 원래 값으로 복원
+      setContent(magazine.contents || "");
       
       // 선택된 매거진 초기화
       if (typeof setSelectedMagazine === 'function') {
@@ -465,12 +495,22 @@ export function MagazineDetail({
         </div>
 
         <Textarea
-          label="내용"
+          label="내용 (텍스트 에디터)"
           value={editedMagazine.contents || ''}
           onValueChange={(value) => setEditedMagazine({...editedMagazine, contents: value})}
           className="md:col-span-2"
           minRows={5}
         />
+        
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            리치 에디터 (Froala)
+          </label>
+          <Froala value={content} onChange={handleEditorChange}></Froala>
+        </div>
+
+
+        
       </div>
     </div>
   );

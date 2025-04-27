@@ -262,11 +262,10 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
                         />
                         <div className="text-xs flex flex-col my-2 w-full">
                           <div className="flex flex-row gap-1">
-                            <Image
+                            <img
                               src="/exhibitioncard/미니달력.svg"
                               alt="미니달력"
-                              width={15}
-                              height={15}
+                              className="w-[15px] h-[15px]"
                             />
                             <span className="text-[10px]">
                               {exhibition.start_date?.replace(
@@ -281,11 +280,10 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
                             </span>
                           </div>
                           <div className="flex flex-row gap-1">
-                            <Image
+                            <img
                               src="/exhibitioncard/미니가격.png"
-                              alt="미니달력"
-                              width={15}
-                              height={15}
+                              alt="미니가격"
+                              className="w-[15px] h-[15px]"
                             />
                             <span className="text-[10px]">
                               {exhibition.price
@@ -300,7 +298,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
                       {/* 북마크 아이콘을 카드 우측 하단으로 이동 */}
                       <div className="absolute top-2 right-2">
                         <div
-                          className="bg-[#606060]/60 rounded-3xl p-1"
+                          className="bg-[#eee] rounded-3xl p-1"
                           onClick={(e) => toggleBookmark(e, exhibition)}
                         >
                           {isBookmarked(exhibition.id) ? (

@@ -23,7 +23,7 @@ import {
   ModalFooter,
 } from "@heroui/react";
 import { createClient } from "@/utils/supabase/client";
-
+import {debounce} from 'lodash'
 export default function GalleryFeatureManager() {
   // 상태 관리
   const [galleries, setGalleries] = useState([]);
@@ -40,7 +40,7 @@ export default function GalleryFeatureManager() {
   const supabase = createClient();
 
   // 데이터 가져오기
-  const fetchGalleries = async () => {
+  const fetchGalleries = debounce(async () => {
     setIsLoading(true);
     try {
       const start = (currentPage - 1) * itemsPerPage;
@@ -54,7 +54,7 @@ export default function GalleryFeatureManager() {
         .order('created_at', { ascending: false });
 
       if (searchTerm) {
-        query = query.ilike('title', `%${searchTerm}%`);
+        query = query.ilike('name', `%${searchTerm}%`);
       }
 
       const { data, error, count } = await query;
@@ -68,7 +68,7 @@ export default function GalleryFeatureManager() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, 500);
 
   // 검색어 변경 시
   const handleSearchChange = (e) => {

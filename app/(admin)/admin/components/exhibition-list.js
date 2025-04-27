@@ -57,7 +57,7 @@ export function ExhibitionList({
 
     let query = supabase
       .from("exhibition")
-      .select("*, naver_gallery_url(*)")
+      .select("*, naver_gallery_url(*)", { count: 'exact' })
       .order("id", { ascending: false })
       .range(offset, offset + itemsPerPage - 1);
 
@@ -73,6 +73,7 @@ export function ExhibitionList({
     if (error) {
       console.error("전시회 데이터 조회 중 오류:", error);
     }
+    console.log('count:', count)
     console.log(
       "전시회 데이터 조회 결과:",
       data?.length,

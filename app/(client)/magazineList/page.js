@@ -74,7 +74,7 @@ export default function MagazineList() {
           </div>
           <div className="w-full flex flex-col gap-4 justify-center items-center">
             {magazines.slice(0, visibleCount).map((item, index) => (
-              <React.Fragment className="" key={item.id}>
+              <React.Fragment key={item.id}>
                 <div className="w-[90%] hover:cursor-pointer" onClick={() => router.push(`/magazine/${item.id}`)}>
                   <div
                     className="w-full mt-6"

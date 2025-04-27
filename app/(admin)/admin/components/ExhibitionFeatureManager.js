@@ -27,7 +27,7 @@ import {
 import { createClient } from "@/utils/supabase/client";
 import { Icon } from "@iconify/react";
 import { v4 as uuidv4 } from 'uuid';
-
+import {debounce} from 'lodash'
 export default function ExhibitionFeatureManager() {
   // 상태 관리
   const [exhibitions, setExhibitions] = useState([]);
@@ -90,6 +90,19 @@ export default function ExhibitionFeatureManager() {
     setSearchTerm(e.target.value);
     setCurrentPage(1); // 검색어 변경 시 첫 페이지로 이동
   };
+
+  // debounce된 검색 함수
+  const debouncedSearch = debounce(() => {
+    fetchExhibitions();
+  }, 500);
+
+  // 데이터 초기 로드 및 검색어/페이지 변경 시 다시 로드
+  useEffect(() => {
+    debouncedSearch();
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [searchTerm, currentPage]);
 
   // 페이지 변경 시
   const handlePageChange = (page) => {
@@ -279,11 +292,6 @@ export default function ExhibitionFeatureManager() {
       setIsLoading(false);
     }
   };
-
-  // 데이터 초기 로드 및 검색어/페이지 변경 시 다시 로드
-  useEffect(() => {
-    fetchExhibitions();
-  }, [searchTerm, currentPage]);
 
   return (
     <Card

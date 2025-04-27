@@ -60,6 +60,7 @@ function GalleryListContent() {
           .from("gallery")
           .select("*")
           .order("blog_review_count", { ascending: false })
+          .eq('isRecommended', true)
           .limit(10);
         
         const { data, error } = await query;
@@ -450,7 +451,7 @@ function GalleryListContent() {
           />
           <div className="w-[90%] flex flex-col justify-center items-center mb-24">
             <div className="w-full flex justify-between items-center">
-              <h1 className="text-[18px] font-bold">별점높은순</h1>
+              <h1 className="text-[18px] font-bold">예술랭픽</h1>
             </div>
 
             <div className="w-full grid grid-cols-3 gap-4 mt-6">

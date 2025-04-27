@@ -10,14 +10,14 @@ import Link from "next/link";
 export function GalleryCards({ galleries, user, bookmarks, toggleBookmark, isBookmarked }) {
   console.log('galleries333', galleries)
   return (
-    <>
+    <div className="w-full">
       <div className="flex flex-col items-center gap-4 w-full">
         {galleries.length === 0 ? (
           <div className="text-center py-10">
             <p className="text-gray-500">검색 결과가 없습니다</p>
           </div>
         ) : (
-          <div className="grid gap-4 w-full justify-center items-center">
+          <div className="flex flex-col gap-4 justify-center items-center w-full">
             {galleries.map((gallery, index) => (
               <Card shadow="sm" onPress={() => router.push(`/gallery/${gallery.id}`)} key={index} className="hover:cursor-pointer w-full">
                   <CardBody className="flex gap-4 flex-row w-full">
@@ -75,6 +75,6 @@ export function GalleryCards({ galleries, user, bookmarks, toggleBookmark, isBoo
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

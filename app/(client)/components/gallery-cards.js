@@ -286,7 +286,7 @@ export default function GalleryCards({ selectedTab, user }) {
               <div className=" rounded-md text-[10px] text-[#BDBDBD] ">평균별점</div>
               <div className="flex items-center gap-x-1">
                 
-                <span className="text-[10px] text-[#007AFF]">{gallery.visitor_rating || "평점 없음"}</span>
+                <span className="text-[10px] text-[#007AFF]">{gallery.visitor_rating || "1.0"}</span>
                 <FaStar className="text-[#007AFF] " />
               </div>
             </div>

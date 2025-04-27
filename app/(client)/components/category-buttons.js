@@ -35,7 +35,7 @@ export function CategoryButtons() {
     <div className="flex flex-row gap-2 px-4 w-full justify-evenly items-center">
       <Link href="/exhibitions">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
-          <Image src="/buttons/샘플.svg" width={32} height={32} alt="전시회"  />
+          <img src="/buttons/샘플.svg" className="w-[32px] h-[32px]" alt="전시회" quality={100}  />
         </div>
         <div className="flex w-full justify-center items-center mt-2">
           <span className="text-[10px] font-bold">전시회</span>
@@ -43,7 +43,7 @@ export function CategoryButtons() {
       </Link>
       <Link href="/galleries">
       <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
-          <Image src="/buttons/갤러리.svg" width={32} height={32} alt="갤러리" />
+          <img src="/buttons/갤러리.svg" className="w-[32px] h-[32px]" alt="갤러리" quality={100} />
         </div>
         <div className="flex w-full justify-center items-center mt-2">
           <span className="text-[10px] font-bold">갤러리</span>
@@ -51,7 +51,7 @@ export function CategoryButtons() {
       </Link>
       <Link href="/magazineList">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
-          <Image src="/buttons/매거진.svg" width={32} height={32} alt="매거진" />
+          <img src="/buttons/매거진.svg" className="w-[32px] h-[32px]" alt="매거진" quality={100} />
         </div>
         <div className="flex w-full justify-center items-center mt-2">
           <span className="text-[10px] font-bold">매거진</span>
@@ -59,7 +59,7 @@ export function CategoryButtons() {
       </Link>
       <Link href="/eventList">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
-          <Image src="/buttons/이벤트.svg" width={32} height={32} alt="이벤트" />
+          <img src="/buttons/이벤트.svg" className="w-[32px] h-[32px]" alt="이벤트" quality={100} />
         </div>
         <div className="flex w-full justify-center items-center mt-2">
           <span className="text-[10px] font-bold">이벤트</span>
@@ -67,7 +67,7 @@ export function CategoryButtons() {
       </Link>
       <Link href="/cooperationList">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
-          <Image src="/buttons/제휴.svg" width={32} height={32} alt="제휴" />
+          <img src="/buttons/제휴.svg" className="w-[32px] h-[32px]" alt="제휴" quality={100} />
         </div>
         <div className="flex w-full justify-center items-center mt-2">
           <span className="text-[10px] font-bold">제휴</span>
