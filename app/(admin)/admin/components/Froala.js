@@ -47,10 +47,18 @@ const FroalaEditorComponent = ({
   imageUploadURL = null,
   imageUploadParams = {},
   imageUploadMethod = 'POST',
-  events = {}
+  events = {},
+  onSave = null // 저장 콜백 추가
 }) => {
   const [editorContent, setEditorContent] = useState(value || '');
+  const [uploadedImages, setUploadedImages] = useState([]); // 업로드된 이미지 목록 추적
+  const [isMounted, setIsMounted] = useState(false); // 클라이언트 측 렌더링 확인용
   const editorRef = useRef(null);
+
+  // 클라이언트 측 렌더링 확인
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     setEditorContent(value || '');
@@ -74,7 +82,7 @@ const FroalaEditorComponent = ({
       
       // Supabase에 업로드
       const { data, error } = await supabase.storage
-        .from('notification')
+        .from('magazine')
         .upload(uniqueFileName, file);
 
       if (error) {
@@ -82,8 +90,16 @@ const FroalaEditorComponent = ({
         return null;
       }
       
-      const publicURL = "https://efehwvtyjlpxkpgswrfw.supabase.co/storage/v1/object/public/"+data.fullPath;
+      const publicURL = "https://teaelrzxuigiocnukwha.supabase.co/storage/v1/object/public/magazine/"+data.path;
       console.log('Image uploaded successfully. URL:', publicURL);
+      
+      // 업로드된 이미지 정보 추적
+      setUploadedImages(prev => [...prev, {
+        originalName: file.name,
+        storagePath: data.path,
+        publicURL: publicURL,
+        uploadedAt: new Date().toISOString()
+      }]);
       
       return publicURL;
     } catch (error) {
@@ -92,67 +108,199 @@ const FroalaEditorComponent = ({
     }
   };
 
-  // 이미지 업로드 핸들러 설정
-  useEffect(() => {
-    let isImageBeingUploaded = false;
-
-    const setupEditor = () => {
-      if (editorRef.current && editorRef.current.editor) {
-        const editor = editorRef.current.editor;
+  // Base64 이미지 추출 및 업로드 함수
+  const extractAndUploadImages = async (htmlContent) => {
+    if (!htmlContent || !isMounted) return htmlContent;
+    
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlContent, 'text/html');
+      const imgTags = doc.querySelectorAll('img');
+      
+      if (!imgTags || imgTags.length === 0) return htmlContent;
+      
+      // 모든 이미지 태그를 처리
+      const uploadPromises = Array.from(imgTags).map(async (img) => {
+        const imgSrc = img.getAttribute('src');
+        if (!imgSrc) return { original: '', uploaded: '' };
         
-        // 이미지 업로드 커스텀 핸들러 등록
-        editor.events.on('image.beforeUpload', async function(images) {
-          // 이미 업로드 중이면 중복 방지
-          if (isImageBeingUploaded) return false;
-          
-          isImageBeingUploaded = true;
-          
+        // 이미 업로드된 이미지인지 확인 (URL이 Supabase를 가리키는지)
+        if (imgSrc.includes('teaelrzxuigiocnukwha.supabase.co')) {
+          return { original: imgSrc, uploaded: imgSrc };
+        }
+        
+        // Base64 이미지인지 확인
+        if (imgSrc.startsWith('data:image')) {
           try {
-            // 각 이미지를 Supabase에 업로드
-            for (let i = 0; i < images.length; i++) {
-              const file = images[i];
-              const imageUrl = await uploadImageToSupabase(file);
-              
-              if (imageUrl) {
-                // 업로드된 이미지 URL을 에디터에 삽입
-                editor.image.insert(imageUrl, null, null, editor.image.get());
-              }
+            // Base64를 파일로 변환
+            const res = await fetch(imgSrc);
+            const blob = await res.blob();
+            const fileExtension = imgSrc.split(';')[0].split('/')[1] || 'png';
+            const file = new File([blob], `image-${Date.now()}.${fileExtension}`, { type: `image/${fileExtension}` });
+            
+            // Supabase에 업로드
+            const uploadedUrl = await uploadImageToSupabase(file);
+            if (uploadedUrl) {
+              return { original: imgSrc, uploaded: uploadedUrl };
             }
           } catch (error) {
-            console.error('이미지 업로드 중 오류 발생:', error);
-          } finally {
-            isImageBeingUploaded = false;
+            console.error('Base64 이미지 처리 중 오류:', error);
           }
-          
-          // 기본 업로드 방식 중단
-          return false;
-        });
+        }
+        
+        return { original: imgSrc, uploaded: imgSrc };
+      });
+      
+      // 모든 업로드 완료 대기
+      const results = await Promise.all(uploadPromises);
+      
+      // 이미지 URL 대체
+      results.forEach(({ original, uploaded }) => {
+        if (original && uploaded && original !== uploaded) {
+          Array.from(imgTags).forEach(img => {
+            if (img.getAttribute('src') === original) {
+              img.setAttribute('src', uploaded);
+            }
+          });
+        }
+      });
+      
+      return doc.body.innerHTML;
+    } catch (error) {
+      console.error('이미지 추출/업로드 중 오류:', error);
+      return htmlContent; // 오류 발생 시 원본 내용 반환
+    }
+  };
 
-        // 이미지 삽입 방지 (중복 방지)
-        editor.events.on('image.uploaded', function(response) {
-          // 이미 커스텀 핸들러에서 이미지를 삽입했으므로 여기서는 아무것도 하지 않음
-          return false;
-        });
-
-        // 이미지 업로드 에러 처리
-        editor.events.on('image.error', function(error, response) {
-          console.error('Froala 이미지 업로드 에러:', error, response);
-          isImageBeingUploaded = false;
-        });
+  // 콘텐츠 저장 전 이미지 처리 함수
+  const processContentBeforeSave = async () => {
+    if (!editorContent || !isMounted) return { content: "", images: [] };
+    
+    try {
+      // 현재 에디터 콘텐츠에서 이미지 추출 및 업로드
+      const processedContent = await extractAndUploadImages(editorContent);
+      
+      // 처리된 콘텐츠 업데이트
+      setEditorContent(processedContent);
+      if (onChange) {
+        onChange(processedContent);
       }
+      
+      return {
+        content: processedContent,
+        images: uploadedImages
+      };
+    } catch (error) {
+      console.error('콘텐츠 처리 중 오류:', error);
+      return {
+        content: editorContent,
+        images: uploadedImages
+      };
+    }
+  };
+
+  // 이미지 업로드 핸들러 설정
+  useEffect(() => {
+    if (!isMounted) return; // 마운트되지 않았으면 이벤트 설정 건너뛰기
+    
+    let isImageBeingUploaded = false;
+    let editorInitialized = false;
+
+    const setupEditor = () => {
+      if (!editorRef.current || !editorRef.current.editor) {
+        // 에디터가 아직 초기화되지 않았으면 재시도
+        setTimeout(setupEditor, 100);
+        return;
+      }
+
+      // 이미 초기화된 경우 중복 실행 방지
+      if (editorInitialized) return;
+      editorInitialized = true;
+
+      const editor = editorRef.current.editor;
+      
+      // 이미지 업로드 커스텀 핸들러 등록
+      editor.events.on('image.beforeUpload', async function(images) {
+        // 이미 업로드 중이면 중복 방지
+        if (isImageBeingUploaded) return false;
+        
+        isImageBeingUploaded = true;
+        
+        try {
+          // 각 이미지를 Supabase에 업로드
+          for (let i = 0; i < images.length; i++) {
+            const file = images[i];
+            const imageUrl = await uploadImageToSupabase(file);
+            
+            if (imageUrl) {
+              // 업로드된 이미지 URL을 에디터에 삽입
+              editor.image.insert(imageUrl, null, null, editor.image.get());
+            }
+          }
+        } catch (error) {
+          console.error('이미지 업로드 중 오류 발생:', error);
+        } finally {
+          isImageBeingUploaded = false;
+        }
+        
+        // 기본 업로드 방식 중단
+        return false;
+      });
+
+      // 이미지 삽입 방지 (중복 방지)
+      editor.events.on('image.uploaded', function(response) {
+        // 이미 커스텀 핸들러에서 이미지를 삽입했으므로 여기서는 아무것도 하지 않음
+        return false;
+      });
+
+      // 이미지 업로드 에러 처리
+      editor.events.on('image.error', function(error, response) {
+        console.error('Froala 이미지 업로드 에러:', error, response);
+        isImageBeingUploaded = false;
+      });
+      
+      // 붙여넣기 이벤트 처리 (클립보드 이미지 처리)
+      editor.events.on('paste.beforeCleanup', function(clipboard_html) {
+        return clipboard_html;
+      });
+      
+      // 이미지 붙여넣기 후 처리
+      editor.events.on('paste.after', function() {
+        // 안전하게 HTML 가져오기 위해 타임아웃 사용 및 에디터/HTML 존재 여부 확인
+        setTimeout(async () => {
+          if (editorRef.current && editorRef.current.editor && editorRef.current.editor.html) {
+            try {
+              const currentContent = editor.html.get();
+              const processedContent = await extractAndUploadImages(currentContent);
+              if (currentContent !== processedContent) {
+                editor.html.set(processedContent);
+              }
+            } catch (error) {
+              console.error('붙여넣기 후 이미지 처리 중 오류:', error);
+            }
+          }
+        }, 300);
+      });
     };
     
     // 에디터가 초기화된 후에 이벤트 핸들러 설정
-    setTimeout(setupEditor, 100);
+    // 더 긴 타임아웃으로 변경하여 에디터가 완전히 초기화될 시간 확보
+    setTimeout(setupEditor, 500);
     
     return () => {
       if (editorRef.current && editorRef.current.editor) {
-        editorRef.current.editor.events.off('image.beforeUpload');
-        editorRef.current.editor.events.off('image.uploaded');
-        editorRef.current.editor.events.off('image.error');
+        try {
+          editorRef.current.editor.events.off('image.beforeUpload');
+          editorRef.current.editor.events.off('image.uploaded');
+          editorRef.current.editor.events.off('image.error');
+          editorRef.current.editor.events.off('paste.beforeCleanup');
+          editorRef.current.editor.events.off('paste.after');
+        } catch (error) {
+          console.error('에디터 이벤트 해제 중 오류:', error);
+        }
       }
     };
-  }, []);
+  }, [isMounted]); // isMounted 의존성 추가
 
   // 에디터 설정
   const config = {
@@ -174,11 +322,13 @@ const FroalaEditorComponent = ({
     imageUploadMethod: 'POST',
     imageMaxSize: 5 * 1024 * 1024, // 5MB
     imageAllowedTypes: ['jpeg', 'jpg', 'png', 'gif', 'webp'],
+    // 붙여넣기 이미지 처리 활성화
+    pastePlain: false,
+    pasteAllowedStyleProps: ['font-family', 'font-size', 'color', 'text-align', 'background-color'],
+    imagePaste: true,
+    imageDefaultWidth: 0, // 원본 크기 유지
     // 이미지 업로드 파라미터 설정
-    imageUploadParams: {
-      ...imageUploadParams,
-      // 추가 파라미터가 필요하면 여기에 설정
-    },
+    imageUploadParams: {},
     // 이미지 업로드 관련 추가 설정
     imageInsertButtons: ['imageUpload'], // 이미지 삽입 버튼 설정
     
@@ -208,11 +358,15 @@ const FroalaEditorComponent = ({
         
         // 워터마크 요소 제거
         setTimeout(() => {
-          const watermarkElements = document.querySelectorAll('.fr-wrapper::before, .fr-wrapper::after, .fr-second-toolbar');
-          watermarkElements.forEach(el => {
-            if (el) el.style.display = 'none';
-          });
-        }, 100);
+          try {
+            const watermarkElements = document.querySelectorAll('.fr-wrapper::before, .fr-wrapper::after, .fr-second-toolbar');
+            watermarkElements.forEach(el => {
+              if (el) el.style.display = 'none';
+            });
+          } catch (error) {
+            console.error('워터마크 제거 중 오류:', error);
+          }
+        }, 300);
       },
       'focus': function() {
         // 에디터에 포커스가 갔을 때 실행할 코드
@@ -247,14 +401,64 @@ const FroalaEditorComponent = ({
     licenseKey: 'X-XXXXXXXXXXX-XXXXXXXXX',
   };
 
+  // 콘텐츠 저장 함수 노출
+  useEffect(() => {
+    // 부모 컴포넌트에서 접근할 수 있도록 저장 함수 노출
+    if (onSave) {
+      onSave.current = async () => {
+        try {
+          return await processContentBeforeSave();
+        } catch (error) {
+          console.error('저장 전 처리 중 오류:', error);
+          return {
+            content: editorContent,
+            images: uploadedImages
+          };
+        }
+      };
+    }
+  }, [editorContent, uploadedImages, onSave]);
+
+  // 클라이언트 측 렌더링에서만 에디터 표시
+  if (!isMounted) {
+    return <div className="froala-editor-loading">에디터 준비 중...</div>;
+  }
+
   return (
-    <div className="froala-editor-container" >
+    <div className="froala-editor-container">
       <FroalaEditor
         ref={editorRef}
         tag='textarea'
         model={editorContent}
         onModelChange={handleModelChange}
-        config={config}
+        config={{
+          ...config,
+          key: 'X-XXXXXXXXXXX-XXXXXXXXX', // Froala 라이센스 키
+          attribution: false,
+          heightMin: height,
+          heightMax: 800,
+          toolbarSticky: true,
+          toolbarStickyOffset: 50,
+          placeholderText: placeholder,
+          // 이벤트 핸들러는 setupEditor에서 구성하므로 여기서는 최소화
+          events: {
+            'initialized': function() {
+              // 워터마크 요소 제거
+              setTimeout(() => {
+                try {
+                  const watermarkElements = document.querySelectorAll('.fr-wrapper::before, .fr-wrapper::after, .fr-second-toolbar');
+                  watermarkElements.forEach(el => {
+                    if (el) el.style.display = 'none';
+                  });
+                } catch (error) {
+                  console.error('워터마크 제거 중 오류:', error);
+                }
+              }, 300);
+              
+              if (events.initialized) events.initialized();
+            }
+          }
+        }}
       />
       <style jsx>{`
         :global(.fr-box) {
@@ -300,6 +504,19 @@ const FroalaEditorComponent = ({
         :global(.fr-wrapper::after),
         :global(.fr-second-toolbar) {
           display: none !important;
+        }
+        .froala-editor-loading {
+          padding: 20px;
+          background-color: #f8f9fa;
+          border-radius: 8px;
+          text-align: center;
+          color: #6c757d;
+          height: ${height}px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+          border: 1px solid #ced4da;
         }
       `}</style>
     </div>
