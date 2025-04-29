@@ -17,6 +17,7 @@ const StatCard = ({ title, value, icon, color }) => (
   </div>
 );
 
+
 // 갤러리 미리보기 컴포넌트
 const GalleryPreview = ({ gallery }) => {
   if (!gallery) return null;
