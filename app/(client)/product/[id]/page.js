@@ -26,6 +26,8 @@ import { LuSend } from "react-icons/lu";
 import { Divider } from "@heroui/react";
 import Image from "next/image";
 import { cn } from "@/utils/cn";
+import { LuWallet } from "react-icons/lu";
+import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 
 // 리뷰 컴포넌트 추가
 const Review = React.forwardRef(
@@ -100,6 +102,22 @@ export default function App() {
   const { id } = useParams();
   const supabase = createClient();
 
+  // 캐러셀 관련 상태 추가
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  // 마우스 드래그 관련 상태 추가
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartX, setDragStartX] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  // 임시 이미지 배열
+  const demoImages = [
+    "https://picsum.photos/800/400?random=1",
+    "https://picsum.photos/800/400?random=2",
+    "https://picsum.photos/800/400?random=3",
+    "https://picsum.photos/800/400?random=4",
+  ];
+
   const [gallery, setGallery] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [notificationPage, setNotificationPage] = useState(1);
@@ -132,13 +150,13 @@ export default function App() {
           .single();
 
         if (error) {
-          console.error("Error fetching gallery:", error);
+          console.log("Error fetching gallery:", error);
         } else {
           setGallery(data);
         }
         setDataLoaded((prev) => ({ ...prev, gallery: true }));
       } catch (error) {
-        console.error("갤러리 불러오기 중 오류 발생:", error);
+        console.log("갤러리 불러오기 중 오류 발생:", error);
         setDataLoaded((prev) => ({ ...prev, gallery: true }));
       }
     };
@@ -158,14 +176,14 @@ export default function App() {
             .eq("gallery_id", id);
 
           if (error) {
-            console.error("북마크 정보를 가져오는 중 오류 발생:", error);
+            console.log("북마크 정보를 가져오는 중 오류 발생:", error);
           } else {
             setIsBookmarked(bookmarks && bookmarks.length > 0);
           }
         }
         setDataLoaded((prev) => ({ ...prev, bookmark: true }));
       } catch (error) {
-        console.error("북마크 상태 확인 중 오류 발생:", error);
+        console.log("북마크 상태 확인 중 오류 발생:", error);
         setDataLoaded((prev) => ({ ...prev, bookmark: true }));
       }
     };
@@ -183,7 +201,7 @@ export default function App() {
           .range(0, notificationsPerPage - 1);
 
         if (error) {
-          console.error("알림 불러오기 오류:", error);
+          console.log("알림 불러오기 오류:", error);
         } else {
           if (data.length < notificationsPerPage) {
             setHasMoreNotifications(false);
@@ -192,7 +210,7 @@ export default function App() {
         }
         setDataLoaded((prev) => ({ ...prev, notifications: true }));
       } catch (error) {
-        console.error("알림 불러오기 중 오류 발생:", error);
+        console.log("알림 불러오기 중 오류 발생:", error);
         setDataLoaded((prev) => ({ ...prev, notifications: true }));
       }
     };
@@ -210,7 +228,7 @@ export default function App() {
           .range(0, reviewsPerPage - 1);
 
         if (error) {
-          console.error("리뷰 불러오기 오류:", error);
+          console.log("리뷰 불러오기 오류:", error);
         } else {
           if (data.length < reviewsPerPage) {
             setHasMoreReviews(false);
@@ -222,7 +240,7 @@ export default function App() {
         await calculateReviewStats();
         setDataLoaded((prev) => ({ ...prev, reviews: true }));
       } catch (error) {
-        console.error("리뷰 불러오기 중 오류 발생:", error);
+        console.log("리뷰 불러오기 중 오류 발생:", error);
         setDataLoaded((prev) => ({ ...prev, reviews: true }));
       }
     };
@@ -249,7 +267,7 @@ export default function App() {
         .eq("gallery_id", id);
 
       if (error) {
-        console.error("리뷰 통계 불러오기 오류:", error);
+        console.log("리뷰 통계 불러오기 오류:", error);
         return;
       }
 
@@ -275,7 +293,7 @@ export default function App() {
         oneStars,
       });
     } catch (error) {
-      console.error("리뷰 통계 계산 중 오류 발생:", error);
+      console.log("리뷰 통계 계산 중 오류 발생:", error);
     }
   };
 
@@ -293,7 +311,7 @@ export default function App() {
         .range(start, end);
 
       if (error) {
-        console.error("추가 알림 불러오기 오류:", error);
+        console.log("추가 알림 불러오기 오류:", error);
         return;
       }
 
@@ -304,7 +322,7 @@ export default function App() {
       setNotifications((prev) => [...prev, ...data]);
       setNotificationPage(nextPage);
     } catch (error) {
-      console.error("추가 알림 불러오기 중 오류 발생:", error);
+      console.log("추가 알림 불러오기 중 오류 발생:", error);
     }
   };
 
@@ -322,7 +340,7 @@ export default function App() {
         .range(start, end);
 
       if (error) {
-        console.error("추가 리뷰 불러오기 오류:", error);
+        console.log("추가 리뷰 불러오기 오류:", error);
         return;
       }
 
@@ -333,86 +351,108 @@ export default function App() {
       setReviews((prev) => [...prev, ...data]);
       setReviewPage(nextPage);
     } catch (error) {
-      console.error("추가 리뷰 불러오기 중 오류 발생:", error);
+      console.log("추가 리뷰 불러오기 중 오류 발생:", error);
     }
   };
 
-  // 북마크 토글 함수
-  const toggleBookmark = async () => {
-    try {
-      const { data: user } = await supabase.auth.getUser();
-
-      if (!user || !user.user) {
-        // 로그인이 필요한 경우 처리
-        alert("북마크를 위해 로그인이 필요합니다.");
-        return;
-      }
-
-      if (isBookmarked) {
-        // 북마크 삭제
-        const { error } = await supabase
-          .from("bookmark")
-          .delete()
-          .eq("user_id", user.user.id)
-          .eq("gallery_id", id);
-
-        if (error) throw error;
-
-        // 북마크 해제 토스트 메시지
-        addToast({
-          title: "북마크 해제",
-          description: "북마크가 해제되었습니다.",
-          color: "primary",
-        });
-      } else {
-        // 북마크 추가
-        const { error } = await supabase.from("bookmark").insert({
-          user_id: user.user.id,
-          gallery_id: id,
-          created_at: new Date().toISOString(),
-        });
-
-        if (error) throw error;
-
-        // 북마크 추가 토스트 메시지
-        addToast({
-          title: "북마크 설정",
-          description: "북마크가 설정되었습니다.",
-          color: "success",
-        });
-      }
-
-      // 북마크 상태 변경
-      setIsBookmarked(!isBookmarked);
-    } catch (error) {
-      console.error("북마크 토글 중 오류 발생:", error);
-
-      // 에러 발생 시 토스트 메시지
-      addToast({
-        title: "오류 발생",
-        description: "북마크 처리 중 오류가 발생했습니다.",
-        color: "danger",
-        icon: <Icon icon="mdi:alert-circle" />,
-      });
+  // 자동 슬라이딩을 위한 타이머 설정
+  useEffect(() => {
+    let intervalId;
+    
+    if (demoImages.length > 0 && !isPaused) {
+      intervalId = setInterval(() => {
+        setCurrentSlide((prev) => (prev === demoImages.length - 1 ? 0 : prev + 1));
+      }, 3000); // 3초마다 슬라이드 변경
     }
+    
+    // 컴포넌트가 언마운트되거나 의존성이 변경될 때 타이머 정리
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [demoImages.length, isPaused]);
+
+  // 터치 이벤트 핸들러
+  const handleTouchStart = (e) => {
+    setIsPaused(true); // 터치 시작할 때 자동 슬라이딩 일시 중지
+    setTouchStart(e.touches[0].clientX);
   };
 
-  const handleShare = async () => {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: gallery.name,
-          text: gallery.description,
-          url: window.location.href,
-        });
-      } else {
-        // Web Share API를 지원하지 않는 경우 클립보드에 복사
-        await navigator.clipboard.writeText(window.location.href);
-        alert('링크가 클립보드에 복사되었습니다.');
-      }
-    } catch (error) {
-      console.error('공유하기 실패:', error);
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 75) {
+      // 왼쪽으로 스와이프
+      setCurrentSlide((prev) => (prev === demoImages.length - 1 ? 0 : prev + 1));
     }
+
+    if (touchStart - touchEnd < -75) {
+      // 오른쪽으로 스와이프
+      setCurrentSlide((prev) => (prev === 0 ? demoImages.length - 1 : prev - 1));
+    }
+    
+    // 터치 끝난 후 3초 후에 자동 슬라이딩 재개
+    setTimeout(() => {
+      setIsPaused(false);
+    }, 3000);
+  };
+
+  // 마우스 드래그 이벤트 핸들러
+  const handleMouseDown = (e) => {
+    setIsPaused(true); // 마우스 드래그 시작할 때 자동 슬라이딩 일시 중지
+    setIsDragging(true);
+    setDragStartX(e.clientX);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault(); // 드래그 중 텍스트 선택 방지
+  };
+
+  const handleMouseUp = (e) => {
+    if (!isDragging) return;
+    
+    const dragDistance = e.clientX - dragStartX;
+    
+    if (dragDistance > 75) {
+      // 오른쪽으로 드래그
+      setCurrentSlide((prev) => (prev === 0 ? demoImages.length - 1 : prev - 1));
+    } else if (dragDistance < -75) {
+      // 왼쪽으로 드래그
+      setCurrentSlide((prev) => (prev === demoImages.length - 1 ? 0 : prev + 1));
+    }
+    
+    setIsDragging(false);
+    
+    // 마우스 드래그 끝난 후 3초 후에 자동 슬라이딩 재개
+    setTimeout(() => {
+      setIsPaused(false);
+    }, 3000);
+  };
+
+  // 마우스 오버 시 자동 슬라이딩 일시 중지
+  const handleMouseEnter = () => {
+    setIsPaused(true);
+  };
+
+  // 마우스 아웃 시 자동 슬라이딩 재개
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+    setIsPaused(false);
+  };
+
+  // 캐러셀 이동 함수
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+    setIsPaused(true);
+    
+    // 선택 후 3초 후에 자동 슬라이딩 재개
+    setTimeout(() => {
+      setIsPaused(false);
+    }, 3000);
   };
 
   console.log("gallery:", gallery);
@@ -426,10 +466,9 @@ export default function App() {
           className="w-full h-screen flex justify-center items-center"
         />
       ) : (
-        <>
+        <div className="flex flex-col items-center justify-center">
           {/* 상단 네비게이션 바 */}
-
-          <div className="bg-white flex items-center">
+          <div className="bg-white flex items-center justify-between w-full">
             <Button
               isIconOnly
               variant="light"
@@ -441,190 +480,108 @@ export default function App() {
             <h2 className="text-lg font-medium"></h2>
           </div>
 
-          {/* Hero Image Section */}
-          <div className="relative w-full h-64">
-            <img
-              src={gallery?.thumbnail}
-              alt="Restaurant"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute bottom-4 right-4 flex gap-2">
-              <div
-                className="bg-white/80 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center"
-                onPress={toggleBookmark}
-              >
-                <Icon
-                  icon={isBookmarked ? "mdi:bookmark" : "mdi:bookmark-outline"}
-                  className="text-xl text-red-500"
-                />
-              </div>
+          {/* Hero Image Section - 캐러셀로 교체 */}
+          <div 
+            className="relative w-full aspect-square"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+          >
+            <div className="w-full h-full overflow-hidden">
               <div 
-                onClick={handleShare}
-                className="bg-gray-300 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center"
+                className="flex h-full w-full"
+                style={{ 
+                  transform: `translateX(-${currentSlide * 100}%)`,
+                  transition: "transform 0.5s ease-in-out"
+                }}
               >
-                <LuSend className="text-lg text-white font-bold " />
-                </div>
+                {demoImages.map((image, index) => (
+                  <div key={index} className="w-full h-full flex-shrink-0">
+                    <img
+                      src={image}
+                      alt={`Gallery Image ${index + 1}`}
+                      className="w-full h-full object-cover rounded-bl-3xl"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Dot Pagination - 스타일 수정 */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-3">
+              {demoImages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                    currentSlide === index
+                      ? "bg-[#007AFF]"
+                      : "bg-[#B8B8B8]"
+                  }`}
+                  aria-label={`이미지 ${index + 1}로 이동`}
+                />
+              ))}
             </div>
           </div>
-
+          <div className="w-[90%] h-full mt-4">
+            <div className="w-full h-full">
+              <div className="text-[18px] font-bold">별이 빛나는 밤에(2025.05.05)</div>
+            </div>
+            <div className="w-[90%] h-full mt-2">
+              <div className="text-[10px]">제작방식:Offset print</div>
+              <div className="text-[10px]">소재:라쿠 세라믹(재질)</div>
+              <div className="text-[10px]">사이즈:Image 70x50cm / Frame 71.6x51.6cm</div>
+            </div>
+            <div className="w-full h-full mt-2 flex flex-row justify-between items-center">
+              
+              <div className="text-[25px] font-bold">₩500,000</div>
+              <div className="text-[10px] flex flex-row gap-x-2 items-center">
+                <LuWallet className="text-black text-lg" />
+                <p>진위성 인증서</p>
+              </div>
+            </div>
+          </div>
+          <Divider orientation="horizontal" className="w-[90%] my-2" />
           {/* Restaurant Info */}
-          <div className="p-4">
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="text-2xl font-bold">{gallery?.name}</h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="flex items-center">
-                    <img
-                      src="/exhibition/미니별점.png"
-                      alt="별점"
-                      className="w-4 h-4"
-                    />
-                    <span className="ml-1">
-                      {gallery?.visitor_rating === 0
-                        ? "1.0"
-                        : gallery?.visitor_rating?.toFixed(1)}
-                    </span>
-                    <span className="text-gray-500">
-                      ({gallery?.blog_review_count})
-                    </span>
-                  </div>
-                </div>
-              </div>
+          <div className="w-[90%] flex flex-row justify-start items-center my-2 gap-x-4">
+            <div className="">
+              <img
+                src="/noimage.jpg"
+                alt="아티스트 이미지"
+                className="w-[52px] aspect-square rounded-full"
+              />
             </div>
-            <Divider orientation="horizontal" className="my-2" />
-
-            <div className="mt-4 space-y-2 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <div>
-                  <img
-                    src="/exhibition/미니지도.svg"
-                    alt="지도"
-                    className="w-4 h-4"
-                  />
-                </div>
-                <span>{gallery?.address}</span>
-              </div>
+            <div className="flex flex-col">
+              <p className="text-[15px] font-bold">이희성</p>
+              <p className="text-[10px]">대한민국 b 1994</p>
             </div>
-
-            <Button
-              onPress={() => router.push(gallery?.homepage_url)}
-              className="w-full mt-4 bg-[#004BFE] text-white text-[13px] font-bold"
-              size="lg"
-            >
-              사이트연결
+          </div>
+          <div className="w-[90%] flex flex-col gap-y-2">
+            <div className="flex flex-col justify-center text-[14px] mt-2">
+              <p>안녕이작가는 매우유명하다, 이작가는</p>
+              <p>
+                어쩌구 저쩌구 정말로 유명하기 때문에
+              </p>
+            </div>
+            
+            
+          </div>
+          <div className="w-[90%] flex flex-row justify-between items-center gap-x-4 my-4 h-14">
+            <Button isIconOnly className="bg-gray-200 w-[20%] h-full text-[20px] font-bold">
+              {isBookmarked ? <FaBookmark /> : <FaRegBookmark />}
+            </Button>
+            <Button className="bg-[#007AFF] text-white w-[80%] h-full text-[20px] font-bold">
+              구매연결
             </Button>
           </div>
-
-          {/* 커스텀 탭바 섹션 */}
-          <div className="mt-4 pb-16 flex flex-col items-center justify-start">
-            {/* 커스텀 탭바 - 중앙 정렬된 탭바 */}
-            <div className="flex w-[90%] border-t border-gray-200 mb-2">
-              <div className="w-1/6"></div>
-              <div className="flex w-2/3">
-                <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "home" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
-                  onClick={() => setSelected("home")}
-                >
-                  홈
-                </button>
-                <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "gallery" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
-                  onClick={() => setSelected("gallery")}
-                >
-                  갤러리공지
-                </button>
-                <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "reviews" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
-                  onClick={() => setSelected("reviews")}
-                >
-                  리뷰
-                </button>
-              </div>
-              <div className="w-1/6"></div>
-            </div>
-
-            {/* 선택된 탭에 따른 컨텐츠 표시 */}
-            <div className="px-2 w-full">
-              {selected === "home" && (
-                <Card className="my-4 mx-2">
-                  <CardBody>
-                    <h3 className="text-lg font-bold mb-2">시설 안내</h3>
-                    <p>{gallery?.add_info}</p>
-                  </CardBody>
-                </Card>
-              )}
-
-              {selected === "gallery" && (
-                <>
-                  {notifications.length > 0 ? (
-                    notifications.map((notification) => (
-                      <Card key={notification.id} className="my-4 mx-2">
-                        <CardBody>
-                          <h3 className="text-lg font-bold">
-                            {notification.title}
-                          </h3>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {new Date(notification.created_at).toLocaleDateString(
-                              "ko-KR"
-                            )}
-                          </p>
-                          <p className="mt-2">{notification.content}</p>
-                        </CardBody>
-                      </Card>
-                    ))
-                  ) : (
-                    <div className="flex justify-center items-center p-8 text-gray-500">
-                      등록된 공지사항이 없습니다.
-                    </div>
-                  )}
-
-                  {hasMoreNotifications && notifications.length > 0 && (
-                    <div className="flex justify-center items-center my-4">
-                      <FaPlusCircle
-                        className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
-                        onClick={loadMoreNotifications}
-                      />
-                    </div>
-                  )}
-                </>
-              )}
-
-              {selected === "reviews" && (
-                <>
-                  <div className="flex flex-col gap-2 mx-2">
-                    {reviews.length > 0 ? (
-                      reviews.map((review) => (
-                        <Review
-                          key={review.id}
-                          review={review}
-                          gallery={gallery}
-                          createdAt={review.created_at}
-                        />
-                      ))
-                    ) : (
-                      <div className="flex justify-center items-center p-8 text-gray-500">
-                        등록된 리뷰가 없습니다.
-                      </div>
-                    )}
-                  </div>
-
-                  {hasMoreReviews && reviews.length > 0 && (
-                    <div className="flex justify-center items-center my-4">
-                      {hasMoreReviews ? (
-                        <FaPlusCircle
-                          className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
-                          onClick={loadMoreReviews}
-                        />
-                      ) : (
-                        <p className="text-gray-500">더 이상 리뷰가 없습니다.</p>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </>
+            
+        </div>
       )}
     </div>
   );

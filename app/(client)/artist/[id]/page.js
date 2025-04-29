@@ -429,7 +429,7 @@ export default function App() {
         <div className="flex flex-col items-center justify-center">
           {/* 상단 네비게이션 바 */}
 
-          <div className="bg-white flex items-center">
+          <div className="bg-white flex items-center justify-between w-full">
             <Button
               isIconOnly
               variant="light"
@@ -451,7 +451,7 @@ export default function App() {
           </div>
 
           {/* Restaurant Info */}
-          <div className="w-[90%] flex flex-row justify-between">
+          <div className="w-[90%] flex flex-row justify-start my-4 gap-x-6">
             <div className="">
               <img
                 src="/noimage.jpg"
@@ -464,116 +464,27 @@ export default function App() {
               <p>대한민국 b 1994</p>
             </div>
           </div>
-
-          {/* 커스텀 탭바 섹션 */}
-          <div className="mt-4 pb-16 flex flex-col items-center justify-start">
-            {/* 커스텀 탭바 - 중앙 정렬된 탭바 */}
-            <div className="flex w-[90%] border-t border-gray-200 mb-2">
-              <div className="w-1/6"></div>
-              <div className="flex w-2/3">
-                <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "home" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
-                  onClick={() => setSelected("home")}
-                >
-                  홈
-                </button>
-                <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "gallery" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
-                  onClick={() => setSelected("gallery")}
-                >
-                  갤러리공지
-                </button>
-                <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selected === "reviews" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
-                  onClick={() => setSelected("reviews")}
-                >
-                  리뷰
-                </button>
-              </div>
-              <div className="w-1/6"></div>
+          <Divider orientation="horizontal" className="w-[90%] my-2" />
+          <div className="w-[90%] flex flex-col gap-y-2">
+            <div className="flex flex-col justify-center">
+              <p>안녕이작가는 매우유명하다, 이작가는</p>
+              <p>
+                어쩌구 저쩌구 정말로 유명하기 때문에
+              </p>
             </div>
-
-            {/* 선택된 탭에 따른 컨텐츠 표시 */}
-            <div className="px-2 w-full">
-              {selected === "home" && (
-                <Card className="my-4 mx-2">
-                  <CardBody>
-                    <h3 className="text-lg font-bold mb-2">시설 안내</h3>
-                    <p>{gallery?.add_info}</p>
-                  </CardBody>
-                </Card>
-              )}
-
-              {selected === "gallery" && (
-                <>
-                  {notifications.length > 0 ? (
-                    notifications.map((notification) => (
-                      <Card key={notification.id} className="my-4 mx-2">
-                        <CardBody>
-                          <h3 className="text-lg font-bold">
-                            {notification.title}
-                          </h3>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {new Date(
-                              notification.created_at
-                            ).toLocaleDateString("ko-KR")}
-                          </p>
-                          <p className="mt-2">{notification.content}</p>
-                        </CardBody>
-                      </Card>
-                    ))
-                  ) : (
-                    <div className="flex justify-center items-center p-8 text-gray-500">
-                      등록된 공지사항이 없습니다.
-                    </div>
-                  )}
-
-                  {hasMoreNotifications && notifications.length > 0 && (
-                    <div className="flex justify-center items-center my-4">
-                      <FaPlusCircle
-                        className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
-                        onClick={loadMoreNotifications}
-                      />
-                    </div>
-                  )}
-                </>
-              )}
-
-              {selected === "reviews" && (
-                <>
-                  <div className="flex flex-col gap-2 mx-2">
-                    {reviews.length > 0 ? (
-                      reviews.map((review) => (
-                        <Review
-                          key={review.id}
-                          review={review}
-                          gallery={gallery}
-                          createdAt={review.created_at}
-                        />
-                      ))
-                    ) : (
-                      <div className="flex justify-center items-center p-8 text-gray-500">
-                        등록된 리뷰가 없습니다.
-                      </div>
-                    )}
-                  </div>
-
-                  {hasMoreReviews && reviews.length > 0 && (
-                    <div className="flex justify-center items-center my-4">
-                      {hasMoreReviews ? (
-                        <FaPlusCircle
-                          className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
-                          onClick={loadMoreReviews}
-                        />
-                      ) : (
-                        <p className="text-gray-500">
-                          더 이상 리뷰가 없습니다.
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
+            <div className="flex flex-row justify-end font-bold hover:cursor-pointer">
+              더보기
+            </div>
+            <div className="grid grid-cols-4 justify-between gap-2">
+              {[...Array(8)].map((_, index) => (
+                <div key={index} className="col-span-1 aspect-square">
+                  <img
+                    src="/noimage.jpg"
+                    alt={`작품 이미지 ${index + 1}`}
+                    className="w-full h-full object-cover rounded-2xl"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>

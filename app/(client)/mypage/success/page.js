@@ -25,7 +25,10 @@ import { createClient } from "@/utils/supabase/client";
 import BookmarkedExhibition from "./components/BookmarkedExhibition";
 import Reviews from "./components/Reviews";
 import GalleryCards from "./components/gallery-cards";
-import {FaArrowLeft} from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa";
+import { FaChevronRight } from "react-icons/fa";
+import MyArtworks from "./components/MyArtworks";
+
 const Success = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const router = useRouter();
@@ -45,11 +48,11 @@ const Success = () => {
     if (error) {
       console.error("정책 정보를 가져오는 중 오류가 발생했습니다:", error);
     }
-    
+
     if (data && data.length > 0) {
-      const policyData = data.find(item => item.title === "이용약관");
-      const csData = data.find(item => item.title === "고객센터");
-      
+      const policyData = data.find((item) => item.title === "이용약관");
+      const csData = data.find((item) => item.title === "고객센터");
+
       setPolicy(policyData);
       setCustomerService(csData);
     }
@@ -103,8 +106,8 @@ const Success = () => {
   useEffect(() => {
     getPolicy();
   }, []);
-  console.log('policy', policy);
-  console.log('customerService', customerService);
+  console.log("policy", policy);
+  console.log("customerService", customerService);
 
   const handleLogout = async () => {
     try {
@@ -141,7 +144,7 @@ const Success = () => {
 
   return (
     <div className="flex flex-col items-center justify-center ">
-      <div className="bg-white flex items-center w-full justify-between">
+      <div className="bg-white flex items-center w-[90%] justify-between">
         <Button
           isIconOnly
           variant="light"
@@ -165,20 +168,34 @@ const Success = () => {
             />
           )}
         </div>
-        <div className="text-lg font-bold">
-          {user?.user_metadata?.full_name || user?.email || "사용자"}
+        <div className="text-lg font-bold flex flex-col justify-center items-center">
+          <div className="flex flex-row items-center gap-x-2 text-[#0B437E]">
+            {user?.user_metadata?.full_name || user?.email || "사용자"}
+            
+          </div>
+          <div className="flex flex-row items-center text-sm justify-center">
+            <div
+              className="cursor-pointer"
+              onClick={() => router.push("/register")}
+            >
+              작가 등록하기
+            </div>
+            <div className="flex flex-row items-center gap-x-2">
+              <FaChevronRight className="text-sm"  />
+            </div>
+          </div>
         </div>
       </div>
-      
+
       {/* 첫 번째 커스텀 탭바 */}
-      <div className="flex w-[90%] border-t border-gray-200 mb-2">
-        <div className="w-1/6"></div>
-        <div className="flex w-2/3">
+      <div className="flex flex-row w-[90%] border-t border-gray-200 mb-2 justify-center items-center">
+        <div className="w-[5%]"></div>
+        <div className="flex w-full">
           <button
             className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "favorite" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
             onClick={() => setSelectedTab("favorite")}
           >
-            나의즐겨찾기
+            즐겨찾기
           </button>
           <button
             className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "review" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
@@ -186,18 +203,47 @@ const Success = () => {
           >
             리뷰
           </button>
+          <button
+            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "message" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
+            onClick={() => setSelectedTab("message")}
+          >
+            메시지
+          </button>
+          <button
+            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "order" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
+            onClick={() => setSelectedTab("order")}
+          >
+            주문내역
+          </button>
+          <button
+            className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "myArt" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
+            onClick={() => setSelectedTab("myArt")}
+          >
+            나의 작품
+          </button>
         </div>
-        <div className="w-1/6"></div>
+        <div className="w-[5%]"></div>
       </div>
-      
-      <div className="w-full px-2">
+
+      <div className="w-full px-2 flex justify-center items-center">
         {selectedTab === "favorite" && <BookmarkedExhibition user={user} />}
         {selectedTab === "review" && <Reviews user={user} />}
+        {selectedTab === "message" && (
+          <div className="flex flex-col items-center justify-center py-8">
+            <p className="text-gray-500">메시지 기능이 준비 중입니다.</p>
+          </div>
+        )}
+        {selectedTab === "order" && (
+          <div className="flex flex-col items-center justify-center py-8">
+            <p className="text-gray-500">주문내역이 없습니다.</p>
+          </div>
+        )}
+        {selectedTab === "myArt" && <MyArtworks user={user} />}
       </div>
-      
+
       {/* 두 번째 커스텀 탭바 */}
-      <div className="flex w-[90%] border-t border-gray-200 mb-2 mt-4">
-        <div className="w-1/6"></div>
+      <div className="flex w-[90%] border-t border-gray-200 mb-2 mt-4 justify-center items-center">
+        <div className="w-[10%]"></div>
         <div className="flex w-2/3">
           <button
             className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedGalleryTab === "recommended" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
@@ -218,13 +264,13 @@ const Success = () => {
             전시갤러리
           </button>
         </div>
-        <div className="w-1/6"></div>
+        <div className="w-[10%]"></div>
       </div>
-      
+
       <div className="w-full px-2">
         <GalleryCards selectedTab={selectedGalleryTab} />
       </div>
-      
+
       <div className="w-full h-auto flex justify-center items-center flex-col gap-y-4 mb-24 px-4">
         <div
           onClick={() => {
@@ -237,8 +283,10 @@ const Success = () => {
           <span>이용약관 및 정책</span>
         </div>
         <Divider></Divider>
-        <div  className="flex items-center gap-x-2 w-full cursor-pointer" onClick={() => {
-            router.push("http://pf.kakao.com/_sBnXn/chat")
+        <div
+          className="flex items-center gap-x-2 w-full cursor-pointer"
+          onClick={() => {
+            router.push("http://pf.kakao.com/_sBnXn/chat");
           }}
         >
           <BiSupport className="text-gray-600" size={20} />
@@ -257,13 +305,12 @@ const Success = () => {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">
-                {title}
-              </ModalHeader>
+              <ModalHeader className="flex flex-col gap-1">{title}</ModalHeader>
               <ModalBody className="max-h-[80vh] overflow-y-auto">
-                <div className="text-sm" dangerouslySetInnerHTML={{ __html: content }} />
-                  
-
+                <div
+                  className="text-sm"
+                  dangerouslySetInnerHTML={{ __html: content }}
+                />
               </ModalBody>
               <ModalFooter>
                 <Button color="primary" onPress={onClose}>
