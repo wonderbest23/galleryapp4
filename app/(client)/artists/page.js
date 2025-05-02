@@ -71,7 +71,7 @@ export default function MagazineList() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center mx-2">
+    <div className="flex flex-col items-center justify-center ">
       {isLoading ? (
         <div className="flex flex-col items-center justify-center w-full h-full gap-y-6 mt-12">
           {[...Array(5)].map((_, index) => (
@@ -110,6 +110,7 @@ export default function MagazineList() {
                 classNames={{ base: "m-1" }}
                 shadow="sm"
                 radius="lg"
+                isPressable
                 onPress={() => router.push(`/artist/${exhibition.id}`)}
                 className="hover:cursor-pointer"
               >

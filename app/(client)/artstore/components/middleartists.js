@@ -5,14 +5,14 @@ import { FaStar } from "react-icons/fa";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 import Link from "next/link";
 import { useEffect, useState, useCallback, useRef } from "react";
-
+import { useRouter } from "next/navigation";
 export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleBookmark, isBookmarked }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [topCards, setTopCards] = useState([]);
   const [carouselItems, setCarouselItems] = useState([]);
   const carouselRef = useRef(null);
   const [bookmarkedProducts, setBookmarkedProducts] = useState({});
-  
+  const router = useRouter();
   // 더미 데이터 - 3개의 캐러셀 아이템
   const dummyItems = [
     { id: 1, name: "전시회 1", contents: "전시회 내용 1", photo: "/noimage.jpg" },
@@ -177,7 +177,7 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
         {/* 상단 3개 카드 */}
         <div className="grid grid-cols-3 gap-4 mb-4">
           {topCards.map((exhibition, index) => (
-            <Card key={`top-card-${index}`} classNames={{base: 'm-1'}} shadow="sm" radius="lg">
+            <Card isPressable onPress={() => router.push(`/artist/${exhibition.id}`)} key={`top-card-${index}`} classNames={{base: 'm-1'}} shadow="sm" radius="lg">
               <CardBody className="p-0">
                 <img src="/noimage.jpg" alt="아티스트 이미지" className="w-full h-full object-cover p-3 rounded-[24px]" />
               </CardBody>
@@ -223,7 +223,7 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
         <Divider orientation="horizontal" className="my-4" />
         <div className="w-full">
           {products.map((product, index) => (
-            <Card key={`product-${index}`} shadow="none" classNames={{base: 'gap-x-2',body: 'gap-x-2'}}>
+            <Card isPressable onPress={() => router.push(`/product/${product.id}`)} key={`product-${index}`} shadow="none" classNames={{base: 'gap-x-2 w-full',body: 'gap-x-2'}}>
               <CardBody className="flex flex-row justify-center items-center">
                 <img src="/noimage.jpg" alt={product.name} className="w-[80px] h-[80px] object-cover " />
                 <div className="flex flex-col flex-grow ml-2">

@@ -7,6 +7,7 @@ import { FaRegStar } from "react-icons/fa";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 export function ExhibitionCards({
   exhibitions,
@@ -23,13 +24,13 @@ export function ExhibitionCards({
   //   location: "서울 강남구",
   //   review: "4.0(225)",
   // });
-
+  const router = useRouter();
   return (
     <>
       <div className="flex flex-col items-center gap-4 ">
         <div className="flex flex-col gap-4 w-full justify-center items-center">
           {exhibitions.map((exhibition, index) => (
-            <Card classNames={{body: 'px-2 py-1'}} key={index} className="w-full " shadow="sm">
+            <Card isPressable onPress={() => router.push(`/exhibition/${exhibition.id}`)} classNames={{body: 'px-2 py-1'}} key={index} className="cursor-pointer w-full " shadow="sm">
               <Link href={`/exhibition/${exhibition.id}`}>
                 <CardBody className="grid grid-cols-7 items-center justify-center gap-x-3">
                   <div className="col-span-2">

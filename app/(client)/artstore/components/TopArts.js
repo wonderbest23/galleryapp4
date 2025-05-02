@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, Card, CardBody, CardFooter } from "@heroui/react";
+import { useRouter } from "next/navigation";
 export default function TopArts() {
   const [categories, setCategories] = useState([
     { id: 1, name: "추천상품", selected: true },
@@ -9,7 +10,7 @@ export default function TopArts() {
     { id: 5, name: "사진/일러스트", selected: false },
     { id: 6, name: "기타", selected: false },
   ]);
-
+  const router = useRouter();
   const artItems = [
     {
       id: 1,
@@ -71,7 +72,7 @@ export default function TopArts() {
       </div>
       <div className="w-full grid grid-cols-2 gap-6 mt-1 justify-items-center">
         {artItems.map((item) => (
-          <Card key={item.id} className="rounded-lg overflow-hidden shadow-sm w-full">
+          <Card isPressable onPress={() => router.push(`/product/${item.id}`)} key={item.id} className="rounded-lg overflow-hidden shadow-sm w-full cursor-pointer">
             <img 
               src={item.image} 
               alt={item.title} 

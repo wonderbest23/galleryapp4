@@ -3,14 +3,14 @@ import { Card, CardBody, Skeleton, CardFooter, Divider } from "@heroui/react";
 import { FaRegStar } from "react-icons/fa";
 import { FaStar } from "react-icons/fa";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
-
+import { useRouter } from "next/navigation";
 export default function LowerCarousel() {
   const scrollRef = useRef(null);
   // 드래그 상태를 추적하는 ref
   const isDraggingRef = useRef(false);
   // 슬라이더 요소에서만 동작하도록 체크하는 ref
   const isSliderClickRef = useRef(false);
-  
+  const router = useRouter();
   const [artItems, setArtItems] = useState([
     {
       id: 1,
@@ -199,7 +199,7 @@ export default function LowerCarousel() {
                 }
               }}
             >
-              <Card className="rounded-xl overflow-hidden shadow-sm h-full flex flex-col">
+              <Card isPressable onPress={() => router.push(`/product/${item.id}`)} className="cursor-pointer rounded-xl overflow-hidden shadow-sm h-full flex flex-col">
                 <div className="relative w-[127px] h-[150px] mx-auto">
                   <img
                     src={item.image}

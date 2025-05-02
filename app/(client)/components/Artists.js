@@ -157,7 +157,6 @@ const Artists = () => {
                     alt={artist.name}
                     width={100}
                     height={100}
-                    full
                     className="object-cover rounded-lg"
                     draggable="false"
                   />

@@ -132,13 +132,13 @@ export default function App() {
           .single();
 
         if (error) {
-          console.error("Error fetching gallery:", error);
+          console.log("Error fetching gallery:", error);
         } else {
           setGallery(data);
         }
         setDataLoaded((prev) => ({ ...prev, gallery: true }));
       } catch (error) {
-        console.error("갤러리 불러오기 중 오류 발생:", error);
+        console.log("갤러리 불러오기 중 오류 발생:", error);
         setDataLoaded((prev) => ({ ...prev, gallery: true }));
       }
     };
@@ -158,14 +158,14 @@ export default function App() {
             .eq("gallery_id", id);
 
           if (error) {
-            console.error("북마크 정보를 가져오는 중 오류 발생:", error);
+            console.log("북마크 정보를 가져오는 중 오류 발생:", error);
           } else {
             setIsBookmarked(bookmarks && bookmarks.length > 0);
           }
         }
         setDataLoaded((prev) => ({ ...prev, bookmark: true }));
       } catch (error) {
-        console.error("북마크 상태 확인 중 오류 발생:", error);
+        console.log("북마크 상태 확인 중 오류 발생:", error);
         setDataLoaded((prev) => ({ ...prev, bookmark: true }));
       }
     };
@@ -183,7 +183,7 @@ export default function App() {
           .range(0, notificationsPerPage - 1);
 
         if (error) {
-          console.error("알림 불러오기 오류:", error);
+          console.log("알림 불러오기 오류:", error);
         } else {
           if (data.length < notificationsPerPage) {
             setHasMoreNotifications(false);
@@ -192,7 +192,7 @@ export default function App() {
         }
         setDataLoaded((prev) => ({ ...prev, notifications: true }));
       } catch (error) {
-        console.error("알림 불러오기 중 오류 발생:", error);
+        console.log("알림 불러오기 중 오류 발생:", error);
         setDataLoaded((prev) => ({ ...prev, notifications: true }));
       }
     };
@@ -210,7 +210,7 @@ export default function App() {
           .range(0, reviewsPerPage - 1);
 
         if (error) {
-          console.error("리뷰 불러오기 오류:", error);
+          console.log("리뷰 불러오기 오류:", error);
         } else {
           if (data.length < reviewsPerPage) {
             setHasMoreReviews(false);
@@ -222,7 +222,7 @@ export default function App() {
         await calculateReviewStats();
         setDataLoaded((prev) => ({ ...prev, reviews: true }));
       } catch (error) {
-        console.error("리뷰 불러오기 중 오류 발생:", error);
+        console.log("리뷰 불러오기 중 오류 발생:", error);
         setDataLoaded((prev) => ({ ...prev, reviews: true }));
       }
     };
@@ -249,7 +249,7 @@ export default function App() {
         .eq("gallery_id", id);
 
       if (error) {
-        console.error("리뷰 통계 불러오기 오류:", error);
+        console.log("리뷰 통계 불러오기 오류:", error);
         return;
       }
 
@@ -275,7 +275,7 @@ export default function App() {
         oneStars,
       });
     } catch (error) {
-      console.error("리뷰 통계 계산 중 오류 발생:", error);
+      console.log("리뷰 통계 계산 중 오류 발생:", error);
     }
   };
 
@@ -293,7 +293,7 @@ export default function App() {
         .range(start, end);
 
       if (error) {
-        console.error("추가 알림 불러오기 오류:", error);
+        console.log("추가 알림 불러오기 오류:", error);
         return;
       }
 
@@ -304,7 +304,7 @@ export default function App() {
       setNotifications((prev) => [...prev, ...data]);
       setNotificationPage(nextPage);
     } catch (error) {
-      console.error("추가 알림 불러오기 중 오류 발생:", error);
+      console.log("추가 알림 불러오기 중 오류 발생:", error);
     }
   };
 
@@ -322,7 +322,7 @@ export default function App() {
         .range(start, end);
 
       if (error) {
-        console.error("추가 리뷰 불러오기 오류:", error);
+        console.log("추가 리뷰 불러오기 오류:", error);
         return;
       }
 
@@ -333,7 +333,7 @@ export default function App() {
       setReviews((prev) => [...prev, ...data]);
       setReviewPage(nextPage);
     } catch (error) {
-      console.error("추가 리뷰 불러오기 중 오류 발생:", error);
+      console.log("추가 리뷰 불러오기 중 오류 발생:", error);
     }
   };
 
@@ -385,7 +385,7 @@ export default function App() {
       // 북마크 상태 변경
       setIsBookmarked(!isBookmarked);
     } catch (error) {
-      console.error("북마크 토글 중 오류 발생:", error);
+      console.log("북마크 토글 중 오류 발생:", error);
 
       // 에러 발생 시 토스트 메시지
       addToast({
@@ -411,7 +411,7 @@ export default function App() {
         alert("링크가 클립보드에 복사되었습니다.");
       }
     } catch (error) {
-      console.error("공유하기 실패:", error);
+      console.log("공유하기 실패:", error);
     }
   };
 

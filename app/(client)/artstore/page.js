@@ -406,7 +406,7 @@ function ExhibitionListContent() {
           <div className="w-[90%] flex flex-col justify-center items-center mb-24">
             <div className="w-full flex justify-between items-center">
               <h1 className="text-[18px] font-bold">Top of Week</h1>
-              <div className="flex items-center gap-2">
+              <div onClick={() => router.push("/artstore")} className="flex items-center gap-2 hover:cursor-pointer">
                 <p className="text-[14px] text-[#0961F5] font-bold">SEE ALL</p>
                 <FaChevronRight className="text-[#0961F5] text-sm font-bold" />
               </div>
