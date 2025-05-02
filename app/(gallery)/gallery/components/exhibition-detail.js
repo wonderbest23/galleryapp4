@@ -51,14 +51,37 @@ export function ExhibitionDetail({
       setImagePreview(exhibition.photo || null);
     }
   }, [selectedKey, exhibition, isNew]);
-
+  
   // 저장 핸들러 - 내용이 변경되면 자동으로 저장
   const handleSave = async () => {
     // 필수 필드 검증
     if (!editedExhibition.contents) {
-      alert("갤러리명과 전시회명은 필수 입력 항목입니다.");
+      addToast({
+        title: "전시회명 오류",
+        description: "전시회명은 필수 입력 항목입니다.",
+        color: "danger",
+      });
       return;
     }
+    if (!editedExhibition.end_date) {
+      addToast({
+        title: "종료일 오류",
+        description: "종료일은 필수 입력 항목입니다.",
+        color: "danger",
+      });
+      return;
+    }
+    if (!editedExhibition.start_date) {
+      addToast({
+        title: "시작일 오류",
+        description: "시작일은 필수 입력 항목입니다.",
+        color: "danger",
+      });
+      return;
+    }
+
+    
+
 
     // 날짜 형식 검증
     const validateDateFormat = (dateStr) => {
@@ -83,6 +106,7 @@ export function ExhibitionDetail({
       });
       return;
     }
+
 
     setIsSaving(true);
     try {

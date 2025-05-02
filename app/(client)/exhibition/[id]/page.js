@@ -40,6 +40,7 @@ export default function App() {
   const [displayedReviewCount, setDisplayedReviewCount] = useState(3);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [allDataLoaded, setAllDataLoaded] = useState(false);
+  const [ticketCount, setTicketCount] = useState(1);
   const supabase = createClient();
 
   useEffect(() => {
@@ -265,6 +266,22 @@ export default function App() {
     fetchReviews();
   }, [id]);
 
+  // 티켓 수량 증가 함수
+  const increaseTicketCount = () => {
+    setTicketCount(prev => prev + 1);
+  };
+
+  // 티켓 수량 감소 함수
+  const decreaseTicketCount = () => {
+    setTicketCount(prev => prev > 1 ? prev - 1 : 1);
+  };
+
+  // 합계 금액 계산
+  const calculateTotalPrice = () => {
+    if (!exhibition || !exhibition.price) return 0;
+    return exhibition.price * ticketCount;
+  };
+
   return (
     <>
       {!allDataLoaded ? (
@@ -386,15 +403,47 @@ export default function App() {
                 </span>
               </div>
             </div>
-
-            <Button
-              target="_blank"
-              onPress={() => router.push(exhibition?.homepage_url)}
-              className="w-full mt-4 bg-[#004BFE] text-white text-[13px] font-bold"
-              size="lg"
-            >
-              사이트연결
-            </Button>
+            <div className="flex flex-row gap-2">
+              <Button
+                target="_blank"
+                onPress={() => router.push("/ticket/payment")}
+                className="w-full mt-4 bg-[#004BFE] text-white text-[13px] font-bold"
+                size="lg"
+              >
+                티켓구매
+              </Button>
+              <Button
+                target="_blank"
+                onPress={() => router.push(exhibition?.homepage_url)}
+                className="w-full mt-4 bg-default-300 text-white text-[13px] font-bold"
+                size="lg"
+              >
+                사이트연결
+              </Button>
+            </div>
+            <div className="flex flex-row items-center justify-between mt-4 rounded-lg p-4 shadow-md">
+              <div className="text-[14px] font-bold">합계금액</div>
+              <div className="flex flex-row items-center gap-2">
+                <div className="text-[14px] font-bold">
+                  ₩ {calculateTotalPrice().toLocaleString()}
+                </div>
+                <div className="flex flex-row items-center border border-gray-200 rounded-lg">
+                  <button 
+                    className="px-3 py-1 text-gray-500"
+                    onClick={decreaseTicketCount}
+                  >
+                    -
+                  </button>
+                  <div className="px-3 py-1 border-x border-gray-200">{ticketCount}</div>
+                  <button 
+                    className="px-3 py-1 text-gray-500"
+                    onClick={increaseTicketCount}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* 커스텀 탭바 섹션 */}

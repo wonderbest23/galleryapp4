@@ -136,7 +136,7 @@ export default function Exhibition() {
       setIsCreatingNew(false);
     }
   };
-
+  console.log('userInfo',userInfo)
   // 신규 전시회 저장 핸들러
   const handleSaveNew = async (newExhibition) => {
     try {

@@ -57,6 +57,14 @@ export function CategoryButtons() {
           <span className="text-[10px] font-bold">매거진</span>
         </div>
       </Link>
+      <Link href="/artstore">
+        <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
+          <img src="/buttons/이벤트.svg" className="w-[32px] h-[32px]" alt="이벤트" quality={100} />
+        </div>
+        <div className="flex w-full justify-center items-center mt-2">
+          <span className="text-[10px] font-bold">아트샵</span>
+        </div>
+      </Link>
       <Link href="/eventList">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
           <img src="/buttons/이벤트.svg" className="w-[32px] h-[32px]" alt="이벤트" quality={100} />
