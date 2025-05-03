@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
       "img1.kakaocdn.net", 
       "t1.kakaocdn.net",
       "k.kakaocdn.net",
+      "dn.kakaocdn.net",
       "teaelrzxuigiocnukwha.supabase.co"
     ],
   },

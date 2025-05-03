@@ -28,6 +28,7 @@ import GalleryCards from "./components/gallery-cards";
 import { FaArrowLeft } from "react-icons/fa";
 import { FaChevronRight } from "react-icons/fa";
 import MyArtworks from "./components/MyArtworks";
+import { FaCheckCircle } from "react-icons/fa";
 
 const Success = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -41,7 +42,8 @@ const Success = () => {
   const [selectedModal, setSelectedModal] = useState(null);
   const [selectedTab, setSelectedTab] = useState("favorite");
   const [selectedGalleryTab, setSelectedGalleryTab] = useState("recommended");
-
+  const [isArtist, setIsArtist] = useState(false);
+  const [profile, setProfile] = useState(null);
   const getPolicy = async () => {
     const supabase = createClient();
     const { data, error } = await supabase.from("policy").select("*");
@@ -78,6 +80,17 @@ const Success = () => {
 
         if (user) {
           setUser(user);
+          console.log("user:", user);
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();  
+          if (profileData) {
+            setIsArtist(profileData.isArtist);
+            setProfile(profileData);
+          }
+
         } else {
           // 로그인되지 않은 경우 로그인 페이지로 리디렉션
           router.push("/mypage");
@@ -108,6 +121,7 @@ const Success = () => {
   }, []);
   console.log("policy", policy);
   console.log("customerService", customerService);
+  console.log("isArtist", isArtist);
 
   const handleLogout = async () => {
     try {
@@ -173,16 +187,23 @@ const Success = () => {
             {user?.user_metadata?.full_name || user?.email || "사용자"}
             
           </div>
-          <div className="flex flex-row items-center text-sm justify-center">
+          <div className="flex flex-row items-center text-sm justify-center gap-x-1">
             <div
               className="cursor-pointer"
               onClick={() => router.push("/register")}
             >
-              작가 등록하기
+              {isArtist ? "작가 정보 수정하기" : "작가 등록하기"}
             </div>
-            <div className="flex flex-row items-center gap-x-2">
-              <FaChevronRight className="text-sm"  />
-            </div>
+            {!isArtist && (
+              <div className="flex flex-row items-center gap-x-2">
+                <FaChevronRight className="text-sm"  />
+              </div>
+            )}
+            {isArtist && (
+              <div className="flex flex-row items-center gap-x-2">
+                <FaCheckCircle className="text-green-500 text-sm"  />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -238,7 +259,7 @@ const Success = () => {
             <p className="text-gray-500">주문내역이 없습니다.</p>
           </div>
         )}
-        {selectedTab === "myArt" && <MyArtworks user={user} />}
+        {selectedTab === "myArt" && <MyArtworks user={user} profile={profile} />}
       </div>
 
       {/* 두 번째 커스텀 탭바 */}

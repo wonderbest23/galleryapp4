@@ -1,0 +1,154 @@
+/* slick.css의 핵심 스타일 */
+.sliderContainer :global(.slick-slider) {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  user-select: none;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sliderContainer :global(.slick-list) {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.sliderContainer :global(.slick-list:focus) {
+  outline: none;
+}
+
+.sliderContainer :global(.slick-list.dragging) {
+  cursor: pointer;
+  cursor: hand;
+}
+
+.sliderContainer :global(.slick-slider .slick-track),
+.sliderContainer :global(.slick-slider .slick-list) {
+  transform: translate3d(0, 0, 0);
+}
+
+.sliderContainer :global(.slick-track) {
+  position: relative;
+  top: 0;
+  left: 0;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sliderContainer :global(.slick-track:before),
+.sliderContainer :global(.slick-track:after) {
+  display: table;
+  content: '';
+}
+
+.sliderContainer :global(.slick-track:after) {
+  clear: both;
+}
+
+.sliderContainer :global(.slick-loading .slick-track) {
+  visibility: hidden;
+}
+
+.sliderContainer :global(.slick-slide) {
+  display: none;
+  float: left;
+  height: 100%;
+  min-height: 1px;
+}
+
+.sliderContainer :global([dir='rtl'] .slick-slide) {
+  float: right;
+}
+
+.sliderContainer :global(.slick-slide img) {
+  display: block;
+}
+
+.sliderContainer :global(.slick-slide.slick-loading img) {
+  display: none;
+}
+
+.sliderContainer :global(.slick-slide.dragging img) {
+  pointer-events: none;
+}
+
+.sliderContainer :global(.slick-initialized .slick-slide) {
+  display: block;
+}
+
+.sliderContainer :global(.slick-loading .slick-slide) {
+  visibility: hidden;
+}
+
+.sliderContainer :global(.slick-vertical .slick-slide) {
+  display: block;
+  height: auto;
+  border: 1px solid transparent;
+}
+
+.sliderContainer :global(.slick-arrow.slick-hidden) {
+  display: none;
+}
+
+/* slick-theme.css의 핵심 스타일 */
+.sliderContainer :global(.slick-dots) {
+  position: absolute;
+  bottom: 20px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sliderContainer :global(.slick-dots li) {
+  margin: 0 3px;
+}
+
+.sliderContainer :global(.slick-dots li button) {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  cursor: pointer;
+  color: transparent;
+  border: 0;
+  outline: none;
+  background: transparent;
+}
+
+.sliderContainer :global(.slick-dots li button:before) {
+  display: none;
+}
+
+/* 슬라이더 커스텀 스타일 */
+.sliderContainer :global(.slick-dots) {
+  bottom: 20px;
+}
+
+.sliderContainer :global(.slick-dots li) {
+  margin: 0 3px;
+}
+
+.sliderContainer :global(.slick-dots li button) {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  cursor: pointer;
+  color: transparent;
+  border: 0;
+  outline: none;
+  background: transparent;
+}
+
+.sliderContainer :global(.slick-dots li button:before) {
+  display: none;
+}
+
+.sliderContainer :global(.slick-slide) {
+  outline: none;
+} 

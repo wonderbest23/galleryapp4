@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Button, Skeleton, Input, Textarea, DatePicker, Spinner } from "@heroui/react";
+import { Button, Skeleton, Input, Textarea, DatePicker, Spinner, useToast } from "@heroui/react";
 import { FaChevronLeft } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { Card, CardBody, Divider, Image, CardFooter } from "@heroui/react";
@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { parseDate } from "@internationalized/date";
 import { CiImageOn } from "react-icons/ci";
+import { addToast } from "@heroui/react";
 
 export default function MagazineList() {
   const [magazines, setMagazines] = useState([]);
@@ -20,6 +21,13 @@ export default function MagazineList() {
   const [profileImage, setProfileImage] = useState("/noimage.jpg");
   const [isUploading, setIsUploading] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState(null);
+  const [artistName, setArtistName] = useState("");
+  const [artistPhone, setArtistPhone] = useState("");
+  const [artistIntro, setArtistIntro] = useState("");
+  const [birthDate, setBirthDate] = useState("1990-01-01");
+  const [artistProof, setArtistProof] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
   const router = useRouter();
   const supabase = createClient();
   const [topCards, setTopCards] = useState([]);
@@ -32,6 +40,61 @@ export default function MagazineList() {
     { id: 4, name: "사진/일러스트" },
     { id: 5, name: "기타" }
   ];
+
+  // 사용자 정보 및 작가 정보 가져오기
+  const getUserProfile = async () => {
+    try {
+      setIsLoading(true);
+      
+      // 현재 로그인된 사용자 정보 가져오기
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        console.log('로그인된 사용자가 없습니다.');
+        setIsLoading(false);
+        return;
+      }
+
+      // profiles 테이블에서 사용자 정보 검색
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.log('프로필 정보를 가져오는 중 오류 발생:', profileError);
+        setIsLoading(false);
+        return;
+      }
+
+      // 작가 정보가 있으면 폼에 미리 채우기
+      if (profileData && profileData.isArtist) {
+        setIsEdit(true);
+        setArtistName(profileData.artist_name || "");
+        setArtistPhone(profileData.artist_phone || "");
+        setArtistIntro(profileData.artist_intro || "");
+        setBirthDate(profileData.artist_birth || "1990-01-01");
+        setArtistProof(profileData.artist_proof || "");
+        
+        // 장르 설정
+        const genreObj = genres.find(g => g.name === profileData.artist_genre);
+        if (genreObj) {
+          setSelectedGenre(genreObj.id);
+        }
+        
+        // 프로필 이미지 설정
+        if (profileData.avatar_url) {
+          setProfileImage(profileData.avatar_url);
+        }
+      }
+      
+    } catch (error) {
+      console.log('사용자 정보 가져오기 실패:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // 더미 데이터 - 20개의 탑 카드 아이템
   const dummyTopCards = [
@@ -70,11 +133,11 @@ export default function MagazineList() {
       .order("created_at", { ascending: false });
     setMagazines(data);
     setAllLoaded(data.length <= visibleCount);
-    setIsLoading(false);
   };
 
   useEffect(() => {
     getMagazines();
+    getUserProfile(); // 사용자 정보 가져오기
   }, []);
 
   console.log("magazines:", magazines);
@@ -113,10 +176,109 @@ export default function MagazineList() {
       // 이미지 URL 상태 업데이트
       setProfileImage(publicUrl);
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.log('Error uploading image:', error);
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleRegister = async () => {
+    try {
+      setIsRegistering(true);
+
+      // 현재 로그인된 사용자 정보 가져오기
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user) {
+        addToast({
+          title: "오류",
+          description: "로그인이 필요합니다.",
+          color: "danger",
+        });
+        return;
+      }
+
+      // 장르가 선택되었는지 확인
+      if (!selectedGenre) {
+        addToast({
+          title: "오류",
+          description: "장르를 선택해주세요.",
+          color: "warning",
+        });
+        return;
+      }
+
+      // 필수 입력 필드 검증
+      if (!artistName || !artistPhone || !artistIntro || !birthDate || !artistProof) {
+        addToast({
+          title: "오류",
+          description: "모든 필드를 입력해주세요.",
+          color: "warning",
+        });
+        return;
+      }
+
+      // 날짜 유효성 검사
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+        addToast({
+          title: "오류",
+          description: "날짜 형식이 유효하지 않습니다. YYYY-MM-DD 형식으로 입력해주세요.",
+          color: "warning",
+        });
+        return;
+      }
+
+      // 선택된 장르 이름 찾기
+      const genreName = genres.find(g => g.id === selectedGenre)?.name || "";
+
+      // profiles 테이블 업데이트
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          isArtist: true,
+          artist_name: artistName,
+          artist_phone: artistPhone,
+          artist_intro: artistIntro,
+          artist_birth: birthDate,  // 문자열 형태로 저장
+          artist_genre: genreName,
+          artist_proof: artistProof,
+          avatar_url: profileImage
+        })
+        .eq('id', user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      addToast({
+        title: isEdit ? "수정 완료" : "등록 완료",
+        description: isEdit ? "작가 정보가 성공적으로 수정되었습니다." : "작가 등록이 성공적으로 완료되었습니다.",
+        color: "success",
+      });
+
+      // 성공 후 리다이렉트 (예: 작가 프로필 페이지로)
+      router.push('/mypage/success');
+      
+    } catch (error) {
+      console.log('작가 등록 오류:', error);
+      addToast({
+        title: isEdit ? "수정 실패" : "등록 실패",
+        description: `작가 ${isEdit ? '정보 수정' : '등록'}에 실패했습니다: ${error.message}`,
+        color: "danger",
+      });
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  // 날짜 입력 핸들러
+  const handleDateChange = (e) => {
+    const value = e.target.value;
+    setBirthDate(value);
   };
 
   return (
@@ -150,7 +312,7 @@ export default function MagazineList() {
               <FaArrowLeft className="text-xl" />
             </Button>
             <h2 className="text-lg font-bold text-center flex-grow">
-              신규작가 등록하기
+              {isEdit ? "작가 정보 수정하기" : "신규작가 등록하기"}
             </h2>
             <div className="w-10"></div>
           </div>
@@ -187,6 +349,8 @@ export default function MagazineList() {
                 type="text"
                 variant="bordered"
                 placeholder="작가명을 입력해주세요"
+                value={artistName}
+                onChange={(e) => setArtistName(e.target.value)}
               />
             </div>
 
@@ -196,6 +360,8 @@ export default function MagazineList() {
                 type="tel"
                 variant="bordered"
                 placeholder="연락처를 입력해주세요"
+                value={artistPhone}
+                onChange={(e) => setArtistPhone(e.target.value)}
               />
             </div>
 
@@ -205,18 +371,19 @@ export default function MagazineList() {
                 variant="bordered"
                 placeholder="작가 소개를 입력해주세요"
                 minRows={4}
+                value={artistIntro}
+                onChange={(e) => setArtistIntro(e.target.value)}
               />
             </div>
 
             <div className="flex flex-col gap-y-2">
               <label className="text-sm text-[#747474] font-medium">출생연도</label>
-              <DatePicker
+              <Input
+                type="text"
                 variant="bordered"
-                placeholder="출생연도를 선택해주세요"
-                showMonthAndYearPickers
-                minValue={parseDate("1900-01-01")}
-                maxValue={parseDate(new Date().toISOString().split('T')[0])}
-                defaultValue={parseDate("1990-01-01")}
+                placeholder="YYYY-MM-DD"
+                value={birthDate}
+                onChange={handleDateChange}
               />
             </div>
 
@@ -245,6 +412,8 @@ export default function MagazineList() {
                 variant="bordered"
                 placeholder="전시 이력, 수상 경력 등 작가 활동을 증명할 수 있는 자료를 입력해주세요"
                 minRows={4}
+                value={artistProof}
+                onChange={(e) => setArtistProof(e.target.value)}
               />
             </div>
 
@@ -252,8 +421,10 @@ export default function MagazineList() {
               color="primary"
               className="w-full mt-6 mb-24 bg-black text-white"
               size="lg"
+              onPress={handleRegister}
+              isLoading={isRegistering}
             >
-              신규 작가 등록하기
+              {isEdit ? "작가 정보 수정하기" : "신규 작가 등록하기"}
             </Button>
           </div>
         </>
