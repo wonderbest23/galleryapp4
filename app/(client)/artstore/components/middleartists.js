@@ -3,16 +3,29 @@ import { Card, CardBody, Skeleton, CardFooter, Divider } from "@heroui/react";
 import { FaRegStar } from "react-icons/fa";
 import { FaStar } from "react-icons/fa";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Link from "next/link";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { createClient } from "@/utils/supabase/client";
+import Slider from "react-slick";
+import "./product-slider.css";
+
 export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleBookmark, isBookmarked }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [topCards, setTopCards] = useState([]);
   const [carouselItems, setCarouselItems] = useState([]);
-  const carouselRef = useRef(null);
   const [bookmarkedProducts, setBookmarkedProducts] = useState({});
+  const [artists, setArtists] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [banners, setBanners] = useState([]);
+  const [bannersLoading, setBannersLoading] = useState(true);
   const router = useRouter();
+  const supabase = createClient();
+  
   // 더미 데이터 - 3개의 캐러셀 아이템
   const dummyItems = [
     { id: 1, name: "전시회 1", contents: "전시회 내용 1", photo: "/noimage.jpg" },
@@ -20,81 +33,148 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
     { id: 3, name: "전시회 3", contents: "전시회 내용 3", photo: "/noimage.jpg" }
   ];
   
+  // 배너 데이터 가져오기
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        setBannersLoading(true);
+        const { data, error } = await supabase.from("banner").select("*");
+        
+        if (error) {
+          console.error('배너 데이터를 불러오는 중 오류 발생:', error);
+          return;
+        }
+
+        setBanners(data || []);
+        setBannersLoading(false);
+      } catch (error) {
+        console.error('배너 데이터 로딩 오류:', error);
+        setBannersLoading(false);
+      }
+    };
+
+    fetchBanners();
+  }, []);
+  
+  
+  // 작가 데이터 가져오기
+  useEffect(() => {
+    const fetchArtists = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('isArtist', true)
+          .limit(3);
+
+        if (error) {
+          console.error('작가 데이터를 불러오는 중 오류 발생:', error);
+          return;
+        }
+
+        setArtists(data || []);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('작가 데이터 로딩 오류:', error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchArtists();
+  }, []);
+  
+  // 상품 데이터 가져오기
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setProductsLoading(true);
+        const { data, error } = await supabase
+          .from('product')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (error) {
+          console.error('상품 데이터를 불러오는 중 오류 발생:', error);
+          return;
+        }
+
+        setProducts(data || []);
+        setProductsLoading(false);
+      } catch (error) {
+        console.error('상품 데이터 로딩 오류:', error);
+        setProductsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+  
   // 상단 카드와 캐러셀 아이템 설정
   useEffect(() => {
-    if (exhibitions && exhibitions.length) {
-      setTopCards(exhibitions.slice(0, 3));
-      setCarouselItems(exhibitions.slice(3));
+    if (banners && banners.length > 0) {
+      // 배너 데이터가 있으면 사용
+      setCarouselItems(banners);
+    } else if (exhibitions && exhibitions.length) {
+      // 배너 데이터가 없고 exhibitions 데이터가 있으면 사용
+      setCarouselItems(exhibitions);
     } else {
-      // 더미 데이터 사용
-      setTopCards(dummyItems);
+      // 둘 다 없으면 더미 데이터 사용
       setCarouselItems(dummyItems);
     }
-  }, [exhibitions]);
+  }, [exhibitions, banners]);
 
-  // 캐러셀 슬라이드 변경 핸들러
-  const handleSlideChange = useCallback((index) => {
-    setCurrentSlide(index);
+  // 슬라이더 설정
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    pauseOnHover: true,
+    adaptiveHeight: false,
     
-    // 캐러셀 스크롤 이동
-    if (carouselRef.current) {
-      carouselRef.current.scrollTo({
-        left: index * carouselRef.current.offsetWidth,
-        behavior: 'smooth'
-      });
-    }
-  }, []);
+    beforeChange: (oldIndex, newIndex) => {
+      setCurrentSlide(newIndex);
+    },
+    customPaging: (i) => (
+      <div
+        className={`w-2 h-2 mx-1 rounded-full ${
+          i === currentSlide ? "bg-[#007AFF]" : "bg-white"
+        }`}
+      />
+    ),
+    dotsClass: "slick-dots custom-dots"
+  };
 
-  // 캐러셀 스크롤 이벤트 핸들러
-  const handleScroll = useCallback(() => {
-    if (carouselRef.current && carouselItems.length) {
-      const scrollPosition = carouselRef.current.scrollLeft;
-      const slideWidth = carouselRef.current.offsetWidth;
-      const newSlide = Math.round(scrollPosition / slideWidth);
-      
-      if (newSlide !== currentSlide) {
-        setCurrentSlide(newSlide);
-      }
-    }
-  }, [currentSlide, carouselItems.length]);
+  // 커스텀 화살표 컴포넌트
+  const PrevArrow = (props) => {
+    const { className, style, onClick } = props;
+    return (
+      <div
+        className={className}
+        style={{ ...style, display: "block", left: "10px", zIndex: 1 }}
+        onClick={onClick}
+      >
+        <FaChevronLeft className="text-white text-xl" />
+      </div>
+    );
+  };
 
-  const products = [
-    { 
-      id: 1, 
-      name: "미술작품미술작품", 
-      contents: "이현경 72x60cm", 
-      price: "₩80,000",
-      photo: "/noimage.jpg" 
-    },
-    { 
-      id: 2, 
-      name: "설산과 집", 
-      contents: "이현경 72x60cm",
-      price: "₩80,000", 
-      photo: "/noimage.jpg" 
-    },
-    { 
-      id: 3, 
-      name: "설산과 집", 
-      contents: "이현경 72x60cm",
-      price: "₩80,000", 
-      photo: "/noimage.jpg" 
-    },
-    { 
-      id: 4, 
-      name: "설산과 집", 
-      contents: "이현경 72x60cm",
-      price: "₩80,000", 
-      photo: "/noimage.jpg" 
-    },
-    { 
-      id: 5, 
-      name: "설산과 집", 
-      contents: "이현경 72x60cm",
-      price: "₩80,000", 
-      photo: "/noimage.jpg" 
-    }
-  ];
+  const NextArrow = (props) => {
+    const { className, style, onClick } = props;
+    return (
+      <div
+        className={className}
+        style={{ ...style, display: "block", right: "10px", zIndex: 1 }}
+        onClick={onClick}
+      >
+        <FaChevronRight className="text-white text-xl" />
+      </div>
+    );
+  };
 
   // 북마크 토글 함수
   const toggleProductBookmark = (productId) => {
@@ -121,6 +201,21 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
         </div>
       </Card>
     </div>
+  );
+
+  // 제품 스켈레톤 UI 컴포넌트
+  const ProductSkeletonCard = () => (
+    <Card shadow="none" classNames={{base: 'gap-x-2 w-full',body: 'gap-x-2'}}>
+      <CardBody className="flex flex-row justify-center items-center">
+        <Skeleton className="rounded-lg h-[80px] w-[80px]" />
+        <div className="flex flex-col flex-grow ml-2 gap-2">
+          <Skeleton className="rounded-lg h-4 w-3/4" />
+          <Skeleton className="rounded-lg h-4 w-1/2" />
+          <Skeleton className="rounded-lg h-4 w-1/3" />
+        </div>
+        <Skeleton className="rounded-lg h-[30px] w-[30px]" />
+      </CardBody>
+    </Card>
   );
 
   // 전시회 카드 컴포넌트
@@ -154,101 +249,122 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
   ), []);
 
   // 이미지만 있는 간단한 캐러셀 아이템 컴포넌트
-  const SimpleCarouselItem = useCallback(({ exhibition }) => (
-    <div className="w-full flex-shrink-0 relative">
-      <img
-        src={exhibition.photo || "/noimage.jpg"}
-        alt={exhibition.name || "이미지"}
-        className="w-full aspect-[335/148] object-cover rounded-xl"
-      />
-    </div>
-  ), []);
-
-  // 캐러셀 아이템 컴포넌트
-  const CarouselItem = useCallback(({ exhibition }) => (
-    <div className="w-full flex-shrink-0">
-      <ExhibitionCard exhibition={exhibition} />
-    </div>
-  ), []);
+  const SimpleCarouselItem = useCallback(({ item }) => {
+    // 배너 또는 전시회 데이터에 따라 적절한 필드 사용
+    const imageUrl = item.url || item.photo || "/noimage.jpg";
+    const altText = item.title || item.name || "이미지";
+    
+    return (
+      <div className="w-full relative">
+        <img
+          src={imageUrl}
+          alt={altText}
+          className="w-full aspect-[335/148] object-cover rounded-xl"
+        />
+      </div>
+    );
+  }, []);
 
   return (
     <div className="w-full max-w-full overflow-hidden my-4">
       <div className="w-full">
-        {/* 상단 3개 카드 */}
+        {/* 상단 3개 카드 - 작가 프로필 */}
         <div className="grid grid-cols-3 gap-4 mb-4">
-          {topCards.map((exhibition, index) => (
-            <Card isPressable onPress={() => router.push(`/artist/${exhibition.id}`)} key={`top-card-${index}`} classNames={{base: 'm-1'}} shadow="sm" radius="lg">
-              <CardBody className="p-0">
-                <img src="/noimage.jpg" alt="아티스트 이미지" className="w-full h-full object-cover p-3 rounded-[24px]" />
-              </CardBody>
-              <CardFooter >  
-                <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">작가이름</p>
-              </CardFooter>
-            </Card>
-          ))}
+          {isLoading ? (
+            // 로딩 중일 때 스켈레톤 UI 표시
+            Array(3).fill().map((_, index) => (
+              <div key={`skeleton-${index}`} className="col-span-1">
+                <SkeletonCard />
+              </div>
+            ))
+          ) : (
+            artists.map((artist, index) => (
+              <Card 
+                isPressable 
+                onPress={() => router.push(`/artist/${artist.id}`)} 
+                key={`artist-${artist.id}`} 
+                classNames={{base: 'm-1'}} 
+                shadow="sm" 
+                radius="lg"
+              >
+                <CardBody className="p-0 relative w-full aspect-square">
+                  <Image 
+                    src={artist.avatar_url || "/noimage.jpg"} 
+                    alt="아티스트 이미지" 
+                    className="w-full h-full object-cover" 
+                    fill 
+                  />
+                </CardBody>
+                <CardFooter>  
+                  <p className="text-[14px] font-medium line-clamp-1 text-[#606060] text-center w-full">
+                    {artist.artist_name || artist.full_name || "작가이름"}
+                  </p>
+                </CardFooter>
+              </Card>
+            ))
+          )}
         </div>
         
         {/* 캐러셀 섹션 */}
         <div className="w-full relative p-1">
-          {/* 캐러셀 슬라이더 */}
-          <div 
-            ref={carouselRef}
-            className="w-full overflow-x-auto scrollbar-hide relative shadow-s"
-            style={{
-              display: 'flex',
-              scrollSnapType: 'x mandatory',
-              scrollBehavior: 'smooth',
-            }}
-            onScroll={handleScroll}
-          >
-            {carouselItems.map((exhibition, index) => (
-              <SimpleCarouselItem key={`carousel-${index}`} exhibition={exhibition} />
-            ))}
-            
-            {/* 닷 페이지네이션 - 이미지 내부 하단에 배치 */}
-            <div className="flex justify-center absolute bottom-2 left-0 right-0 z-10">
-              {carouselItems.map((_, index) => (
-                <button
-                  key={`dot-${index}`}
-                  className={`w-2 h-2 mx-1 rounded-full transition-colors ${
-                    currentSlide === index ? 'bg-[#007AFF]' : 'bg-white'
-                  }`}
-                  onClick={() => handleSlideChange(index)}
-                  aria-label={`슬라이드 ${index + 1}`}
-                />
-              ))}
-            </div>
+          {/* react-slick 슬라이더 */}
+          <div className="product-slider">
+            {bannersLoading ? (
+              <div className="w-full aspect-[335/148]">
+                <Skeleton className="w-full h-full rounded-xl" />
+              </div>
+            ) : (
+              <Slider {...sliderSettings}>
+                {carouselItems.map((item, index) => (
+                  <SimpleCarouselItem key={`carousel-${index}`} item={item} />
+                ))}
+              </Slider>
+            )}
           </div>
         </div>
         <Divider orientation="horizontal" className="my-4" />
         <div className="w-full">
-          {products.map((product, index) => (
-            <Card isPressable onPress={() => router.push(`/product/${product.id}`)} key={`product-${index}`} shadow="none" classNames={{base: 'gap-x-2 w-full',body: 'gap-x-2'}}>
-              <CardBody className="flex flex-row justify-center items-center">
-                <img src="/noimage.jpg" alt={product.name} className="w-[80px] h-[80px] object-cover " />
-                <div className="flex flex-col flex-grow ml-2">
-                  <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">{product.name}</p>
-                  <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">{product.contents}</p>
-                  <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">{product.price}</p>
-                </div>
-                <div className="items-center bg-gray-300 rounded-lg p-2 h-[30px] w-[30px] flex justify-center items-center">
-                  <button 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleProductBookmark(product.id);
-                    }}
-                    className="text-lg text-gray-500 hover:text-[#007AFF]"
-                  >
-                    {bookmarkedProducts[product.id] ? (
-                      <FaBookmark className="text-[#007AFF]" />
-                    ) : (
-                      <FaRegBookmark className="text-white" />
-                    )}
-                  </button>
-                </div>
-              </CardBody>
-            </Card>
-          ))}
+          {productsLoading ? (
+            // 상품 로딩 중일 때 스켈레톤 UI 표시
+            Array(5).fill().map((_, index) => (
+              <div key={`product-skeleton-${index}`}>
+                <ProductSkeletonCard />
+                {index < 4 && <Divider orientation="horizontal" className="my-2" />}
+              </div>
+            ))
+          ) : (
+            products.map((product, index) => (
+              <div key={`product-${product.id}`}>
+                <Card isPressable onPress={() => router.push(`/product/${product.id}`)} shadow="none" classNames={{base: 'gap-x-2 w-full',body: 'gap-x-2'}}>
+                  <CardBody className="flex flex-row justify-center items-center ">
+                    <div className="w-[80px] h-[80px] relative">
+                      <Image src={product.image[0] || "/noimage.jpg"} alt="product image" className="w-full h-full object-cover " fill />
+                    </div>
+                    <div className="flex flex-col flex-grow ml-2">
+                      <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">{product.name}</p>
+                      <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">{product.size} </p>
+                      <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">₩{product.price?.toLocaleString()}</p>
+                    </div>
+                    <div className="items-center bg-gray-300 rounded-lg p-2 h-[30px] w-[30px] flex justify-center items-center">
+                      <div 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toggleProductBookmark(product.id);
+                        }}
+                        className="text-lg text-gray-500 hover:text-[#007AFF] cursor-pointer"
+                      >
+                        {bookmarkedProducts[product.id] ? (
+                          <FaBookmark className="text-[#007AFF]" />
+                        ) : (
+                          <FaRegBookmark className="text-white" />
+                        )}
+                      </div>
+                    </div>
+                  </CardBody>
+                </Card>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

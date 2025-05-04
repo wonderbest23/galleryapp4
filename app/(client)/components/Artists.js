@@ -4,6 +4,7 @@ import { FaChevronRight } from "react-icons/fa";
 import { Card, CardBody, Skeleton } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { createClient } from '@/utils/supabase/client';
 
 const Artists = () => {
   const router = useRouter();
@@ -13,23 +14,51 @@ const Artists = () => {
   const isDraggingRef = useRef(false);
   const isSliderClickRef = useRef(false);
   const [artists, setArtists] = useState([]);
+  const [works, setWorks] = useState([]);
+  const [recommendedWorks, setRecommendedWorks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  const supabase = createClient();
   useEffect(() => {
-    // 더미 데이터 생성
-    const dummyArtists = Array(10)
-      .fill(null)
-      .map((_, index) => ({
-        id: index + 1,
-        name: `아티스트 ${index + 1}`,
-        field: `작품 분야 ${index + 1}`,
-        photo: `/artists/artist${(index % 5) + 1}.jpg`,
-        title: `작품명 ${index + 1}`,
-        size: `${100 + index * 10} x ${150 + index * 10} cm`,
-        price: `${(index + 1) * 10000}원`,
-      }));
-    setArtists(dummyArtists);
-    setIsLoading(false);
+    const fetchData = async () => {
+      try {
+        // 아티스트 데이터 가져오기
+        const { data: artistsData, error: artistsError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('isArtist', true)
+          .order('created_at', { ascending: false });
+
+        if (artistsError) throw artistsError;
+        setArtists(artistsData);
+
+        // 최신 작품 5개 가져오기
+        const { data: worksData, error: worksError } = await supabase
+          .from('product')
+          .select('*, artist_id(*)')
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (worksError) throw worksError;
+        setWorks(worksData);
+
+        // 추천 작품 5개 가져오기
+        const { data: recommendedData, error: recommendedError } = await supabase
+          .from('product')
+          .select('*, artist_id(*)')
+          .eq('isRecommended', true)
+          .limit(5);
+
+        if (recommendedError) throw recommendedError;
+        setRecommendedWorks(recommendedData);
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleMouseDown = useCallback((e, ref) => {
@@ -89,6 +118,8 @@ const Artists = () => {
       slider.addEventListener("touchend", onTouchEnd);
     }
   }, []);
+
+  console.log('works:', works)
 
   if (isLoading) {
     return (
@@ -151,19 +182,18 @@ const Artists = () => {
               className="flex-shrink-0 w-[100px] h-full block"
             >
               <Card  className="h-full overflow-hidden shadow transition-shadow rounded-xl ">
-                <div onClick={() => router.push(`/artist/${artist.id}`)} className="relative cursor-pointer">
+                <div onClick={() => router.push(`/artist/${artist.id}`)} className="relative cursor-pointer w-[100px] aspect-square">
                   <Image
-                    src="/noimage.jpg"
-                    alt={artist.name}
-                    width={100}
-                    height={100}
-                    className="object-cover rounded-lg"
+                    src={artist.avatar_url || "/noimage.jpg"}
+                    alt="artist"
+                    fill
+                    className="object-cover rounded-lg w-full h-full"
                     draggable="false"
                   />
                 </div>
                 <CardBody className="flex flex-col justify-between  p-3">
                   <h3 className="text-sm font-bold w-full text-center">
-                    {artist.name}
+                    {artist.artist_name}
                   </h3>
                 </CardBody>
               </Card>
@@ -188,16 +218,16 @@ const Artists = () => {
           onMouseDown={(e) => handleMouseDown(e, workSliderRef)}
           onTouchStart={(e) => handleTouchStart(e, workSliderRef)}
         >
-          {artists.map((artist) => (
-            <div key={artist.id} className="flex w-[150px] h-full block">
+          {works.map((work) => (
+            <div key={work.id} className="flex w-[150px] h-full block">
               <Card
-                className="h-full w-[150px] overflow-hidden  transition-shadow rounded-xl"
+                className="h-full w-[150px] overflow-hidden transition-shadow rounded-xl"
                 shadow="none"
               >
-                <div onClick={() => router.push(`/product/${artist.id}`)} className="relative cursor-pointer h-[200px] w-[150px]">
+                <div onClick={() => router.push(`/product/${work.id}`)} className="relative cursor-pointer h-[200px] w-[150px]">
                   <Image
-                    src="/noimage.jpg"
-                    alt={artist.name}
+                    src={work.image[0] || "/noimage.jpg"}
+                    alt="works"
                     fill
                     className="object-cover rounded-lg"
                     draggable="false"
@@ -205,17 +235,13 @@ const Artists = () => {
                 </div>
                 <div className="flex flex-col justify-between p-3">
                   <h3 className="text-[13px] w-full text-start">
-                    {artist.name}
+                    {work.name}
                   </h3>
                   <p className="text-[10px] text-start">
-                    {artist.title} {artist.size}
+                    {work.size} {work.make_method}
                   </p>
-
                   <p className="text-[14px] text-start font-bold">
-                    ₩
-                    {artist.price
-                      .toString()
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                    ₩{work.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                   </p>
                 </div>
               </Card>
@@ -223,7 +249,7 @@ const Artists = () => {
           ))}
         </div>
       </div>
-      {/* // 아티스트 가로방향 캐러샐샐 */}
+      {/* // Top of Week 가로방향 캐러샐 */}
       <div className="flex flex-row items-center justify-between w-full">
         <div className="flex flex-col items-center justify-center text-[18px] font-bold">
           Top of Week
@@ -249,16 +275,16 @@ const Artists = () => {
           onMouseDown={(e) => handleMouseDown(e, anotherSliderRef)}
           onTouchStart={(e) => handleTouchStart(e, anotherSliderRef)}
         >
-          {artists.map((artist) => (
-            <div key={artist.id} className="flex w-[150px] h-full block">
+          {recommendedWorks.map((work) => (
+            <div key={work.id} className="flex w-[150px] h-full block">
               <Card
-                className="h-full w-[125px] overflow-hidden  transition-shadow rounded-xl"
+                className="h-full w-[125px] overflow-hidden transition-shadow rounded-xl"
                 shadow="none"
               >
-                <div onClick={() => router.push(`/product/${artist.id}`)} className="relative cursor-pointer h-[150px] w-[125px]">
+                <div onClick={() => router.push(`/product/${work.id}`)} className="relative cursor-pointer h-[150px] w-[125px]">
                   <Image
-                    src="/noimage.jpg"
-                    alt={artist.name}
+                    src={work.image[0] || "/noimage.jpg"}
+                    alt='bestofweek'
                     fill
                     className="object-cover rounded-lg"
                     draggable="false"
@@ -266,15 +292,10 @@ const Artists = () => {
                 </div>
                 <div className="flex flex-col justify-between p-3">
                   <h3 className="text-[14px] w-full text-start">
-                    {artist.name}
+                    {work.name}
                   </h3>
-                  
-
                   <p className="text-[12px] text-start font-bold">
-                    ₩
-                    {artist.price
-                      .toString()
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                    ₩{work.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                   </p>
                 </div>
               </Card>

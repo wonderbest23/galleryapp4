@@ -176,7 +176,7 @@ export default function App() {
     customPaging: (i) => (
       <div 
         className={`w-2 h-2 mx-1 rounded-full ${
-          i === currentSlide ? 'bg-[#007AFF]' : 'bg-[#B8B8B8] opacity-30'
+          i === currentSlide ? 'bg-[#007AFF]' : 'bg-white '
         }`} 
       />
     ),

@@ -3,67 +3,52 @@ import React from "react";
 import { Button, Skeleton } from "@heroui/react";
 import { FaChevronLeft } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { Card, CardBody, Divider, Image, CardFooter } from "@heroui/react";
+import { Card, CardBody, Divider, CardFooter } from "@heroui/react";
 import { FaPlusCircle } from "react-icons/fa";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
-export default function MagazineList() {
-  const [magazines, setMagazines] = useState([]);
+import Image from "next/image";
+export default function ArtistList() {
   const [visibleCount, setVisibleCount] = useState(12);
   const [allLoaded, setAllLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const supabase = createClient();
-  const [topCards, setTopCards] = useState([]);
-  const [visibleTopCards, setVisibleTopCards] = useState([]);
+  const [artists, setArtists] = useState([]);
+  const [visibleArtists, setVisibleArtists] = useState([]);
 
-  // 더미 데이터 - 20개의 탑 카드 아이템
-  const dummyTopCards = [
-    { id: 1, name: "김작가", photo: "/noimage.jpg" },
-    { id: 2, name: "이작가", photo: "/noimage.jpg" },
-    { id: 3, name: "박작가", photo: "/noimage.jpg" },
-    { id: 4, name: "최작가", photo: "/noimage.jpg" },
-    { id: 5, name: "정작가", photo: "/noimage.jpg" },
-    { id: 6, name: "강작가", photo: "/noimage.jpg" },
-    { id: 7, name: "조작가", photo: "/noimage.jpg" },
-    { id: 8, name: "윤작가", photo: "/noimage.jpg" },
-    { id: 9, name: "장작가", photo: "/noimage.jpg" },
-    { id: 10, name: "임작가", photo: "/noimage.jpg" },
-    { id: 11, name: "한작가", photo: "/noimage.jpg" },
-    { id: 12, name: "오작가", photo: "/noimage.jpg" },
-    { id: 13, name: "서작가", photo: "/noimage.jpg" },
-    { id: 14, name: "신작가", photo: "/noimage.jpg" },
-    { id: 15, name: "권작가", photo: "/noimage.jpg" },
-    { id: 16, name: "황작가", photo: "/noimage.jpg" },
-    { id: 17, name: "안작가", photo: "/noimage.jpg" },
-    { id: 18, name: "송작가", photo: "/noimage.jpg" },
-    { id: 19, name: "전작가", photo: "/noimage.jpg" },
-    { id: 20, name: "홍작가", photo: "/noimage.jpg" },
-  ];
+  const getArtists = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('isArtist', true);
+      
+      if (error) {
+        console.error('아티스트 데이터를 불러오는 중 오류 발생:', error);
+        return;
+      }
 
-  useEffect(() => {
-    setTopCards(dummyTopCards);
-    setVisibleTopCards(dummyTopCards.slice(0, visibleCount));
-    setAllLoaded(dummyTopCards.length <= visibleCount);
-  }, [visibleCount]);
-
-  const getMagazines = async () => {
-    const { data, error } = await supabase
-      .from("magazine")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setMagazines(data);
-    setAllLoaded(data.length <= visibleCount);
-    setIsLoading(false);
+      setArtists(data || []);
+      setVisibleArtists((data || []).slice(0, visibleCount));
+      setAllLoaded((data || []).length <= visibleCount);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('데이터 로딩 오류:', error);
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    getMagazines();
+    getArtists();
   }, []);
 
-  console.log("magazines:", magazines);
+  useEffect(() => {
+    setVisibleArtists(artists.slice(0, visibleCount));
+    setAllLoaded(artists.length <= visibleCount);
+  }, [visibleCount, artists]);
 
   const loadMore = () => {
     const newVisibleCount = visibleCount + 12;
@@ -71,7 +56,7 @@ export default function MagazineList() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center ">
+    <div className="flex flex-col items-center justify-center">
       {isLoading ? (
         <div className="flex flex-col items-center justify-center w-full h-full gap-y-6 mt-12">
           {[...Array(5)].map((_, index) => (
@@ -104,45 +89,45 @@ export default function MagazineList() {
             <div className="w-10"></div>
           </div>
           <div className="grid grid-cols-3 gap-4 mb-4 w-[90%] mt-4">
-            {visibleTopCards.map((exhibition, index) => (
+            {visibleArtists.map((artist, index) => (
               <Card
-                key={`top-card-${index}`}
+                key={`artist-card-${index}`}
                 classNames={{ base: "m-1" }}
+                
                 shadow="sm"
                 radius="lg"
                 isPressable
-                onPress={() => router.push(`/artist/${exhibition.id}`)}
+                onPress={() => router.push(`/artist/${artist.id}`)}
                 className="hover:cursor-pointer"
               >
-                <CardBody className="p-2">
-                  <img
-                    src="/noimage.jpg"
-                    alt="아티스트 이미지"
-                    className="w-full h-full object-cover rounded-2xl"
-                  />
+                <CardBody className="p-0">
+                  <div className="relative w-full aspect-square">
+                    <Image
+                      src={artist.avatar_url || "/noimage.jpg"}
+                      alt="아티스트 이미지"
+                      className="object-cover rounded-2xl"
+                      fill
+                    />
+                  </div>
                  <div className="flex flex-col items-center justify-center my-2">
                     <p className="text-[14px] font-medium line-clamp-1 text-[#606060] text-center">
-                      {exhibition.name}
+                      {artist.full_name || artist.username || '이름 없음'}
                     </p>
-                   
                  </div>
                 </CardBody>
               </Card>
             ))}
           </div>
           
-          <div className="flex justify-center my-4">
-            <div
-              
-              
-              onClick={loadMore}
-              className="mb-4"
-            >
-              <FaPlusCircle 
-                className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
-              />
+          {!allLoaded && (
+            <div className="flex justify-center my-4">
+              <div onClick={loadMore} className="mb-4">
+                <FaPlusCircle 
+                  className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
+                />
+              </div>
             </div>
-          </div>
+          )}
         </>
       )}
     </div>

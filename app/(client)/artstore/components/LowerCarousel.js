@@ -1,72 +1,48 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Card, CardBody, Skeleton, CardFooter, Divider } from "@heroui/react";
-import { FaRegStar } from "react-icons/fa";
-import { FaStar } from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react";
+import { Card, CardBody } from "@heroui/react";
+import { FaRegStar, FaStar } from "react-icons/fa";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import Image from "next/image";
+import { createClient } from "@/utils/supabase/client";
+
 export default function LowerCarousel() {
-  const scrollRef = useRef(null);
-  // 드래그 상태를 추적하는 ref
-  const isDraggingRef = useRef(false);
-  // 슬라이더 요소에서만 동작하도록 체크하는 ref
-  const isSliderClickRef = useRef(false);
   const router = useRouter();
-  const [artItems, setArtItems] = useState([
-    {
-      id: 1,
-      image: "/noimage.jpg",
-      title: "꽃이 있는 풍경",
-      artist: "김예술",
-      price: "₩250,000",
-      liked: false,
-      bookmarked: false,
-    },
-    {
-      id: 2,
-      image: "/noimage.jpg",
-      title: "바다의 소리",
-      artist: "이창작",
-      price: "₩180,000",
-      liked: false,
-      bookmarked: false,
-    },
-    {
-      id: 3,
-      image: "/noimage.jpg",
-      title: "가을 숲",
-      artist: "박작가",
-      price: "₩320,000",
-      liked: false,
-      bookmarked: false,
-    },
-    {
-      id: 4,
-      image: "/noimage.jpg",
-      title: "도시의 야경",
-      artist: "정아트",
-      price: "₩210,000",
-      liked: false,
-      bookmarked: false,
-    },
-    {
-      id: 5,
-      image: "/noimage.jpg",
-      title: "서울의 밤",
-      artist: "홍미술",
-      price: "₩280,000",
-      liked: false,
-      bookmarked: false,
-    },
-    {
-      id: 6,
-      image: "/noimage.jpg",
-      title: "산과 바다",
-      artist: "최화가",
-      price: "₩195,000",
-      liked: false,
-      bookmarked: false,
-    },
-  ]);
+  const [artItems, setArtItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isDragging, setIsDragging] = useState(false);
+  const supabase = createClient();
+  const sliderRef = useRef(null);
+
+  useEffect(() => {
+    const fetchTopProducts = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('product')
+          .select('*')
+          .eq('isTopOfWeek', true)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('이번 주 인기 상품을 불러오는 중 오류 발생:', error);
+          return;
+        }
+
+        // 데이터를 그대로 설정
+        setArtItems(data || []);
+      } catch (error) {
+        console.error('상품 데이터 로딩 오류:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTopProducts();
+  }, []);
 
   const toggleLike = (id) => {
     setArtItems((prev) =>
@@ -84,142 +60,91 @@ export default function LowerCarousel() {
     );
   };
 
-  // 마우스 이벤트 핸들러
-  const handleMouseDown = useCallback((e) => {
-    isSliderClickRef.current = true;
-    e.preventDefault();
-    
-    if (scrollRef.current) {
-      isDraggingRef.current = false;
-      scrollRef.current.style.cursor = "grabbing";
-      
-      const slider = scrollRef.current;
-      const startX = e.pageX;
-      const scrollLeft = slider.scrollLeft;
-      
-      // 마우스 이동 이벤트 핸들러
-      const onMouseMove = (e) => {
-        if (!isSliderClickRef.current) return;
-        
-        e.preventDefault();
-        isDraggingRef.current = true;
-        
-        const x = e.pageX;
-        // 자연스러운 1:1 이동으로 변경
-        const walk = startX - x;
-        slider.scrollLeft = scrollLeft + walk;
-      };
-      
-      // 마우스 업 이벤트 핸들러
-      const onMouseUp = (e) => {
-        isSliderClickRef.current = false;
-        slider.style.cursor = "grab";
-        
-        // 드래그 상태 해제 시간 단축
-        setTimeout(() => {
-          isDraggingRef.current = false;
-        }, 10);
-        
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
-      };
-      
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
+  const handleCardClick = (id, e) => {
+    // 드래그 중이면 페이지 이동 방지
+    if (!isDragging) {
+      router.push(`/product/${id}`);
     }
-  }, []);
+  };
 
-  // 터치 이벤트 핸들러
-  const handleTouchStart = useCallback((e) => {
-    isSliderClickRef.current = true;
-    
-    if (scrollRef.current) {
-      isDraggingRef.current = false;
-      const slider = scrollRef.current;
-      const startX = e.touches[0].clientX;
-      const scrollLeft = slider.scrollLeft;
-      
-      // 터치 이동 이벤트 핸들러
-      const onTouchMove = (e) => {
-        if (!isSliderClickRef.current) return;
-        
-        isDraggingRef.current = true;
-        
-        const x = e.touches[0].clientX;
-        // 자연스러운 1:1 이동으로 변경
-        const walk = startX - x;
-        slider.scrollLeft = scrollLeft + walk;
-      };
-      
-      // 터치 종료 이벤트 핸들러
-      const onTouchEnd = () => {
-        isSliderClickRef.current = false;
-        
-        // 지연시간 최소화
-        setTimeout(() => {
-          isDraggingRef.current = false;
-        }, 10);
-        
-        slider.removeEventListener("touchmove", onTouchMove);
-        slider.removeEventListener("touchend", onTouchEnd);
-      };
-      
-      slider.addEventListener("touchmove", onTouchMove, { passive: false });
-      slider.addEventListener("touchend", onTouchEnd);
+  // react-slick 설정
+  const settings = {
+    dots: false,
+    arrows: false,
+    infinite: false,
+    speed: 500,
+    slidesToShow: 2.5,
+    slidesToScroll: 1,
+    swipeToSlide: true,
+    touchThreshold: 10,
+    cssEase: "cubic-bezier(0.23, 1, 0.32, 1)",
+    beforeChange: () => setIsDragging(true),
+    afterChange: () => {
+      // 슬라이드 변경 후 약간의 지연시간을 두고 드래그 상태 해제
+      setTimeout(() => {
+        setIsDragging(false);
+      }, 100);
     }
-  }, []);
+  };
+  console.log('artItems:', artItems)
 
-  return (
-    <div className="w-full overflow-hidden my-4">
-      <div
-        ref={scrollRef}
-        className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
-        style={{
-          scrollSnapType: "x mandatory",
-          scrollBehavior: "auto",
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-          WebkitOverflowScrolling: "touch",
-          cursor: "grab",
-          touchAction: "pan-x",
-        }}
-        onMouseDown={handleMouseDown}
-        onTouchStart={handleTouchStart}
-      >
-        <div className="flex gap-4 pr-8 relative z-10">
-          {artItems.map((item) => (
-            <div
-              key={item.id}
-              className="flex-shrink-0"
-              onClick={(e) => {
-                // 드래그 중에는 클릭 이벤트 방지
-                if (isDraggingRef.current) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }
-              }}
-            >
-              <Card isPressable onPress={() => router.push(`/product/${item.id}`)} className="cursor-pointer rounded-xl overflow-hidden shadow-sm h-full flex flex-col">
-                <div className="relative w-[127px] h-[150px] mx-auto">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover rounded-2xl"
-                  />
-                </div>
-                <CardBody className="p-3">
-                  <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">
-                    {item.title}
-                  </p>
-                  <p className="text-[14px] text-black font-bold mt-1">
-                    {item.price}
-                  </p>
-                </CardBody>
-              </Card>
+  if (loading) {
+    return (
+      <div className="w-full overflow-hidden my-4">
+        <div className="flex gap-4 pb-4">
+          {[1, 2, 3].map((_, index) => (
+            <div key={index} className="flex-shrink-0 w-[127px]">
+              <div className="bg-gray-200 h-[150px] rounded-xl animate-pulse"></div>
+              <div className="mt-2 bg-gray-200 h-4 w-3/4 rounded animate-pulse"></div>
+              <div className="mt-1 bg-gray-200 h-4 w-1/2 rounded animate-pulse"></div>
             </div>
           ))}
         </div>
       </div>
+    );
+  }
+
+  // 상품이 없는 경우
+  if (artItems.length === 0) {
+    return (
+      <div className="w-full overflow-hidden my-4 text-center py-8">
+        <p className="text-gray-500">이번 주 인기 상품이 없습니다.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full overflow-hidden my-4">
+      <Slider {...settings} ref={sliderRef}>
+        {artItems.map((item) => (
+          <div key={item.id} className="pr-4">
+            <Card 
+              
+              className="cursor-pointer rounded-xl overflow-hidden shadow-sm h-full flex flex-col"
+            >
+              <div 
+                onClick={(e) => handleCardClick(item.id, e)} 
+                className="relative w-[127px] h-[150px] mx-auto"
+              >
+                <Image
+                  src={item.image[0]}
+                  alt={item.name}
+                  className="w-full h-full object-cover rounded-2xl"
+                  fill
+                />
+              </div>
+              <CardBody className="p-3" onClick={(e) => handleCardClick(item.id, e)}>
+                <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">
+                  {item.name}
+                </p>
+                <p className="text-[14px] text-black font-bold mt-1">
+                  {item.price ? `₩${Number(item.price).toLocaleString()}` : ""}
+                </p>
+              </CardBody>
+            </Card>
+          </div>
+        ))}
+      </Slider>
     </div>
   );
 }
