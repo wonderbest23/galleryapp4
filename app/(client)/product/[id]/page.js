@@ -310,7 +310,6 @@ export default function App() {
             <div className="w-[90%] h-full mt-2">
               <div className="text-[10px]">제작방식:{product?.make_method}</div>
               <div className="text-[10px]">소재:{product?.make_material}</div>
-              <div className="text-[10px]">사이즈:{product?.make_size} / Frame:{product?.make_frame}</div>
             </div>
             <div className="w-full h-full mt-2 flex flex-row justify-between items-center">
               

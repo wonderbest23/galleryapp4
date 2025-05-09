@@ -9,7 +9,7 @@ import {
   Spinner,
 } from "@heroui/react";
 import { FaChevronLeft } from "react-icons/fa";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
   CardBody,
@@ -27,112 +27,102 @@ import { parseDate } from "@internationalized/date";
 import { CiImageOn } from "react-icons/ci";
 import { FaCircleCheck } from "react-icons/fa6";
 
-export default function MagazineList() {
-  const [magazines, setMagazines] = useState([]);
-  const [visibleCount, setVisibleCount] = useState(12);
-  const [allLoaded, setAllLoaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [profileImage, setProfileImage] = useState("/noimage.jpg");
-  const [isUploading, setIsUploading] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState(null);
-  const [quantity, setQuantity] = useState(1);
+export default function PaymentSuccessPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(true);
+  const [ticketInfo, setTicketInfo] = useState({
+    exhibition: null,
+    user: null,
+    ticketCount: 0,
+    purchaseDate: new Date().toISOString(),
+    orderId: ""
+  });
   const supabase = createClient();
-  const [topCards, setTopCards] = useState([]);
-  const [visibleTopCards, setVisibleTopCards] = useState([]);
-
-  const genres = [
-    { id: 1, name: "현대미술" },
-    { id: 2, name: "명화/동양화" },
-    { id: 3, name: "추상화" },
-    { id: 4, name: "사진/일러스트" },
-    { id: 5, name: "기타" },
-  ];
-
-  // 더미 데이터 - 20개의 탑 카드 아이템
-  const dummyTopCards = [
-    { id: 1, name: "김작가", photo: "/noimage.jpg" },
-    { id: 2, name: "이작가", photo: "/noimage.jpg" },
-    { id: 3, name: "박작가", photo: "/noimage.jpg" },
-    { id: 4, name: "최작가", photo: "/noimage.jpg" },
-    { id: 5, name: "정작가", photo: "/noimage.jpg" },
-    { id: 6, name: "강작가", photo: "/noimage.jpg" },
-    { id: 7, name: "조작가", photo: "/noimage.jpg" },
-    { id: 8, name: "윤작가", photo: "/noimage.jpg" },
-    { id: 9, name: "장작가", photo: "/noimage.jpg" },
-    { id: 10, name: "임작가", photo: "/noimage.jpg" },
-    { id: 11, name: "한작가", photo: "/noimage.jpg" },
-    { id: 12, name: "오작가", photo: "/noimage.jpg" },
-    { id: 13, name: "서작가", photo: "/noimage.jpg" },
-    { id: 14, name: "신작가", photo: "/noimage.jpg" },
-    { id: 15, name: "권작가", photo: "/noimage.jpg" },
-    { id: 16, name: "황작가", photo: "/noimage.jpg" },
-    { id: 17, name: "안작가", photo: "/noimage.jpg" },
-    { id: 18, name: "송작가", photo: "/noimage.jpg" },
-    { id: 19, name: "전작가", photo: "/noimage.jpg" },
-    { id: 20, name: "홍작가", photo: "/noimage.jpg" },
-  ];
 
   useEffect(() => {
-    setTopCards(dummyTopCards);
-    setVisibleTopCards(dummyTopCards.slice(0, visibleCount));
-    setAllLoaded(dummyTopCards.length <= visibleCount);
-  }, [visibleCount]);
+    const fetchData = async () => {
+      try {
+        const exhibitionId = searchParams.get('exhibition_id');
+        const userId = searchParams.get('user_id');
+        const ticketCount = searchParams.get('ticket_count') || 1;
+        const paymentKey = searchParams.get('paymentKey');
+        const amount= searchParams.get('amount');
+        const orderId = searchParams.get('orderId');
+        console.log('orderId:', orderId)
+        // 전시회 정보 가져오기
+        const { data: exhibitionData, error: exhibitionError } = await supabase
+          .from("exhibition")
+          .select("*, gallery:naver_gallery_url(*)")
+          .eq("id", exhibitionId)
+          .single();
+        
+        if (exhibitionError) {
+          console.log("전시회 정보를 가져오는 중 오류 발생:", exhibitionError);
+          return;
+        }
+        
+        // 사용자 정보 가져오기
+        const { data: userData, error: userError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
+        
+        if (userError) {
+          console.log("사용자 정보를 가져오는 중 오류 발생:", userError);
+        }
+        
+        // 티켓 정보 저장
+        
+        setTicketInfo({
+          exhibition: exhibitionData,
+          user: userData || { name: "게스트" },
+          ticketCount: parseInt(ticketCount),
+          purchaseDate: new Date().toISOString(),
+          orderId: orderId
+        });
+        
 
-  const getMagazines = async () => {
-    const { data, error } = await supabase
-      .from("magazine")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setMagazines(data);
-    setAllLoaded(data.length <= visibleCount);
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    getMagazines();
-  }, []);
-
-  console.log("magazines:", magazines);
-
-  const loadMore = () => {
-    const newVisibleCount = visibleCount + 12;
-    setVisibleCount(newVisibleCount);
-  };
-
-  const handleImageUpload = async (e) => {
-    try {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      setIsUploading(true);
-
-      // 파일 확장자 추출
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      // Supabase Storage에 이미지 업로드
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file);
-
-      if (uploadError) {
-        throw uploadError;
+        
+        // payment_credit 테이블에 결제 정보 저장
+        const { error: paymentError } = await supabase
+          .from('payment_ticket')
+          .upsert([
+            {
+              exhibition_id: exhibitionId,
+              amount: amount,
+              payment_key: paymentKey, // 결제 키로 orderId 사용
+              order_id: orderId,
+              status: 'success',
+              people_count: ticketCount,
+              user_id: userId,
+              
+            }
+          ], { 
+            onConflict: 'order_id',
+            ignoreDuplicates: false 
+          });
+        
+        if (paymentError) {
+          console.log("결제 정보 저장 중 오류 발생:", paymentError);
+        }
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.log("데이터 가져오기 오류:", error);
+        setIsLoading(false);
       }
+    };
+    
+    fetchData();
+  }, [searchParams]);
 
-      // 업로드된 이미지의 public URL 가져오기
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(filePath);
-
-      // 이미지 URL 상태 업데이트
-      setProfileImage(publicUrl);
-    } catch (error) {
-      console.error("Error uploading image:", error);
-    } finally {
-      setIsUploading(false);
-    }
+  // 날짜 포맷 함수
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR') + ' ' + 
+           date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
   return (
@@ -156,22 +146,39 @@ export default function MagazineList() {
         </div>
       ) : (
         <>
-          <div className="w-[90%] flex flex-col gap-y-12 mt-6 h-[calc(100vh-150px)] justify-center ">
+          <div className="bg-white flex items-center w-[90%] justify-between">
+            <Button
+              isIconOnly
+              variant="light"
+              className="mr-2"
+              onPress={() => router.push("/")}
+            >
+              <FaArrowLeft className="text-xl" />
+            </Button>
+            <h2 className="text-lg font-bold text-center flex-grow">
+              결제 완료
+            </h2>
+            <div className="w-10"></div>
+          </div>
+          
+          <div className="w-[90%] flex flex-col gap-y-10 mt-6 h-[calc(100vh-150px)] justify-center">
             <div className="flex flex-col items-center justify-center">
               <div className="text-[36px] text-black font-bold">
                 <div>결제 완료!</div>
-                <div className="text-[10px] text-black font-medium">
-                  최중섭:Layer landspace 전시회
+                <div className="text-[14px] text-black font-medium text-center mt-2">
+                  {ticketInfo.exhibition?.contents}
                 </div>
               </div>
             </div>
-
-            <div className="text-[12px] text-black font-medium text-center">
-              <p>성명:김주홍</p>
-              <p>구매날짜:2025-03-05 16:01:12</p>
-              <p>티켓 구매 수</p>
-              <p>구매넘버:2352930492034</p>
+          
+            <div className="w-full h-[200px] py-12 text-[12px] text-black font-medium text-start bg-[#FAFAFA] px-20 rounded-2xl">
+              <p>성명: {ticketInfo.user?.name || "게스트"}</p>
+              <p>구매날짜: {formatDate(ticketInfo.purchaseDate)}</p>
+              <p>티켓 구매 수: {ticketInfo.ticketCount}매</p>
+              <p>구매번호: {ticketInfo.orderId}</p>
+              <p>총 결제금액: {(ticketInfo.exhibition?.price * ticketInfo.ticketCount).toLocaleString()}원</p>
             </div>
+            
             <div className="flex flex-col items-center justify-center gap-y-4">
               <FaCircleCheck className="text-green-500 text-[40px]" />
               <div className="text-[18px] text-black font-medium">
@@ -181,10 +188,10 @@ export default function MagazineList() {
 
             <Button
               onPress={() => router.push("/")}
-              className="w-fullfont-bold bg-white border-2 border-black text-black"
+              className="w-full font-bold bg-white border-2 border-black text-black"
               size="lg"
             >
-              홈으로 돌아가기기
+              홈으로 돌아가기
             </Button>
           </div>
         </>

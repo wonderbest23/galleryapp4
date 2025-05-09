@@ -5,106 +5,20 @@ import {
   Skeleton,
   Divider,
   NumberInput,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { FaArrowLeft } from "react-icons/fa";
-import { useState, useEffect } from "react";
-import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
-import { createClient } from "@/utils/supabase/client";
+import { useState } from "react";
 
 export default function PaymentPage() {
-  const {isOpen, onOpen, onOpenChange} = useDisclosure();
   const [isLoading, setIsLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
-  const [payment, setPayment] = useState(null);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("CARD");
-  const [userData, setUserData] = useState(null);
-  const [customerKey, setCustomerKey] = useState(null);
-  const supabase = createClient();
-  const clientKey = process.env.NEXT_PUBLIC_TOSSPAYMENTS_API_KEY;
-  
-  const generateRandomString = () => {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  };
-  const removeSpecialCharacters = (value) => {
-    return value.replace(/[^0-9]/g, '');
-  };
-
-  const getUser = async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error) {
-      console.log("Error fetching user:", error);
-    }
-    setUserData(data.user);
-    setCustomerKey(data.user.id);
-  };
-  
-  useEffect(() => {
-    getUser();
-  }, []);
 
   // 수량 변경 핸들러
   const handleQuantityChange = (value) => {
     setQuantity(value);
   };
-
-  console.log("customerKey:", customerKey);
-
-  //SDK를 일단 로드한다.
-  useEffect(() => {
-    if (!customerKey) {
-      console.log("clientKey가 설정되지 않았습니다.");
-      return;
-    }
-    async function fetchPayment() {
-      try {
-        const tossPayments = await loadTossPayments(clientKey);
-
-        // 회원 결제
-        const payment = tossPayments.payment({
-          customerKey,
-        });
-
-        setPayment(payment);
-      } catch (error) {
-        console.log("Error fetching payment:", error);
-      }
-    }
-
-    fetchPayment();
-  }, [clientKey, customerKey]);
-
-  //결제 함수를 만들자
-  async function requestPayment() {
-    const successUrlWithParams = `${window.location.origin}/payment/success?user_id=${userData.id}`;
-    // const successUrlWithParams = `${window.location.origin}/inquiries/complete?time_slot_id=${selectedResult.slot_id}&user_id=${userData.id}&participants=${selectedResult.noParticipants}`;
-
-    if (selectedPaymentMethod === "CARD") {
-      await payment.requestPayment({
-        method: "CARD",
-        amount: { currency: "KRW", value: totalAmount },
-        orderId: generateRandomString(),
-        orderName: "크레딧 충전",
-        successUrl: successUrlWithParams,
-        failUrl: window.location.origin + "/fail",
-        customerEmail: userData.email,
-        customerName: userData.name,
-        card: {
-          useEscrow: false,
-          flowMode: "DEFAULT",
-          useCardPoint: false,
-          useAppCardOnly: false,
-        },
-      });
-    }
-  }
 
   // 총 금액 계산
   const totalAmount = quantity * 10000;
@@ -229,22 +143,18 @@ export default function PaymentPage() {
             <div className="flex flex-col gap-y-4 p-4 bg-gray-50 rounded-lg">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">주문금액</span>
-                <span className="font-medium">
-                  {totalAmount.toLocaleString()}원
-                </span>
+                <span className="font-medium">{totalAmount.toLocaleString()}원</span>
               </div>
-              <Divider className="my-2" />
+              <Divider className="my-2"/>
               <div className="flex justify-between items-center">
                 <span className="text-gray-800 font-medium">총 결제금액</span>
-                <span className="text-lg font-bold text-blue-600">
-                  {totalAmount.toLocaleString()}원
-                </span>
+                <span className="text-lg font-bold text-blue-600">{totalAmount.toLocaleString()}원</span>
               </div>
             </div>
 
             <Button
-              onPress={requestPayment}
-              className="w-full mt-6 mb-24 text-white font-bold bg-[#007AFF]"
+              onPress={() => router.push("/payment/process")}
+              className="w-full mt-6 mb-24  text-white font-bold bg-[#007AFF]"
               size="lg"
             >
               결제하기

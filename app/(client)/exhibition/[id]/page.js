@@ -26,6 +26,7 @@ import { HiOutlineCurrencyDollar } from "react-icons/hi2";
 import CardReview from "./components/card-review";
 import { FaArrowLeft } from "react-icons/fa";
 import { LuSend } from "react-icons/lu";
+import { loadTossPayments } from "@tosspayments/tosspayments-sdk";
 
 export default function App() {
   const { id } = useParams();
@@ -41,7 +42,10 @@ export default function App() {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [allDataLoaded, setAllDataLoaded] = useState(false);
   const [ticketCount, setTicketCount] = useState(1);
+  const [payment, setPayment] = useState(null);
+  const [userData, setUserData] = useState(null);
   const supabase = createClient();
+  const clientKey = process.env.NEXT_PUBLIC_TOSSPAYMENTS_API_KEY;
 
   useEffect(() => {
     if (
@@ -282,6 +286,89 @@ export default function App() {
     return exhibition.price * ticketCount;
   };
 
+  useEffect(() => {
+    const getUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.log("사용자 정보 가져오기 오류:", error);
+        return;
+      }
+      if (data && data.user) {
+        setUserData(data.user);
+      }
+    };
+    
+    getUser();
+  }, []);
+
+  // 토스페이먼츠 결제 SDK 로드
+  useEffect(() => {
+    if (!userData || !clientKey) return;
+    
+    const fetchPayment = async () => {
+      try {
+        const tossPayments = await loadTossPayments(clientKey);
+        
+        // 회원 결제
+        const payment = tossPayments.payment({
+          customerKey: userData.id,
+        });
+        
+        setPayment(payment);
+      } catch (error) {
+        console.log("결제 설정 오류:", error);
+      }
+    };
+    
+    fetchPayment();
+  }, [clientKey, userData]);
+
+  // 랜덤 문자열 생성 함수
+  const generateRandomString = () => {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  };
+  
+  // 결제 요청 함수
+  const requestPayment = async () => {
+    if (!payment || !userData || !exhibition) {
+      addToast({
+        title: "결제 오류",
+        description: "결제 정보를 가져오는 중 오류가 발생했습니다.",
+        color: "danger",
+      });
+      return;
+    }
+    
+    const totalAmount = calculateTotalPrice();
+    const successUrlWithParams = `${window.location.origin}/ticket/success?exhibition_id=${id}&user_id=${userData.id}&ticket_count=${ticketCount}`;
+
+    try {
+      await payment.requestPayment({
+        method: "CARD",
+        amount: { currency: "KRW", value: totalAmount },
+        orderId: generateRandomString(),
+        orderName: `${exhibition.contents} 티켓 ${ticketCount}매`,
+        successUrl: successUrlWithParams,
+        failUrl: `${window.location.origin}/ticket/fail`,
+        customerEmail: userData.email,
+        customerName: userData.user_metadata?.name || "고객",
+        card: {
+          useEscrow: false,
+          flowMode: "DEFAULT",
+          useCardPoint: false,
+          useAppCardOnly: false,
+        },
+      });
+    } catch (error) {
+      console.error("결제 요청 오류:", error);
+      addToast({
+        title: "결제 오류",
+        description: "결제 처리 중 오류가 발생했습니다.",
+        color: "danger",
+      });
+    }
+  };
+
   return (
     <>
       {!allDataLoaded ? (
@@ -405,22 +492,24 @@ export default function App() {
             </div>
             <div className="flex flex-row gap-2">
               <Button
-                target="_blank"
-                onPress={() => router.push("/ticket/payment")}
-                className="w-full mt-4 bg-[#004BFE] text-white text-[13px] font-bold"
+                onPress={exhibition?.isSale ? requestPayment : undefined}
+                className={`w-full mt-4 ${exhibition?.isSale ? 'bg-[#004BFE]' : 'bg-gray-400'} text-white text-[13px] font-bold`}
                 size="lg"
+                disabled={!exhibition?.isSale}
               >
-                티켓구매
+                {exhibition?.isSale ? '티켓구매' : '판매중지'}
               </Button>
               <Button
                 target="_blank"
                 onPress={() => router.push(exhibition?.homepage_url)}
-                className="w-full mt-4 bg-default-300 text-white text-[13px] font-bold"
+                className="w-full mt-4 border-3 border-gray-400 text-gray-400 text-[13px] font-bold"
                 size="lg"
+                variant="bordered"
               >
                 사이트연결
               </Button>
             </div>
+            {exhibition?.isSale && (
             <div className="flex flex-row items-center justify-between mt-4 rounded-lg p-4 shadow-md">
               <div className="text-[14px] font-bold">합계금액</div>
               <div className="flex flex-row items-center gap-2">
@@ -444,6 +533,7 @@ export default function App() {
                 </div>
               </div>
             </div>
+            )}
           </div>
 
           {/* 커스텀 탭바 섹션 */}

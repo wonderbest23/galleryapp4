@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Card, CardBody, Image, Button, Spinner } from "@heroui/react";
+import { Card, CardBody, Image, Button, Spinner,addToast } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
@@ -49,7 +49,7 @@ export default function MyArtworks({ user, profile }) {
     <div className="grid grid-cols-4 gap-4 w-[90%]">
       {isLoading ? (
         <div className="col-span-4 flex justify-center py-8">
-          <Spinner />
+          <Spinner variant="wave" color="primary" />
         </div>
       ) : (
         <>
@@ -78,18 +78,32 @@ export default function MyArtworks({ user, profile }) {
       <div className="col-span-4 text-center text-[12px] text-gray-500 font-bold mt-4">
         현재등록 {artworks.length}건 / 신규등록 가능 수 {profile?.artist_credit}건
       </div>
-      <Button
-        onPress={() => router.push("/addProduct")}
-        className="col-span-4 bg-black text-white text-[16px] h-12"
-      >
-        신규작품 등록하기
-      </Button>
-      <Button
-        onPress={() => router.push("/payment/process")}
-        className="col-span-4 bg-[#007AFF] text-white text-[16px] h-12"
-      >
-        결제하기
-      </Button>
+      {profile?.isArtistApproval === true && (
+        <>
+          <Button
+            onPress={() => {
+              if (profile?.artist_credit === 0) {
+                addToast({
+                  title: "알림",
+                  description: "결제 후 신규작품을 등록해주세요.",
+                  color: "danger"
+                });
+                return;
+              }
+              router.push("/addProduct");
+            }}
+            className="col-span-4 bg-black text-white text-[16px] h-12"
+          >
+            신규작품 등록하기
+          </Button>
+          <Button
+            onPress={() => router.push("/payment")}
+            className="col-span-4 bg-[#007AFF] text-white text-[16px] h-12"
+          >
+            결제하기
+          </Button>
+        </>
+      )}
     </div>
   );
 }

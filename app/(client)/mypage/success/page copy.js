@@ -16,7 +16,7 @@ import {
   ModalFooter,
   useDisclosure,
 } from "@heroui/react";
-import { FaChevronLeft, FaFileContract, FaCheckCircle, FaClock } from "react-icons/fa";
+import { FaChevronLeft, FaFileContract } from "react-icons/fa";
 import { BiSupport } from "react-icons/bi";
 import { FiLogOut } from "react-icons/fi";
 import { useRouter } from "next/navigation";
@@ -24,11 +24,11 @@ import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import BookmarkedExhibition from "./components/BookmarkedExhibition";
 import Reviews from "./components/Reviews";
-import OrderHistory from "./components/OrderHistory";
 import GalleryCards from "./components/gallery-cards";
 import { FaArrowLeft } from "react-icons/fa";
 import { FaChevronRight } from "react-icons/fa";
 import MyArtworks from "./components/MyArtworks";
+import { FaCheckCircle } from "react-icons/fa";
 
 const Success = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -192,11 +192,7 @@ const Success = () => {
               className="cursor-pointer"
               onClick={() => router.push("/register")}
             >
-              {isArtist ? 
-                (profile?.isArtistApproval === false 
-                  ? "승인 대기중" 
-                  : "작가 정보 수정하기") 
-                : "작가 등록하기"}
+              {isArtist ? "작가 정보 수정하기" : "작가 등록하기"}
             </div>
             {!isArtist && (
               <div className="flex flex-row items-center gap-x-2">
@@ -205,11 +201,7 @@ const Success = () => {
             )}
             {isArtist && (
               <div className="flex flex-row items-center gap-x-2">
-                {profile?.isArtistApproval === false ? (
-                  <FaClock className="text-yellow-500 text-sm animate-pulse" />
-                ) : (
-                  <FaCheckCircle className="text-green-500 text-sm" />
-                )}
+                <FaCheckCircle className="text-green-500 text-sm"  />
               </div>
             )}
           </div>
@@ -262,7 +254,11 @@ const Success = () => {
             <p className="text-gray-500">메시지 기능이 준비 중입니다.</p>
           </div>
         )}
-        {selectedTab === "order" && <OrderHistory user={user} />}
+        {selectedTab === "order" && (
+          <div className="flex flex-col items-center justify-center py-8">
+            <p className="text-gray-500">주문내역이 없습니다.</p>
+          </div>
+        )}
         {selectedTab === "myArt" && <MyArtworks user={user} profile={profile} />}
       </div>
 

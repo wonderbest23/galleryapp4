@@ -11,6 +11,7 @@ export default function Sidebar({ onItemClick }) {
   const menuItems = [
     { icon: "lucide:layout-dashboard", label: "갤러리관리", href: "/admin/gallery" },
     { icon: "lucide:layout-dashboard", label: "전시회관리", href: "/admin/exhibition" },
+    { icon: "lucide:users", label: "작가관리", href: "/admin/artist" },
     { icon: "lucide:newspaper", label: "소식등록", href: "/admin/magazine" },
     { icon: "lucide:image", label: "배너수정", href: "/admin/banner" },
     { icon: "lucide:log-out", label: "로그아웃", href: "" },

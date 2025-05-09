@@ -132,12 +132,12 @@ export function ExhibitionDetail({
       setIsUploading(false);
     }
   };
-
+  console.log("exhibition:", exhibition)
   const handleSave = async () => {
     // 편집 모드가 아닌 경우에는 바로 저장 진행
     if (!isEditing && !isNewExhibition) {
       // 이미지가 선택되었다면 업로드부터 진행
-      let photoUrl = exhibition.photo;
+      let photoUrl = editedExhibition.photo;
       if (imageFile) {
         setIsUploading(true);
         photoUrl = await uploadImage();
@@ -159,37 +159,38 @@ export function ExhibitionDetail({
         console.log("업데이트하기");
         
         // naver_gallery_url 처리
-        const naver_gallery_url = exhibition.naver_gallery_url && typeof exhibition.naver_gallery_url === 'object' 
-          ? exhibition.naver_gallery_url.url || "" 
-          : exhibition.naver_gallery_url || "";
+        const naver_gallery_url = editedExhibition.naver_gallery_url && typeof editedExhibition.naver_gallery_url === 'object' 
+          ? editedExhibition.naver_gallery_url.url || "" 
+          : editedExhibition.naver_gallery_url || "";
         
         const { error } = await supabase
           .from("exhibition")
           .update({
-            name: exhibition.name,
-            contents: exhibition.contents,
+            name: editedExhibition.name,
+            contents: editedExhibition.contents,
             photo: photoUrl, // 여기서 새 이미지 URL 사용
-            start_date: exhibition.start_date,
-            end_date: exhibition.end_date,
-            working_hour: exhibition.working_hour,
-            off_date: exhibition.off_date,
-            add_info: exhibition.add_info,
-            homepage_url: exhibition.homepage_url,
-            isFree: exhibition.isFree,
-            isRecommended: exhibition.isRecommended,
-            review_count: exhibition.review_count,
-            review_average: exhibition.review_average,
-            // naver_gallery_url: naver_gallery_url,
-            price: exhibition.price,
+            start_date: editedExhibition.start_date,
+            end_date: editedExhibition.end_date,
+            working_hour: editedExhibition.working_hour,
+            off_date: editedExhibition.off_date,
+            add_info: editedExhibition.add_info,
+            homepage_url: editedExhibition.homepage_url,
+            isFree: editedExhibition.isFree,
+            isRecommended: editedExhibition.isRecommended,
+            review_count: editedExhibition.review_count,
+            review_average: editedExhibition.review_average,
+            naver_gallery_url: naver_gallery_url,
+            price: editedExhibition.price,
+            isSale: editedExhibition.isSale,
           })
-          .eq("id", exhibition.id);
+          .eq("id", editedExhibition.id);
 
         if (error) {
           throw error;
         }
 
         // 업데이트된 photo URL을 포함하여 전달
-        onUpdate({...exhibition, photo: photoUrl});
+        onUpdate({...editedExhibition, photo: photoUrl});
 
         addToast({
           title: "전시회 저장 완료",
@@ -357,6 +358,7 @@ export function ExhibitionDetail({
               review_average: editedExhibition.review_average,
               naver_gallery_url: naver_gallery_url_value,
               price: editedExhibition.price,
+              isSale: editedExhibition.isSale,
             },
           ])
           .select();
@@ -390,6 +392,7 @@ export function ExhibitionDetail({
             review_average: editedExhibition.review_average,
             naver_gallery_url: editedExhibition.naver_gallery_url,
             price: editedExhibition.price,
+            isSale: editedExhibition.isSale,
           })
           .eq("id", editedExhibition.id);
 
@@ -419,7 +422,8 @@ export function ExhibitionDetail({
         review_count: 0,
         review_average: 0,
         naver_gallery_url:"",
-        price:0
+        price:0,
+        isSale: false
       });
       // 목록 새로고침 실행
       try {
@@ -486,7 +490,8 @@ export function ExhibitionDetail({
       review_count: 0,
       review_average: 0,
       naver_gallery_url:"",
-      price:0
+      price:0,
+      isSale: false
     });
     setSelectedExhibition(null);
   };
@@ -633,6 +638,13 @@ export function ExhibitionDetail({
             setEditedExhibition({ ...editedExhibition, contents: value })
           }
           isRequired={true}
+        />
+                <Input
+          className="col-span-2 md:col-span-1"
+          label="전시회 아이디"
+          value={editedExhibition.id||""}
+          
+          isDisabled={true}
         />
         
         {/* 썸네일 이미지 업로드 컴포넌트 */}
@@ -828,6 +840,15 @@ export function ExhibitionDetail({
               }
             >
               추천 전시회로 표시
+            </Checkbox>
+            <Checkbox
+              id="isSale"
+              isSelected={editedExhibition.isSale||false}
+              onValueChange={(value) =>
+                setEditedExhibition({ ...editedExhibition, isSale: value })
+              }
+            >
+              티켓판매로 표시
             </Checkbox>
           </div>
         </div>
