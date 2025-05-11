@@ -375,7 +375,7 @@ export default function App() {
                   addToast({
                     title: "로그인이 필요합니다",
                     description: "구매 연결을 위해 로그인해주세요",
-                    variant: "warning",
+                    color: "warning",
                   });
                 }
               }}
