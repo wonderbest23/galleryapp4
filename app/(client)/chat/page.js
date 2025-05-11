@@ -45,6 +45,7 @@ function ChatPageContent() {
       return;
     }
 
+    
     const checkOrCreateChat = async () => {
       setLoading(true);
       setError(null);
