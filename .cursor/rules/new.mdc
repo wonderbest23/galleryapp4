@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+console.err쓰지말고 console.log를 사용해줘줘

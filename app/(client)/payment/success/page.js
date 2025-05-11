@@ -6,7 +6,8 @@ import {
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from 'next/navigation';
 
-async function processPayment(orderId, amount, paymentKey, userId) {
+async function processPayment(orderId, amount, paymentKey, userId, quantity) {
+  console.log("quantity:", quantity)
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     const response = await fetch(`${baseUrl}/api/payment`, {
@@ -43,6 +44,7 @@ async function processPayment(orderId, amount, paymentKey, userId) {
           payment_key: paymentKey,
           order_id: orderId,
           status: 'success',
+          quantity: parseInt(quantity),
         }
       ], { 
         onConflict: 'order_id',
@@ -96,10 +98,10 @@ async function processPayment(orderId, amount, paymentKey, userId) {
 
 export default async function PaymentSuccess({ searchParams }) {
   const params = await searchParams;
-  const { user_id, orderId, amount, paymentKey } = params;
+  const { user_id, orderId, amount, paymentKey, quantity } = params;
 
   try {
-    await processPayment(orderId, amount, paymentKey, user_id);
+    await processPayment(orderId, amount, paymentKey, user_id, quantity);
   } catch (error) {
     console.error('Payment processing error:', error);
     const errorMessage = encodeURIComponent(error.message || '결제 처리 중 오류가 발생했습니다.');

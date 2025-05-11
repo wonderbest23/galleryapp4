@@ -8,7 +8,7 @@ import { createClient } from "@/utils/supabase/client";
 function MyPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get("returnUrl") || "/mypage/success";
+  const returnUrl = searchParams.get("redirect_to") || "/mypage/success";
   const [loading, setLoading] = useState(false);
 
   // 컴포넌트 마운트 시 로그인 상태 확인

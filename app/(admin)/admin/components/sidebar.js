@@ -14,6 +14,8 @@ export default function Sidebar({ onItemClick }) {
     { icon: "lucide:users", label: "작가관리", href: "/admin/artist" },
     { icon: "lucide:newspaper", label: "소식등록", href: "/admin/magazine" },
     { icon: "lucide:image", label: "배너수정", href: "/admin/banner" },
+    { icon: "lucide:ticket", label: "티켓구매내역", href: "/admin/payment-ticket" },
+    { icon: "lucide:credit-card", label: "크레딧구매내역", href: "/admin/payment-credit" },
     { icon: "lucide:log-out", label: "로그아웃", href: "" },
     { icon: "lucide:users", label: "갤러리 페이지로 이동", href: "/gallery" },
   ];
@@ -54,7 +56,10 @@ export default function Sidebar({ onItemClick }) {
               color={pathname === item.href ? "primary" : "default"}
               className="justify-start"
               fullWidth
-              onPress={() => router.push(item.href)}
+              onPress={() => {
+                router.push(item.href);
+                if (onItemClick) onItemClick();
+              }}
             >
               <Icon icon={item.icon} className="text-lg mr-2" />
               {item.label}

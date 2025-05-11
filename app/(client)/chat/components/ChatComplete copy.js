@@ -37,7 +37,7 @@ const staticUserId = "abcd1234";
 const userName = "테스트 사용자";
 console.log("apiKey:", apiKey);
 
-export default function Home() {
+export default function Home({hostId,userId}) {
   const [token, setToken] = useState(null);
   const [activeChannel, setActiveChannel] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -60,7 +60,7 @@ export default function Home() {
   
   const user = {
     id: staticUserId,
-    name: userName,
+    name: userName  ,
     image: `https://getstream.io/random_png/?name=${userName}`,
   };
 
@@ -157,7 +157,7 @@ export default function Home() {
   }
 
   return (
-    <div className="w-full h-screen flex flex-col">
+    <div className="w-full h-[calc(100vh-160px)] flex flex-col ">
       
       <main className="flex-1 overflow-hidden">
         <Chat client={chatClient} theme="messaging light">
@@ -181,7 +181,7 @@ export default function Home() {
               
               {showCreateForm && (
                 <div className="p-4 border-b">
-                  <CreateChannel onSuccess={handleChannelCreated} />
+                  <CreateChannel onSuccess={handleChannelCreated} hostId={hostId} userId={userId} />
                 </div>
               )}
               
@@ -266,9 +266,6 @@ export default function Home() {
         </Chat>
       </main>
       
-      <footer className="bg-gray-100 p-2 text-center text-sm text-gray-600">
-        GetStream 채팅 애플리케이션 © {new Date().getFullYear()}
-      </footer>
     </div>
   );
 }

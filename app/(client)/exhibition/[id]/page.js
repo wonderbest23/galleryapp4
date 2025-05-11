@@ -577,7 +577,7 @@ export default function App() {
 
               {selected === "gallery" && (
                 <>
-                  {notice &&
+                  {notice && notice.length > 0 ? (
                     notice.slice(0, displayedNoticeCount).map((item, i) => (
                       <Card key={item.id || i} className="my-4 mx-2">
                         <CardBody>
@@ -593,7 +593,12 @@ export default function App() {
                           </p>
                         </CardBody>
                       </Card>
-                    ))}
+                    ))
+                  ) : (
+                    <div className="flex justify-center items-center text-gray-500 my-4">
+                      전시회 공지가 없습니다.
+                    </div>
+                  )}
                   {notice && notice.length > displayedNoticeCount && (
                     <div className="flex justify-center items-center my-4">
                       <Button

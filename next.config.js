@@ -9,7 +9,11 @@ const nextConfig = {
     return config;
   },
   images: {
-    domains: ['picsum.photos'],
+    domains: [
+      'picsum.photos', 
+      'teaelrzxuigiocnukwha.supabase.co',
+      'teaelrzxuigiocnukwha.supabase.in'
+    ],
     unoptimized: true,
   },
 };

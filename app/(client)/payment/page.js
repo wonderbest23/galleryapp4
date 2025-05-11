@@ -83,7 +83,7 @@ export default function PaymentPage() {
 
   //결제 함수를 만들자
   async function requestPayment() {
-    const successUrlWithParams = `${window.location.origin}/payment/success?user_id=${userData.id}`;
+    const successUrlWithParams = `${window.location.origin}/payment/success?user_id=${userData.id}&quantity=${quantity}`;
     // const successUrlWithParams = `${window.location.origin}/inquiries/complete?time_slot_id=${selectedResult.slot_id}&user_id=${userData.id}&participants=${selectedResult.noParticipants}`;
 
     if (selectedPaymentMethod === "CARD") {

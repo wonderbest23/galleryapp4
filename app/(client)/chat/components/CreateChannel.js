@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useChatContext } from "stream-chat-react";
 import { searchUsers } from "../lib/action";
 
-export default function CreateChannel({ onSuccess }) {
+export default function CreateChannel({ onSuccess,hostId,userId }) {
+  console.log("hostId:", hostId);
+  console.log("userId:", userId);
   const { client } = useChatContext();
   const [channelName, setChannelName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -24,7 +26,22 @@ export default function CreateChannel({ onSuccess }) {
       setSearchResults(users);
     } catch (err) {
       setError("사용자 검색 중 오류가 발생했습니다");
-      console.error("사용자 검색 오류:", err);
+      console.log("사용자 검색 오류:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // 전체 사용자 목록 가져오기
+  const handleGetAllUsers = async () => {
+    try {
+      setIsLoading(true);
+      setError("");
+      const users = await searchUsers("");
+      setSearchResults(users);
+    } catch (err) {
+      setError("사용자 목록을 가져오는 중 오류가 발생했습니다");
+      console.log("사용자 목록 오류:", err);
     } finally {
       setIsLoading(false);
     }
@@ -37,6 +54,46 @@ export default function CreateChannel({ onSuccess }) {
       setSelectedUsers(selectedUsers.filter(u => u.id !== user.id));
     } else {
       setSelectedUsers([...selectedUsers, user]);
+    }
+  };
+  
+  // hostId와 userId로 채널 생성
+  const handleCreateDirectChannel = async () => {
+    if (!hostId || !userId) {
+      setError("호스트 ID 또는 사용자 ID가 없습니다");
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      setError("");
+      
+      // 채널에 참여할 멤버 ID 배열
+      const memberIds = [hostId, userId];
+      
+      
+      // 고유한 채널 생성 (distinct 채널) 및 watch 호출
+      const channel = client.channel('messaging', {
+        members: memberIds,
+        created_by_id: client.userID,
+        name: '거래시작',
+        hostChannel: true
+      });
+      
+      // 채널 생성 후 반드시 watch를 호출하여 초기화
+      await channel.create();
+      await channel.watch();
+      
+      // 성공 시 부모 컴포넌트에 채널 전달
+      if (onSuccess) {
+        onSuccess(channel);
+      }
+      
+    } catch (err) {
+      setError("1:1 채팅방 생성 중 오류가 발생했습니다");
+      console.log("1:1 채널 생성 오류:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -70,8 +127,9 @@ export default function CreateChannel({ onSuccess }) {
         created_by_id: client.userID,
       });
       
-      // 채널 생성 및 상태 초기화
+      // 채널 생성 및 watch 호출하여 초기화
       await channel.create();
+      await channel.watch();
       
       // 성공 시 부모 컴포넌트에 채널 전달
       if (onSuccess) {
@@ -85,7 +143,7 @@ export default function CreateChannel({ onSuccess }) {
       setSearchResults([]);
     } catch (err) {
       setError("채팅방 생성 중 오류가 발생했습니다");
-      console.error("채널 생성 오류:", err);
+      console.log("채널 생성 오류:", err);
     } finally {
       setIsLoading(false);
     }
@@ -99,6 +157,20 @@ export default function CreateChannel({ onSuccess }) {
       {error && (
         <div className="mb-3 p-2 bg-red-100 text-red-700 rounded text-sm">
           {error}
+        </div>
+      )}
+      
+      {/* 호스트-사용자 간 1:1 채팅방 생성 버튼 */}
+      {hostId && userId && (
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={handleCreateDirectChannel}
+            className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            disabled={isLoading}
+          >
+            {isLoading ? "생성 중..." : "호스트와 1:1 채팅방 생성"}
+          </button>
         </div>
       )}
       
@@ -143,6 +215,18 @@ export default function CreateChannel({ onSuccess }) {
               {isLoading ? "검색 중..." : "검색"}
             </button>
           </div>
+        </div>
+        
+        {/* 전체 사용자 보기 버튼 */}
+        <div className="mb-3">
+          <button
+            type="button"
+            onClick={handleGetAllUsers}
+            className="w-full px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded text-sm"
+            disabled={isLoading}
+          >
+            전체 사용자 목록 보기
+          </button>
         </div>
         
         {/* 검색 결과 */}

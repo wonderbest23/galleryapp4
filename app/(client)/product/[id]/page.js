@@ -99,6 +99,8 @@ export default function App() {
     bookmark: false,
   });
   const [product, setProduct] = useState(null);
+  const [user, setUser] = useState(null);
+  const [userId, setUserId] = useState(null);
   const router = useRouter();
   const { id } = useParams();
   const supabase = createClient();
@@ -111,6 +113,7 @@ export default function App() {
   const [reviews, setReviews] = useState([]);
   const [reviewPage, setReviewPage] = useState(1);
   const [hasMoreReviews, setHasMoreReviews] = useState(true);
+  const [hostId, setHostId] = useState(null);
   const reviewsPerPage = 3;
   const [reviewStats, setReviewStats] = useState({
     average: 0,
@@ -187,6 +190,17 @@ export default function App() {
   };
 
   useEffect(() => {
+    const fetchUser = async () => {
+      const { data: user } = await supabase.auth.getUser();
+      setUser(user);
+      setUserId(user?.user?.id);
+    };
+    fetchUser();
+  }, []);
+  console.log("user:", user)
+  console.log("hostId:", hostId)
+  console.log("userId:", userId)
+  useEffect(() => {
     const fetchProduct = async () => {
       try {
         const { data, error } = await supabase
@@ -199,6 +213,7 @@ export default function App() {
           console.log("Error fetching product:", error);
         } else {
           setProduct(data);
+          setHostId(data.artist_id.id);
         }
         setDataLoaded((prev) => ({ ...prev, product: true }));
       } catch (error) {
@@ -208,6 +223,8 @@ export default function App() {
     };
     fetchProduct();
   }, [id]);
+
+
 
   useEffect(() => {
     const fetchBookmarkStatus = async () => {
@@ -258,7 +275,6 @@ export default function App() {
     ? product.image 
     : ['/noimage.jpg'];
 
-  console.log("product:", product)
 
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen">
@@ -342,11 +358,25 @@ export default function App() {
             
             
           </div>
-          <div className="w-[90%] flex flex-row justify-between items-center gap-x-4 my-4 h-14">
+          <div className="w-[90%] flex flex-row justify-between items-center gap-x-4 my-4 h-14 mb-20">
             <Button isIconOnly className="bg-gray-200 w-[20%] h-full text-[20px] font-bold">
               {isBookmarked ? <FaBookmark /> : <FaRegBookmark />}
             </Button>
-            <Button className="bg-[#007AFF] text-white w-[80%] h-full text-[20px] font-bold">
+            <Button 
+              className="bg-[#007AFF] text-white w-[80%] h-full text-[16px] font-bold"
+              onPress={() => {
+                if (userId) {
+                  router.push(`/chat?hostId=${hostId}&userId=${userId}&productId=${id}`);
+                } else {
+                  router.push('/mypage?redirect_to=/product/' + id);
+                  addToast({
+                    title: "로그인이 필요합니다",
+                    description: "구매 연결을 위해 로그인해주세요",
+                    variant: "warning",
+                  });
+                }
+              }}
+            >
               구매연결
             </Button>
           </div>
