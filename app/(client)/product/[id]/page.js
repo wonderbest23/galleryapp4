@@ -32,64 +32,7 @@ import Slider from "react-slick";
 import "./product-slider.css";
 
 // 리뷰 컴포넌트 추가
-const Review = React.forwardRef(
-  ({ review, createdAt, gallery, ...props }, ref) => (
-    <Card ref={ref} {...props} className="px-4 pt-4 pb-2">
-      <div className="flex flex-col">
-        <div className="flex flex-row items-center gap-2 mb-2">
-          <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center overflow-hidden">
-            {gallery?.thumbnail ? (
-              <img
-                src={gallery?.thumbnail}
-                alt="Gallery Thumbnail"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <Icon icon="mdi:image" className="text-2xl text-gray-400" />
-            )}
-          </div>
-          <div className="flex flex-col w-full ml-4">
-            <p className="text-[13px] font-bold">{gallery?.name}</p>
-            <p className="text-[12px] text-default-400">
-              {review.name || "익명"}님의 실제 방문 리뷰
-            </p>
-            <p className="text-[12px] text-default-400 text-end">
-              {new Date(createdAt)
-                .toLocaleDateString("ko-KR")
-                .replace(/\./g, "년")
-                .slice(0, -1) + "일"}
-            </p>
-          </div>
-        </div>
 
-        {/* 리뷰 내용 */}
-        <div className="w-full">
-          <p className="text-default-500">{review.description}</p>
-        </div>
-
-        {/* 별점 */}
-        <div className="flex items-center gap-1 mb-3 justify-end">
-          {Array.from({ length: 5 }, (_, i) => {
-            const isSelected = i + 1 <= review.rating;
-
-            return (
-              <Icon
-                key={i}
-                className={cn(
-                  "text-lg",
-                  isSelected ? "text-blue-500" : "text-default-200"
-                )}
-                icon="solar:star-bold"
-              />
-            );
-          })}
-        </div>
-      </div>
-    </Card>
-  )
-);
-
-Review.displayName = "Review";
 
 export default function App() {
   const [selected, setSelected] = useState("home");
@@ -197,9 +140,7 @@ export default function App() {
     };
     fetchUser();
   }, []);
-  console.log("user:", user)
-  console.log("hostId:", hostId)
-  console.log("userId:", userId)
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -225,7 +166,7 @@ export default function App() {
   }, [id]);
 
 
-
+  console.log('setIsBookmarked',isBookmarked)
   useEffect(() => {
     const fetchBookmarkStatus = async () => {
       try {
@@ -275,6 +216,68 @@ export default function App() {
     ? product.image 
     : ['/noimage.jpg'];
 
+  // 북마크 토글 함수
+  const toggleBookmark = async () => {
+    try {
+      // 사용자 확인
+      if (!user || !user.user) {
+        // 로그인이 필요한 경우 처리
+        addToast({
+          title: "로그인이 필요합니다",
+          description: "북마크 기능을 위해 로그인해주세요",
+          variant: "warning",
+        });
+        router.push('/mypage?redirect_to=/product/' + id);
+        return;
+      }
+
+      if (isBookmarked) {
+        // 북마크 삭제
+        const { error } = await supabase
+          .from("bookmark")
+          .delete()
+          .eq("user_id", user.user.id)
+          .eq("product_id", id);
+
+        if (error) throw error;
+
+        // 북마크 해제 토스트 메시지
+        addToast({
+          title: "북마크 해제",
+          description: "북마크가 해제되었습니다.",
+          color: "success",
+        });
+      } else {
+        // 북마크 추가
+        const { error } = await supabase.from("bookmark").insert({
+          user_id: user.user.id,
+          product_id: id,
+          created_at: new Date().toISOString(),
+        });
+
+        if (error) throw error;
+
+        // 북마크 추가 토스트 메시지
+        addToast({
+          title: "북마크 설정",
+          description: "북마크가 설정되었습니다.",
+          color: "success",
+        });
+      }
+
+      // 북마크 상태 변경
+      setIsBookmarked(!isBookmarked);
+    } catch (error) {
+      console.log("북마크 토글 중 오류 발생:", error);
+
+      // 에러 발생 시 토스트 메시지
+      addToast({
+        title: "오류 발생",
+        description: "북마크 처리 중 오류가 발생했습니다.",
+        variant: "danger",
+      });
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen">
@@ -359,8 +362,8 @@ export default function App() {
             
           </div>
           <div className="w-[90%] flex flex-row justify-between items-center gap-x-4 my-4 h-14 mb-20">
-            <Button isIconOnly className="bg-gray-200 w-[20%] h-full text-[20px] font-bold">
-              {isBookmarked ? <FaBookmark /> : <FaRegBookmark />}
+            <Button isIconOnly className="bg-gray-200 w-[20%] h-full text-[20px] font-bold" onPress={toggleBookmark}>
+              {isBookmarked ? <FaBookmark className="text-red-500" /> : <FaRegBookmark />}
             </Button>
             <Button 
               className="bg-[#007AFF] text-white w-[80%] h-full text-[16px] font-bold"

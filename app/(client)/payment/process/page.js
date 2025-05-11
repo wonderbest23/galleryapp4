@@ -1,9 +1,9 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@heroui/react";
 
-export default function PaymentProcessPage() {
+function PaymentProcessor() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -62,5 +62,18 @@ export default function PaymentProcessPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function PaymentProcessPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center w-full min-h-[70vh] px-4">
+        <Spinner size="lg" color="primary" />
+        <p className="mt-4 text-lg">로딩 중...</p>
+      </div>
+    }>
+      <PaymentProcessor />
+    </Suspense>
   );
 }

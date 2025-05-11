@@ -280,8 +280,6 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
           ) : (
             artists.map((artist, index) => (
               <Card 
-                isPressable 
-                onPress={() => router.push(`/artist/${artist.id}`)} 
                 key={`artist-${artist.id}`} 
                 classNames={{base: 'm-1'}} 
                 shadow="sm" 
@@ -295,10 +293,18 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
                     fill 
                   />
                 </CardBody>
-                <CardFooter>  
-                  <p className="text-[14px] font-medium line-clamp-1 text-[#606060] text-center w-full">
-                    {artist.artist_name || artist.full_name || "작가이름"}
-                  </p>
+                <CardFooter className="flex justify-center">  
+                  <div className="flex flex-row items-center justify-between w-full">
+                    <p className="text-[14px] font-medium line-clamp-1 text-[#606060] text-center w-full">
+                      {artist.artist_name || artist.full_name || "작가이름"}
+                    </p>
+                    <button 
+                      onClick={() => router.push(`/artist/${artist.id}`)}
+                      className="text-sm text-blue-500 hover:text-blue-700"
+                    >
+                      보기
+                    </button>
+                  </div>
                 </CardFooter>
               </Card>
             ))
@@ -335,7 +341,7 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
           ) : (
             products.map((product, index) => (
               <div key={`product-${product.id}`}>
-                <Card isPressable onPress={() => router.push(`/product/${product.id}`)} shadow="none" classNames={{base: 'gap-x-2 w-full',body: 'gap-x-2'}}>
+                <Card shadow="none" classNames={{base: 'gap-x-2 w-full',body: 'gap-x-2'}}>
                   <CardBody className="flex flex-row justify-center items-center ">
                     <div className="w-[80px] h-[80px] relative">
                       <Image src={product.image[0] || "/noimage.jpg"} alt="product image" className="w-full h-full object-cover " fill />
@@ -344,24 +350,32 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
                       <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">{product.name}</p>
                       <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">{product.size} </p>
                       <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">₩{product.price?.toLocaleString()}</p>
+                      <button 
+                        onClick={() => router.push(`/product/${product.id}`)} 
+                        className="text-xs text-blue-500 hover:text-blue-700 text-left mt-1"
+                      >
+                        상세보기
+                      </button>
                     </div>
                     <div className="items-center bg-gray-300 rounded-lg p-2 h-[30px] w-[30px] flex justify-center items-center">
                       <div 
                         onClick={(e) => {
+                          e.stopPropagation();
                           e.preventDefault();
                           toggleProductBookmark(product.id);
                         }}
-                        className="text-lg text-gray-500 hover:text-[#007AFF] cursor-pointer"
+                        className="cursor-pointer"
                       >
                         {bookmarkedProducts[product.id] ? (
-                          <FaBookmark className="text-[#007AFF]" />
+                          <FaBookmark className="text-red-500 h-6 w-6 p-1.5 opacity-80 rounded-lg" />
                         ) : (
-                          <FaRegBookmark className="text-white" />
+                          <FaRegBookmark className="text-white h-6 w-6 p-1.5 opacity-80 rounded-lg" />
                         )}
                       </div>
                     </div>
                   </CardBody>
                 </Card>
+                {index < products.length - 1 && <Divider orientation="horizontal" className="my-2" />}
               </div>
             ))
           )}

@@ -364,7 +364,7 @@ function ExhibitionListContent() {
       ) : (
         <>
         
-          <div className="bg-white flex items-center w-[90%] justify-between">
+          <div className="bg-white flex items-center w-full justify-between">
             <Button
               isIconOnly
               variant="light"
