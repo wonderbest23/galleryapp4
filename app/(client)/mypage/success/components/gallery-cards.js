@@ -151,9 +151,9 @@ export default function GalleryCards({ selectedTab, user }) {
 
       {/* 플러스 버튼을 항상 중앙에 고정하고 마진 추가 */}
       {hasMore ? (
-        <div className="flex justify-center w-full my-1">
+        <div className="flex justify-center w-full my-1 mb-4">
           <FaPlusCircle
-            className="text-gray-500 text-3xl font-bold hover:cursor-pointer hover:scale-110 transition-transform"
+            className="text-gray-500 text-2xl font-bold hover:cursor-pointer hover:scale-110 transition-transform"
             onClick={loadMore}
           />
         </div>

@@ -9,6 +9,8 @@ import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
+import { LuWallet } from "react-icons/lu";
+import { FaTag } from "react-icons/fa6";
 
 export default function BookmarkedExhibition({ user }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -82,12 +84,37 @@ export default function BookmarkedExhibition({ user }) {
             })
         );
         
+        // 북마크된 상품 정보를 불러옴
+        const productsData = await Promise.all(
+          bookmarkData
+            .filter(bookmark => bookmark.product_id) // product_id가 null이 아닌 항목만 필터링
+            .map(async (bookmark) => {
+              // supabase에서 상품 정보 직접 가져오기
+              const { data: product, error: productError } = await supabase
+                .from('product')
+                .select('*, artist_id(*)')
+                .eq('id', bookmark.product_id)
+                .single();
+                
+              if (productError || !product) {
+                return null;
+              }
+              
+              return {
+                ...product,
+                isBookmarked: true,
+                type: 'product'
+              };
+            })
+        );
+        
         // null 값 제거 후 상태 업데이트
         const validExhibitions = exhibitionsData.filter(item => item !== null);
         const validGalleries = galleriesData.filter(item => item !== null);
-        setBookmarkedExhibitions([...validExhibitions, ...validGalleries]);
+        const validProducts = productsData.filter(item => item !== null);
+        setBookmarkedExhibitions([...validExhibitions, ...validGalleries, ...validProducts]);
       } catch (error) {
-        console.error('북마크 가져오기 오류:', error);
+        console.log('북마크 가져오기 오류:', error);
         // 오류 발생 시 빈 배열로 설정
         setBookmarkedExhibitions([]);
       } finally {
@@ -113,54 +140,94 @@ export default function BookmarkedExhibition({ user }) {
     return <div className="text-center py-4">북마크 정보를 불러오는 중...</div>;
   }
 
+  // 아이템 타입에 따른 링크 URL 생성
+  const getItemUrl = (item) => {
+    if (item.type === 'gallery') return `/gallery/${item.id}`;
+    if (item.type === 'product') return `/product/${item.id}`;
+    return `/exhibition/${item.id}`;
+  };
+
+  // 가격 형식화 (천 단위 콤마)
+  const formatPrice = (price) => {
+    return price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
   return (
     <>
       <div className="flex flex-col items-center gap-4 w-full px-2 justify-center">
         <div className="grid gap-4 w-full justify-center items-center">
           {bookmarkedExhibitions.length > 0 ? (
-            bookmarkedExhibitions.slice(0, displayCount).map((exhibition, index) => (
+            bookmarkedExhibitions.slice(0, displayCount).map((item, index) => (
               <Card key={index} className="w-full">
-                <Link href={`/exhibition/${exhibition.id}`}>
+                <Link href={getItemUrl(item)}>
                   <CardBody className="flex gap-4 flex-row justify-center items-center">
                     <img
-                      src={exhibition.type === 'gallery' ? exhibition.thumbnail : exhibition.photo}
-                      alt={exhibition.title}
+                      src={item.type === 'gallery' 
+                        ? item.thumbnail 
+                        : item.type === 'product'
+                          ? (item.image && item.image.length > 0 ? item.image[0] : "/noimage.jpg")
+                          : item.photo}
+                      alt={item.type === 'product' ? item.name : item.title || item.contents}
                       className="w-24 h-24 object-cover rounded flex-shrink-0"
                     />
                     <div className="flex flex-col w-full min-w-0">
                       <div className="flex flex-row justify-between items-start">
                         <div className="flex flex-col min-w-0">
-                          <div className="text-xs text-gray-500">{exhibition.type === 'gallery' ? '갤러리' : '전시회'}</div>
+                          <div className="text-xs text-gray-500">
+                            {item.type === 'gallery' 
+                              ? '갤러리' 
+                              : item.type === 'product'
+                                ? '작품'
+                                : '전시회'}
+                          </div>
                           <div className="text-lg font-bold truncate">
-                            {exhibition.type === 'gallery' ? exhibition.name : exhibition.contents}
+                            {item.type === 'gallery' 
+                              ? item.name 
+                              : item.type === 'product'
+                                ? item.name
+                                : item.contents}
                           </div>
                         </div>
-                        
                       </div>
 
                       <Divider
                         orientation="horizontal"
-                        className=" bg-gray-300"
+                        className="bg-gray-300"
                       />
                       <div className="text-xs flex flex-col my-2">
-                        {exhibition.type === 'gallery' ? (
+                        {item.type === 'gallery' ? (
                           <div className="flex flex-row gap-1">
-                            <Image src="/exhibition/미니지도.svg" alt="calendar" width={15} height={15} />
-                            {exhibition.address}
+                            <Image src="/exhibition/미니지도.svg" alt="map" width={15} height={15} />
+                            {item.address}
                           </div>
+                        ) : item.type === 'product' ? (
+                          <>
+                            <div className="flex flex-row gap-1 items-center ">
+                            <FaTag className="text-blue-500" />
+                              ₩{formatPrice(item.price)}원
+                            </div>
+                            
+                            
+                            {item.artist_id && (
+                              <div className="flex flex-row gap-1 items-center">
+                                <FaTag className="text-blue-500" />
+                                {item.artist_id.artist_name || '작가 정보 없음'}
+                              </div>
+                            )}
+                          </>
                         ) : (
                           <>
                             <div className="flex flex-row gap-1">
                               <Image src="/exhibition/미니달력.svg" alt="calendar" width={15} height={15} />
-                              {exhibition.start_date?.substring(0,4)}년 {exhibition.start_date?.substring(4,6)}월 {exhibition.start_date?.substring(6,8)}일 ~ {exhibition.end_date?.substring(0,4)}년 {exhibition.end_date?.substring(4,6)}월 {exhibition.end_date?.substring(6,8)}일
+                              {item.start_date?.substring(0,4)}년 {item.start_date?.substring(4,6)}월 {item.start_date?.substring(6,8)}일 ~ {item.end_date?.substring(0,4)}년 {item.end_date?.substring(4,6)}월 {item.end_date?.substring(6,8)}일
                             </div>
                             <div className="flex flex-row gap-1">
-                              <Image src="/exhibition/미니지도.svg" alt="calendar" width={15} height={15} />
-                              {exhibition.gallery.address}
+                              <Image src="/exhibition/미니지도.svg" alt="map" width={15} height={15} />
+                              {item.gallery.address}
                             </div>
                             <div className="flex flex-row gap-1">
-                              <Image src="/exhibition/미니가격.png" alt="calendar" width={15} height={15} />
-                              {exhibition.price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원
+                              <Image src="/exhibition/미니가격.png" alt="price" width={15} height={15} />
+                              {formatPrice(item.price)}원
                             </div>
                           </>
                         )}
@@ -171,7 +238,7 @@ export default function BookmarkedExhibition({ user }) {
               </Card>
             ))
           ) : (
-            <div className="text-center py-4">북마크한 전시회가 없습니다.</div>
+            <div className="text-center py-4">북마크한 항목이 없습니다.</div>
           )}
         </div>
         
@@ -183,12 +250,10 @@ export default function BookmarkedExhibition({ user }) {
                 onClick={loadMoreExhibitions}
               />
             ) : displayCount > 0 && !hasMore && bookmarkedExhibitions.length > 5 ? (
-              <div className="text-center py-2 text-gray-500">더 이상 표시할 전시회가 없습니다.</div>
+              <div className="text-center py-2 text-gray-500">더 이상 표시할 항목이 없습니다.</div>
             ) : null}
           </div>
         )}
-
-
       </div>
     </>
   );
