@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import {
   Button,
   Skeleton,
@@ -21,7 +21,8 @@ import { CiImageOn } from "react-icons/ci";
 import { IoMdCloseCircleOutline } from "react-icons/io";
 import ChatComplete from "./components/ChatComplete";
 
-export default function ChatPage() {
+// 클라이언트 컴포넌트로 분리
+function ChatPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hostId = searchParams.get("hostId");
@@ -102,5 +103,14 @@ export default function ChatPage() {
         chatData={chatData}
       />
     </div>
+  );
+}
+
+// 메인 페이지 컴포넌트
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div className="p-4 text-center">로딩중...</div>}>
+      <ChatPageContent />
+    </Suspense>
   );
 }
