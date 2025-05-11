@@ -3,6 +3,8 @@ import { Button, Card, CardBody,Spinner } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
+import { FaRegBookmark } from "react-icons/fa";
+
 export default function TopArts() {
   const [categories, setCategories] = useState([
     { id: 1, name: "추천상품", selected: true, genre: null },
@@ -105,6 +107,9 @@ export default function TopArts() {
                   className=" object-cover rounded-lg"
                   fill
                 />
+                <div className="absolute bottom-2 right-2">
+                  <FaRegBookmark className="bg-gray-500 text-white opacity-40 h-6 w-6 rounded-lg p-1.5" />
+                </div>
               </div>
               <CardBody className="p-0 mt-2">
                 <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">{item.title}</p>
