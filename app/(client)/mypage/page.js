@@ -9,6 +9,7 @@ function MyPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("redirect_to") || "/mypage/success";
+  console.log("MyPage - redirect_to 파라미터:", returnUrl);
   const [loading, setLoading] = useState(false);
 
   // 컴포넌트 마운트 시 로그인 상태 확인
@@ -23,6 +24,7 @@ function MyPageContent() {
 
         if (session) {
           // 로그인 정보가 있으면 returnUrl로 리다이렉트 (없으면 success 페이지로)
+          console.log("이미 로그인 되어있음, 리다이렉트 경로:", returnUrl);
           router.push(returnUrl);
         }
       } catch (error) {
@@ -39,11 +41,14 @@ function MyPageContent() {
     try {
       setLoading(true);
       const supabase = createClient();
+      
+      const redirectUrl = `${window.location.origin}/auth/callback?redirect_to=${encodeURIComponent(returnUrl)}`;
+      console.log("카카오 로그인 리다이렉션 URL:", redirectUrl);
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "kakao",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?redirect_to=${encodeURIComponent(returnUrl)}`,
+          redirectTo: redirectUrl,
         },
       });
 

@@ -330,6 +330,16 @@ export default function App() {
   
   // 결제 요청 함수
   const requestPayment = async () => {
+    if (!userData) {
+      // 로그인되지 않은 경우 로그인 페이지로 이동
+      const redirectPath = `/exhibition/${id}`;
+      console.log("로그인 필요, 리다이렉트 경로:", redirectPath);
+      router.push(`/mypage?redirect_to=${encodeURIComponent(redirectPath)}`);
+      return;
+    }
+
+    console.log("로그인 상태 확인, 사용자:", userData);
+
     if (!payment || !userData || !exhibition) {
       addToast({
         title: "결제 오류",
