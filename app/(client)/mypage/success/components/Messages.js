@@ -84,8 +84,23 @@ const Messages = ({ user }) => {
     return '사용자';
   };
 
-  const handleChatClick = (chatId) => {
-    router.push(`/chat/${chatId}`);
+  const handleChatClick = (chat) => {
+    // 테스트를 위해 userId와 hostId를 바꿔서 전달
+    // const isHost = chat.host_id === user.id;
+    // const userId = isHost ? chat.user_id : chat.host_id; // user_id와 host_id 바꿈
+    // const hostId = user.id; // user_id와 host_id 바꿈
+    // const productId = chat.product_id.id;
+    
+    // router.push(`/chat?userId=${userId}&hostId=${hostId}&productId=${productId}`);
+
+    // 원래 코드
+    const isHost = chat.host_id === user.id;
+    const userId = user.id;
+    const hostId = isHost ? chat.user_id : chat.host_id;
+    const productId = chat.product_id.id;
+    
+    router.push(`/chat?userId=${userId}&hostId=${hostId}&productId=${productId}`);
+    
   };
 
   // 가격 형식화 (천 단위 콤마)
@@ -116,7 +131,8 @@ const Messages = ({ user }) => {
           <Card 
             key={chat.id} 
             className="w-full max-w-full"
-            onClick={() => handleChatClick(chat.id)}
+            isPressable
+            onPress={() => handleChatClick(chat)}
           >
             <CardBody className="flex gap-4 flex-row justify-center items-center cursor-pointer">
               <div className="relative w-24 h-24 flex-shrink-0 rounded overflow-hidden">

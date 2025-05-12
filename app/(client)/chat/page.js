@@ -83,7 +83,7 @@ function ChatPageContent() {
   }, [hostId, userId, productId, router]);
 
   return (
-    <div className="flex flex-col items-center justify-center mx-2">
+    <div className="flex flex-col items-center justify-center mx-2 ">
       <div className="bg-white flex items-center w-full justify-between">
         <Button
           isIconOnly

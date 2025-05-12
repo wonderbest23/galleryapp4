@@ -162,7 +162,7 @@ export default function Home({hostId, userId, productId, chatData}) {
 
   if (error) {
     return (
-      <div className="w-full flex flex-col items-center justify-center h-screen">
+      <div className="w-full flex flex-col items-center justify-center h-screen ">
         <p className="text-xl text-red-500">{error}</p>
         <button 
           onClick={() => window.location.reload()}
@@ -173,6 +173,7 @@ export default function Home({hostId, userId, productId, chatData}) {
       </div>
     );
   }
+  
 
   return (
     <div className="w-full h-[calc(100vh-160px)] flex flex-col">
@@ -180,7 +181,7 @@ export default function Home({hostId, userId, productId, chatData}) {
         <Chat client={chatClient} theme="messaging light">
           <div className="flex h-full">
             {/* 채널 리스트는 숨김 처리 */}
-            <div className="w-full">
+            <div className="w-full h-full">
               {activeChannel ? (
                 <Channel 
                   channel={activeChannel}
