@@ -23,6 +23,7 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
   const [productsLoading, setProductsLoading] = useState(true);
   const [banners, setBanners] = useState([]);
   const [bannersLoading, setBannersLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
   const router = useRouter();
   const supabase = createClient();
   
@@ -32,6 +33,18 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
     { id: 2, name: "전시회 2", contents: "전시회 내용 2", photo: "/noimage.jpg" },
     { id: 3, name: "전시회 3", contents: "전시회 내용 3", photo: "/noimage.jpg" }
   ];
+
+  // 로그인한 사용자 정보 가져오기
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setCurrentUser(session.user);
+      }
+    };
+
+    fetchUser();
+  }, []);
   
   // 배너 데이터 가져오기
   useEffect(() => {
@@ -41,14 +54,14 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
         const { data, error } = await supabase.from("banner").select("*");
         
         if (error) {
-          console.error('배너 데이터를 불러오는 중 오류 발생:', error);
+          console.log('배너 데이터를 불러오는 중 오류 발생:', error);
           return;
         }
 
         setBanners(data || []);
         setBannersLoading(false);
       } catch (error) {
-        console.error('배너 데이터 로딩 오류:', error);
+        console.log('배너 데이터 로딩 오류:', error);
         setBannersLoading(false);
       }
     };
@@ -68,14 +81,14 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
           .limit(3);
 
         if (error) {
-          console.error('작가 데이터를 불러오는 중 오류 발생:', error);
+          console.log('작가 데이터를 불러오는 중 오류 발생:', error);
           return;
         }
 
         setArtists(data || []);
         setIsLoading(false);
       } catch (error) {
-        console.error('작가 데이터 로딩 오류:', error);
+        console.log('작가 데이터 로딩 오류:', error);
         setIsLoading(false);
       }
     };
@@ -95,20 +108,52 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
           .limit(5);
 
         if (error) {
-          console.error('상품 데이터를 불러오는 중 오류 발생:', error);
+          console.log('상품 데이터를 불러오는 중 오류 발생:', error);
           return;
         }
 
         setProducts(data || []);
         setProductsLoading(false);
       } catch (error) {
-        console.error('상품 데이터 로딩 오류:', error);
+        console.log('상품 데이터 로딩 오류:', error);
         setProductsLoading(false);
       }
     };
 
     fetchProducts();
   }, []);
+
+  // 북마크 데이터 가져오기
+  useEffect(() => {
+    const fetchBookmarks = async () => {
+      // 로그인한 사용자만 북마크 정보를 가져옴
+      if (!currentUser) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('bookmark')
+          .select('*')
+          .eq('user_id', currentUser.id);
+
+        if (error) {
+          console.log('북마크 데이터를 불러오는 중 오류 발생:', error);
+          return;
+        }
+
+        // 북마크된 제품들을 객체로 변환 (product_id를 키로, bookmark.id를 값으로 저장)
+        const bookmarkMap = {};
+        data.forEach(bookmark => {
+          bookmarkMap[bookmark.product_id] = bookmark.id;
+        });
+
+        setBookmarkedProducts(bookmarkMap);
+      } catch (error) {
+        console.log('북마크 데이터 로딩 오류:', error);
+      }
+    };
+
+    fetchBookmarks();
+  }, [currentUser]);
   
   // 상단 카드와 캐러셀 아이템 설정
   useEffect(() => {
@@ -177,11 +222,53 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
   };
 
   // 북마크 토글 함수
-  const toggleProductBookmark = (productId) => {
-    setBookmarkedProducts(prev => ({
-      ...prev,
-      [productId]: !prev[productId]
-    }));
+  const toggleProductBookmark = async (productId) => {
+    // 로그인한 사용자만 북마크 기능 사용 가능
+    if (!currentUser) {
+      router.push('/mypage?redirect_to=/artstore');
+      return;
+    }
+
+    try {
+      if (bookmarkedProducts[productId]) {
+        // 이미 북마크가 있으면 삭제
+        const { error } = await supabase
+          .from('bookmark')
+          .delete()
+          .eq('id', bookmarkedProducts[productId]);
+
+        if (error) {
+          console.log('북마크 삭제 오류:', error);
+          return;
+        }
+
+        // 북마크 상태 업데이트
+        const updatedBookmarks = { ...bookmarkedProducts };
+        delete updatedBookmarks[productId];
+        setBookmarkedProducts(updatedBookmarks);
+      } else {
+        // 북마크가 없으면 새로 추가
+        const { data, error } = await supabase
+          .from('bookmark')
+          .insert([
+            { user_id: currentUser.id, product_id: productId }
+          ])
+          .select();
+
+        if (error) {
+          console.log('북마크 추가 오류:', error);
+          return;
+        }
+
+        // 북마크 상태 업데이트
+        setBookmarkedProducts({
+          ...bookmarkedProducts,
+          [productId]: data[0].id
+        });
+      }
+    } catch (error) {
+      console.log('북마크 토글 중 오류 발생:', error);
+    }
   };
 
   // 로딩 상태에서 사용할 스켈레톤 UI 컴포넌트
@@ -298,12 +385,7 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
                     <p className="text-[14px] font-medium line-clamp-1 text-[#606060] text-center w-full">
                       {artist.artist_name || artist.full_name || "작가이름"}
                     </p>
-                    <button 
-                      onClick={() => router.push(`/artist/${artist.id}`)}
-                      className="text-sm text-blue-500 hover:text-blue-700"
-                    >
-                      보기
-                    </button>
+
                   </div>
                 </CardFooter>
               </Card>
@@ -341,7 +423,12 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
           ) : (
             products.map((product, index) => (
               <div key={`product-${product.id}`}>
-                <Card shadow="none" classNames={{base: 'gap-x-2 w-full',body: 'gap-x-2'}}>
+                <Card 
+                  shadow="none" 
+                  classNames={{base: 'gap-x-2 w-full',body: 'gap-x-2'}}
+                  isPressable
+                  onPress={() => router.push(`/product/${product.id}`)}
+                >
                   <CardBody className="flex flex-row justify-center items-center ">
                     <div className="w-[80px] h-[80px] relative">
                       <Image src={product.image[0] || "/noimage.jpg"} alt="product image" className="w-full h-full object-cover " fill />
@@ -350,12 +437,7 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
                       <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">{product.name}</p>
                       <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">{product.size} </p>
                       <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">₩{product.price?.toLocaleString()}</p>
-                      <button 
-                        onClick={() => router.push(`/product/${product.id}`)} 
-                        className="text-xs text-blue-500 hover:text-blue-700 text-left mt-1"
-                      >
-                        상세보기
-                      </button>
+                      
                     </div>
                     <div className="items-center bg-gray-300 rounded-lg p-2 h-[30px] w-[30px] flex justify-center items-center">
                       <div 
@@ -366,7 +448,7 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
                         }}
                         className="cursor-pointer"
                       >
-                        {bookmarkedProducts[product.id] ? (
+                        {!!bookmarkedProducts[product.id] ? (
                           <FaBookmark className="text-red-500 h-6 w-6 p-1.5 opacity-80 rounded-lg" />
                         ) : (
                           <FaRegBookmark className="text-white h-6 w-6 p-1.5 opacity-80 rounded-lg" />

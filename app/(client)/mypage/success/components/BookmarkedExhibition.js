@@ -11,6 +11,7 @@ import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { LuWallet } from "react-icons/lu";
 import { FaTag } from "react-icons/fa6";
+import { Spinner } from "@heroui/spinner";
 
 export default function BookmarkedExhibition({ user }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -137,7 +138,9 @@ export default function BookmarkedExhibition({ user }) {
 
   // 로딩 중일 때 표시할 컴포넌트
   if (isLoading) {
-    return <div className="text-center py-4">북마크 정보를 불러오는 중...</div>;
+    return <div className="text-center py-4">
+      <Spinner variant="wave" color="primary" />
+    </div>;
   }
 
   // 아이템 타입에 따른 링크 URL 생성

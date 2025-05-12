@@ -7,7 +7,7 @@ import { FaRegStar } from "react-icons/fa";
 import { FaPlusCircle } from "react-icons/fa";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-
+import { Spinner } from "@heroui/spinner";
 export default function Reviews({ user }) {
   const [reviews, setReviews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -57,7 +57,9 @@ export default function Reviews({ user }) {
 
   // 로딩 중일 때 표시할 컴포넌트
   if (isLoading) {
-    return <div className="text-center py-4">리뷰 정보를 불러오는 중...</div>;
+    return <div className="text-center py-4">
+      <Spinner variant="wave" color="primary" />
+    </div>;
   }
 
   return (

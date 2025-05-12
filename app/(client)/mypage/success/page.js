@@ -29,6 +29,7 @@ import GalleryCards from "./components/gallery-cards";
 import { FaArrowLeft } from "react-icons/fa";
 import { FaChevronRight } from "react-icons/fa";
 import MyArtworks from "./components/MyArtworks";
+import Messages from "./components/Messages";
 
 const Success = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -257,11 +258,7 @@ const Success = () => {
       <div className="w-full px-2 flex justify-center items-center">
         {selectedTab === "favorite" && <BookmarkedExhibition user={user} />}
         {selectedTab === "review" && <Reviews user={user} />}
-        {selectedTab === "message" && (
-          <div className="flex flex-col items-center justify-center py-8">
-            <p className="text-gray-500">메시지 기능이 준비 중입니다.</p>
-          </div>
-        )}
+        {selectedTab === "message" && <Messages user={user} />}
         {selectedTab === "order" && <OrderHistory user={user} />}
         {selectedTab === "myArt" && <MyArtworks user={user} profile={profile} />}
       </div>
