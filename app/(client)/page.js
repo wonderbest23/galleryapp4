@@ -172,6 +172,7 @@ export default function Home() {
       </div>
       
 
+
       {/* 이용약관 모달 */}
       <Modal className="h-full max-h-[75vh] overflow-y-auto " size="2xl" isOpen={termsDisclosure.isOpen} onClose={termsDisclosure.onClose}>
         <ModalContent>
