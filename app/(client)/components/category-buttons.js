@@ -26,6 +26,12 @@ import { RiShoppingBag2Line } from "react-icons/ri";
 import { LuBook } from "react-icons/lu";
 import { LuAlarmClock } from "react-icons/lu";
 import { PiSwatches } from "react-icons/pi";
+import { FaCalendarAlt } from "react-icons/fa";
+import { FaHouseCircleCheck } from "react-icons/fa6";
+import { FaBook } from "react-icons/fa";
+import { FaShopify } from "react-icons/fa";
+import { FaHandsHelping } from "react-icons/fa";
+import { MdEventAvailable } from "react-icons/md";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -35,7 +41,7 @@ export function CategoryButtons() {
     <div className="flex flex-row gap-2 px-4 w-full justify-evenly items-center">
       <Link href="/exhibitions">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
-          <img src="/buttons/샘플.svg" className="w-[32px] h-[32px]" alt="전시회" quality={100}  />
+          <FaCalendarAlt className="w-6 h-6 text-[#007AFF]" />
         </div>
         <div className="flex w-full justify-center items-center mt-2">
           <span className="text-[10px] font-bold">전시회</span>
@@ -43,7 +49,7 @@ export function CategoryButtons() {
       </Link>
       <Link href="/galleries">
       <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
-          <img src="/buttons/갤러리.svg" className="w-[32px] h-[32px]" alt="갤러리" quality={100} />
+            <FaHouseCircleCheck className="w-6 h-6 text-[#007AFF]" />
         </div>
         <div className="flex w-full justify-center items-center mt-2">
           <span className="text-[10px] font-bold">갤러리</span>
@@ -51,7 +57,7 @@ export function CategoryButtons() {
       </Link>
       <Link href="/magazineList">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
-          <img src="/buttons/매거진.svg" className="w-[32px] h-[32px]" alt="매거진" quality={100} />
+          <FaBook className="w-6 h-6 text-[#007AFF]" />
         </div>
         <div className="flex w-full justify-center items-center mt-2">
           <span className="text-[10px] font-bold">매거진</span>
@@ -59,7 +65,7 @@ export function CategoryButtons() {
       </Link>
       <Link href="/artstore">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
-          <img src="/buttons/이벤트.svg" className="w-[32px] h-[32px]" alt="이벤트" quality={100} />
+          <FaShopify className="w-6 h-6 text-[#007AFF]" />
         </div>
         <div className="flex w-full justify-center items-center mt-2">
           <span className="text-[10px] font-bold">아트샵</span>
@@ -67,7 +73,7 @@ export function CategoryButtons() {
       </Link>
       <Link href="/eventList">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
-          <img src="/buttons/이벤트.svg" className="w-[32px] h-[32px]" alt="이벤트" quality={100} />
+          <MdEventAvailable className="w-6 h-6 text-[#007AFF]" />
         </div>
         <div className="flex w-full justify-center items-center mt-2">
           <span className="text-[10px] font-bold">이벤트</span>
@@ -75,7 +81,7 @@ export function CategoryButtons() {
       </Link>
       <Link href="/cooperationList">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
-          <img src="/buttons/제휴.svg" className="w-[32px] h-[32px]" alt="제휴" quality={100} />
+          <FaHandsHelping className="w-6 h-6 text-[#007AFF]" />
         </div>
         <div className="flex w-full justify-center items-center mt-2">
           <span className="text-[10px] font-bold">제휴</span>
