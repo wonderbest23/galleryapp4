@@ -3,14 +3,13 @@ import React, { useState, useEffect } from "react";
 import { Card, CardBody, Skeleton } from "@heroui/react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import Image from "next/image";
 export function ExhibitionCarousel() {
-  const [currentSlide, setCurrentSlide] = React.useState(0);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isPaused, setIsPaused] = useState(false);
   const supabase = createClient();
 
   const getBanners = async () => {
@@ -18,11 +17,11 @@ export function ExhibitionCarousel() {
     try {
       const { data, error } = await supabase.from("banner").select("*").order("id", { ascending: false });
       if (error) {
-        console.error("Error fetching banners:", error);
+        console.log("Error fetching banners:", error);
       }
       setBanners(data || []);
     } catch (error) {
-      console.error("Error fetching banners:", error);
+      console.log("Error fetching banners:", error);
     } finally {
       setLoading(false);
     }
@@ -32,71 +31,29 @@ export function ExhibitionCarousel() {
     getBanners();
   }, []);
 
-  // 자동 슬라이딩을 위한 타이머 설정
-  useEffect(() => {
-    let intervalId;
-    
-    if (!loading && banners.length > 0 && !isPaused) {
-      intervalId = setInterval(() => {
-        setCurrentSlide((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
-      }, 2000); // 2초마다 슬라이드 변경
-    }
-    
-    // 컴포넌트가 언마운트되거나 의존성이 변경될 때 타이머 정리
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [loading, banners.length, isPaused]);
-
-  const handleTouchStart = (e) => {
-    setIsPaused(true); // 터치 시작할 때 자동 슬라이딩 일시 중지
-    setTouchStart(e.touches[0].clientX);
-  };
-
-  const handleTouchMove = (e) => {
-    setTouchEnd(e.touches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStart - touchEnd > 75) { // 왼쪽으로 스와이프
-      setCurrentSlide((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
-    }
-
-    if (touchStart - touchEnd < -75) { // 오른쪽으로 스와이프
-      setCurrentSlide((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
-    }
-    
-    // 터치 끝난 후 3초 후에 자동 슬라이딩 재개
-    setTimeout(() => {
-      setIsPaused(false);
-    }, 3000);
-  };
-
-  // 마우스 오버 시 자동 슬라이딩 일시 중지
-  const handleMouseEnter = () => {
-    setIsPaused(true);
-  };
-
-  // 마우스 아웃 시 자동 슬라이딩 재개
-  const handleMouseLeave = () => {
-    setIsPaused(false);
+  // Slick 설정
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 2000,
+    pauseOnHover: true,
+    arrows: false,
+    dotsClass: "slick-dots custom-dots",
+    customPaging: (i) => (
+      <div className="dot-button" />
+    )
   };
 
   return (
-    <div 
-      className="relative py-5 w-full flex justify-center items-center"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div className="relative py-5 w-full flex justify-center items-center">
       <Card className="w-full" shadow="none">
         <CardBody className="p-0 w-full flex justify-center items-center">
           {loading ? (
-            <Card className="w-[300px]  space-y-5 p-4" radius="lg" shadow="none" >
+            <Card className="w-[300px] space-y-5 p-4" radius="lg" shadow="none" >
               <Skeleton className="rounded-lg">
                 <div className="h-48 rounded-lg bg-default-300" />
               </Skeleton>
@@ -112,31 +69,84 @@ export function ExhibitionCarousel() {
                 </Skeleton>
               </div>
             </Card>
-          ) : banners.length > 0 && (
-            
-              <img
-                src={banners[currentSlide]?.url || `https://picsum.photos/800/400?random=${currentSlide}`}
-                alt={banners[currentSlide]?.title || `Slide ${currentSlide + 1}`}
-                className="w-[90%] h-[200px] object-cover rounded-2xl"
-              />
-            
+          ) : (
+            <div className="w-[90%] relative">
+              <Slider {...settings}>
+                {banners.map((banner, index) => (
+                  <div key={index}>
+                    <Image
+                      src={banner?.url || `https://picsum.photos/800/400?random=${index}`}
+                      alt={banner?.title || `Slide ${index + 1}`}
+                      className="w-full h-[200px] object-cover rounded-2xl"
+                      style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+                      width={800}
+                      height={400}
+                      priority={index === 0}
+                    />
+                  </div>
+                ))}
+              </Slider>
+            </div>
           )}
         </CardBody>
       </Card>
-      {!loading && (
-        <div className="absolute bottom-7 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {banners.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                currentSlide === index ? 'bg-[#007AFF]' : 'bg-[#B8B8B8]'
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-      )}
+      <style jsx global>{`
+        .custom-dots {
+          position: absolute;
+          bottom: 10px;
+          display: flex !important;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+          padding: 0;
+          margin: 0;
+          list-style: none;
+          text-align: center;
+          z-index: 10;
+        }
+        .custom-dots li {
+          position: relative;
+          display: inline-block;
+          width: 12px;
+          height: 12px;
+          margin: 0 3px;
+          padding: 0;
+          cursor: pointer;
+        }
+        .custom-dots li button {
+          font-size: 0;
+          line-height: 0;
+          display: block;
+          width: 12px;
+          height: 12px;
+          padding: 0;
+          cursor: pointer;
+          color: transparent;
+          border: 0;
+          outline: none;
+          background: transparent;
+        }
+        .custom-dots li .dot-button {
+          display: block;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background-color: white;
+          
+        }
+        .custom-dots li.slick-active .dot-button {
+          background-color: #007AFF !important;
+          width: 10px;
+          height: 10px;
+        }
+        
+        /* 이미지 클릭 시 하이라이트 제거 */
+        img {
+          -webkit-tap-highlight-color: transparent;
+          outline: none;
+          user-select: none;
+        }
+      `}</style>
     </div>
   );
 }
