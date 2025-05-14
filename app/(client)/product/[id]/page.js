@@ -324,7 +324,7 @@ export default function App() {
 
           <div className="w-[90%] h-full mt-4">
             <div className="w-full h-full">
-              <div className="text-[18px] font-bold">별이 빛나는 밤에(2025.05.05)</div>
+              <div className="text-[18px] font-bold">{product?.name || '제품명 없음'}</div>
             </div>
             <div className="w-[90%] h-full mt-2">
               <div className="text-[10px]">제작방식:{product?.make_method}</div>

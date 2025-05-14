@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Input, Button, Textarea, Checkbox, addToast } from "@heroui/react";
+import { Input, Button, Textarea, Checkbox, addToast, Select, SelectItem } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect, useRef } from "react";
@@ -296,6 +296,11 @@ export function ArtistDetail({
     });
   };
 
+  const handleGenreChange = (e) => {
+    const genre = e.target.value;
+    setEditedArtist((prev) => ({ ...prev, artist_genre: genre }));
+  };
+
   const handleCancel = () => {
     // 취소 시 항상 작가 선택 초기화
     setSelectedArtist(null);
@@ -369,13 +374,18 @@ export function ArtistDetail({
           className="col-span-2 md:col-span-1"
         />
 
-        <Input
+        <Select
           label="장르"
-          name="artist_genre"
-          value={editedArtist.artist_genre || ""}
-          onChange={handleInputChange}
           className="col-span-2 md:col-span-1"
-        />
+          selectedKeys={[editedArtist.artist_genre] || []}
+          onChange={handleGenreChange}
+        >
+          <SelectItem key="현대미술">현대미술</SelectItem>
+          <SelectItem key="추상화">추상화</SelectItem>
+          <SelectItem key="명화/동양화">명화/동양화</SelectItem>
+          <SelectItem key="사진/일러스트">사진/일러스트</SelectItem>
+          <SelectItem key="기타">기타</SelectItem>
+        </Select>
 
         <Input
           label="작가 소개"
