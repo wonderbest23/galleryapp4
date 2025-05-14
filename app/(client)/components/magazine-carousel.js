@@ -3,24 +3,27 @@ import React from "react";
 import {
   Card,
   CardBody,
-  Tabs,
-  Tab,
-  Skeleton,
-  Spinner,
   Link,
+  Skeleton,
 } from "@heroui/react";
 import { createClient } from "@/utils/supabase/client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { IoIosArrowForward } from "react-icons/io";
 import { useRouter } from "next/navigation";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import Image from "next/image";
+
 export function MagazineCarousel() {
-  const [currentSlide, setCurrentSlide] = React.useState(0);
-  const [touchStart, setTouchStart] = React.useState(null);
-  const [touchEnd, setTouchEnd] = React.useState(null);
-  const [magazines, setMagazines] = React.useState([]);
-  const [selected, setSelected] = React.useState("michelin");
+  const [magazines, setMagazines] = useState([]);
+  const [selected, setSelected] = useState("michelin");
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const sliderRef = useRef(null);
   const supabase = createClient();
   const router = useRouter();
+
   useEffect(() => {
     const fetchMagazines = async () => {
       const { data, error } = await supabase
@@ -29,7 +32,7 @@ export function MagazineCarousel() {
         .order("created_at", { ascending: false })
         .limit(5);
       if (error) {
-        console.error("Error fetching magazines:", error);
+        console.log("Error fetching magazines:", error);
       } else {
         setMagazines(data || []);
       }
@@ -38,30 +41,59 @@ export function MagazineCarousel() {
     fetchMagazines();
   }, []);
 
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe && currentSlide < magazines.length - 1) {
-      setCurrentSlide((prev) => prev + 1);
+  const handleMagazineClick = (e, magazineId) => {
+    // 스와이프 중에는 페이지 이동 방지
+    if (!isDragging) {
+      e.stopPropagation();
+      router.push(`/magazine/${magazineId}`);
     }
+  };
 
-    if (isRightSwipe && currentSlide > 0) {
-      setCurrentSlide((prev) => prev - 1);
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 5000,
+    pauseOnHover: true,
+    arrows: false,
+    draggable: true,
+    swipe: true,
+    swipeToSlide: true,
+    touchMove: true,
+    touchThreshold: 5,
+    useCSS: true,
+    useTransform: true,
+    customPaging: (i) => (
+      <div
+        className="w-2 h-2 rounded-full cursor-pointer"
+        style={{
+          backgroundColor: i === activeSlide ? "#007AFF" : "#FFFFFF"
+        }}
+      />
+    ),
+    dotsClass: "slick-dots flex gap-2 justify-center absolute bottom-12 left-0 right-0 z-10",
+    beforeChange: (current, next) => setActiveSlide(next),
+    initialSlide: 0,
+    responsive: [
+      {
+        breakpoint: 768,
+        settings: {
+          arrows: false,
+          draggable: true,
+          swipe: true
+        }
+      }
+    ],
+    swipeEvent: false,
+    // 스와이프 관련 이벤트 핸들러 추가
+    onSwipe: () => { setIsDragging(true); },
+    afterChange: () => { 
+      setTimeout(() => {
+        setIsDragging(false);
+      }, 100);
     }
   };
 
@@ -83,7 +115,6 @@ export function MagazineCarousel() {
           >
             <span className={`${selected === "michelin" ? "relative" : ""}`}>
               미슐랭매거진
-              
             </span>
           </button>
         </div>
@@ -91,43 +122,61 @@ export function MagazineCarousel() {
       {selected === "michelin" && (
         <div>
           {magazines.length > 0 ? (
-            <div
-              className="relative"
-              onTouchStart={onTouchStart}
-              onTouchMove={onTouchMove}
-              onTouchEnd={onTouchEnd}
-            >
-              <Card className="w-full">
-                <CardBody className="p-0">
-                  <Link href={`/magazine/${magazines[currentSlide].id}`}>
-                    <img
-                      src={
-                        magazines[currentSlide]?.photo[0]["url"] ||
-                        `/images/noimage.jpg`
-                      }
-                      alt={magazines[currentSlide]?.title}
-                      className="w-full h-[454px] object-cover"
-                    />
-                  </Link>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent text-white">
-                    <h3 className="text-xl font-bold">
-                      {magazines[currentSlide].title}
-                    </h3>
-                    <p>{magazines[currentSlide].subtitle || "매거진 내용"}</p>
+            <div className="relative">
+              <Slider {...settings} className="slick-container" ref={sliderRef}>
+                {magazines.map((magazine, index) => (
+                  <div key={index}>
+                    <Card 
+                      className="w-full"
+                    >
+                      <CardBody className="p-0 relative">
+                        <div 
+                          className="relative w-full h-[454px]"
+                        >
+                          <Image
+                            src={
+                              magazine?.photo[0]?.url ||
+                              `/images/noimage.jpg`
+                            }
+                            alt={magazine?.title}
+                            fill
+                            sizes="100vw"
+                            style={{ objectFit: "cover" }}
+                            priority={index === 0}
+                          />
+                          <div 
+                            className="absolute inset-0 flex items-center justify-center"
+                            onClick={(e) => handleMagazineClick(e, magazine.id)}
+                          >
+                            <span className="sr-only">매거진 보기</span>
+                          </div>
+                        </div>
+                        <div 
+                          className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent text-white"
+                          onClick={(e) => handleMagazineClick(e, magazine.id)}
+                        >
+                          <h3 className="text-xl font-bold">
+                            {magazine.title}
+                          </h3>
+                          <p>{magazine.subtitle || "매거진 내용"}</p>
+                        </div>
+                      </CardBody>
+                    </Card>
                   </div>
-                </CardBody>
-              </Card>
-              <div className="flex gap-2 justify-center mt-4">
-                {magazines.map((_, index) => (
-                  <button
-                    key={index}
-                    className={`w-2 h-2 rounded-full ${
-                      currentSlide === index ? "bg-[#007AFF]" : "bg-[#B8B8B8]"
-                    }`}
-                    onClick={() => setCurrentSlide(index)}
-                  />
                 ))}
-              </div>
+              </Slider>
+              <style jsx global>{`
+                .slick-container .slick-dots {
+                  position: absolute;
+                  bottom: 10px;
+                  left: 0;
+                  right: 0;
+                  z-index: 10;
+                  display: flex !important;
+                  justify-content: center;
+                  gap: 0.5rem;
+                }
+              `}</style>
             </div>
           ) : (
             <div className="flex justify-center items-center h-[300px]">
