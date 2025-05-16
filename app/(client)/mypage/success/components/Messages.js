@@ -7,7 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import Image from "next/image";
 import { FaTag } from "react-icons/fa6";
-
+import { FaMoneyBillWaveAlt } from "react-icons/fa";
 const Messages = ({ user }) => {
   const router = useRouter();
   const [chats, setChats] = useState([]);
@@ -160,7 +160,7 @@ const Messages = ({ user }) => {
                 
                 <div className="text-xs flex flex-col my-2">
                   <div className="flex flex-row gap-1 items-center">
-                    <FaTag className="text-blue-500" />
+                    <FaMoneyBillWaveAlt className="w-3 h-3 text-[#007AFF]" />
                     {formatPrice(chat.product_id.price)}원
                   </div>
                   <div className="flex flex-row gap-1 items-center mt-1">

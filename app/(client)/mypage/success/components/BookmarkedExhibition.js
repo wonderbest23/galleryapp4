@@ -12,6 +12,9 @@ import Image from "next/image";
 import { LuWallet } from "react-icons/lu";
 import { FaTag } from "react-icons/fa6";
 import { Spinner } from "@heroui/spinner";
+import { FaMoneyBillWaveAlt } from "react-icons/fa";
+import { FaCalendar } from "react-icons/fa6";
+
 
 export default function BookmarkedExhibition({ user }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -200,20 +203,20 @@ export default function BookmarkedExhibition({ user }) {
                       <div className="text-xs flex flex-col my-2">
                         {item.type === 'gallery' ? (
                           <div className="flex flex-row gap-1">
-                            <Image src="/exhibition/미니지도.svg" alt="map" width={15} height={15} />
+                            <FaMapPin className="w-3 h-3 text-[#007AFF]" />
                             {item.address}
                           </div>
                         ) : item.type === 'product' ? (
                           <>
                             <div className="flex flex-row gap-1 items-center ">
-                            <FaTag className="text-blue-500" />
+                            <FaMoneyBillWaveAlt className="w-3 h-3 text-[#007AFF]" />
                               ₩{formatPrice(item.price)}원
                             </div>
                             
                             
                             {item.artist_id && (
                               <div className="flex flex-row gap-1 items-center">
-                                <FaTag className="text-blue-500" />
+                                <FaTag className="w-3 h-3 text-[#007AFF]" />
                                 {item.artist_id.artist_name || '작가 정보 없음'}
                               </div>
                             )}
@@ -221,15 +224,15 @@ export default function BookmarkedExhibition({ user }) {
                         ) : (
                           <>
                             <div className="flex flex-row gap-1">
-                              <Image src="/exhibition/미니달력.svg" alt="calendar" width={15} height={15} />
+                              <FaCalendar className="w-3 h-3 text-[#007AFF]" />
                               {item.start_date?.substring(0,4)}년 {item.start_date?.substring(4,6)}월 {item.start_date?.substring(6,8)}일 ~ {item.end_date?.substring(0,4)}년 {item.end_date?.substring(4,6)}월 {item.end_date?.substring(6,8)}일
                             </div>
                             <div className="flex flex-row gap-1">
-                              <Image src="/exhibition/미니지도.svg" alt="map" width={15} height={15} />
+                              <FaMapPin className="w-3 h-3 text-[#007AFF]" />
                               {item.gallery.address}
                             </div>
                             <div className="flex flex-row gap-1">
-                              <Image src="/exhibition/미니가격.png" alt="price" width={15} height={15} />
+                              <FaMoneyBillWaveAlt className="w-3 h-3 text-[#007AFF]" />
                               {formatPrice(item.price)}원
                             </div>
                           </>

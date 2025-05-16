@@ -5,6 +5,8 @@ import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { FaPlus } from "react-icons/fa";
 import Link from "next/link";
+import { FaCalendar } from "react-icons/fa6";
+import { FaMoneyBillWaveAlt } from "react-icons/fa";
 
 const OrderHistory = ({ user }) => {
   const [orders, setOrders] = useState([]);
@@ -112,21 +114,15 @@ const OrderHistory = ({ user }) => {
                     />
                     <div className="text-xs flex flex-col my-2 w-full">
                       <div className="flex flex-row gap-1">
-                        <img
-                          src="/exhibitioncard/미니달력.svg"
-                          alt="미니달력"
-                          className="w-[15px] h-[15px]"
-                        />
+                        <FaCalendar className="w-3 h-3 text-[#007AFF]" />
+                        
                         <span className="text-[10px]">
                           결제금액: {Number(order.amount).toLocaleString()}원
                         </span>
                       </div>
                       <div className="flex flex-row gap-1">
-                        <img
-                          src="/exhibitioncard/미니가격.png"
-                          alt="미니가격"
-                          className="w-[15px] h-[15px]"
-                        />
+                        <FaMoneyBillWaveAlt className="w-3 h-3 text-[#007AFF]" />
+                        
                         <span className="text-[10px]">
                           인원: {order.people_count}명 / 주문일: {new Date(order.created_at).toLocaleDateString('ko-KR')}
                         </span>
