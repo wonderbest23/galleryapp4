@@ -137,51 +137,35 @@ const Artists = () => {
 
   // 스켈레톤 아티스트 카드
   const SkeletonArtistCard = ({ index }) => (
-    <motion.div 
-      key={`skeleton-artist-${index}`}
-      initial={{ opacity: 0.6, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
-      className="flex-shrink-0"
-    >
+    <div key={`skeleton-artist-${index}`} className="flex-shrink-0">
       <div className="flex-shrink-0">
         <Skeleton className="w-[100px] h-[100px] rounded-lg" />
         <div className="mt-2">
           <Skeleton className="w-16 h-4 rounded-md mx-auto" />
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 
   // 스켈레톤 작품 카드
   const SkeletonWorkCard = ({ index }) => (
-    <motion.div 
-      key={`skeleton-work-${index}`}
-      initial={{ opacity: 0.6, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
-      className="flex-shrink-0"
-    >
+    <div key={`skeleton-work-${index}`} className="flex-shrink-0">
       <Skeleton className="w-[150px] h-[225px] rounded-lg" />
       <div className="mt-2">
         <Skeleton className="w-24 h-3 rounded-md" />
         <Skeleton className="w-16 h-3 rounded-md mt-1" />
       </div>
-    </motion.div>
+    </div>
   );
 
   // 아티스트 카드 컴포넌트
   const ArtistCard = ({ artist, index }) => (
     <motion.div
       key={artist.id}
-      initial={{ opacity: 0, y: 20, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ 
-        type: "spring", 
-        stiffness: 100, 
-        damping: 15,
+        duration: 0.3, 
         delay: index * 0.05
       }}
       className="flex-shrink-0 w-[100px] h-full block"
@@ -212,12 +196,10 @@ const Artists = () => {
   const WorkCard = ({ work, index, size = "normal" }) => (
     <motion.div
       key={work.id}
-      initial={{ opacity: 0, y: 20, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ 
-        type: "spring", 
-        stiffness: 100, 
-        damping: 15,
+        duration: 0.3, 
         delay: index * 0.05
       }}
       className={`flex ${size === "normal" ? "w-[150px]" : "w-[125px]"} h-full`}
