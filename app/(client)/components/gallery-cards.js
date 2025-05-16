@@ -13,6 +13,7 @@ import { createClient } from "@/utils/supabase/client";
 import useBookmarkStore from "./bookmarkStore";
 import { addToast } from "@heroui/react";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function GalleryCards({ selectedTab, user }) {
   const [gallerys, setGallerys] = useState([]);
@@ -224,79 +225,103 @@ export default function GalleryCards({ selectedTab, user }) {
   }, [selectedTab, getGallerys, page, gallerys.length]);
 
   // 로딩 상태에서 사용할 스켈레톤 UI 컴포넌트
-  const SkeletonCard = () => (
-    <div className="w-[200px] h-[300px] ">
-          <Card className="w-[200px] space-y-5 p-4" radius="lg" shadow="none">
-      <Skeleton className="rounded-lg">
-        <div className="h-24 rounded-lg bg-default-300" />
-      </Skeleton>
-      <div className="space-y-3">
-        <Skeleton className="w-3/5 rounded-lg">
-          <div className="h-3 w-3/5 rounded-lg bg-default-200" />
+  const SkeletonCard = ({ index }) => (
+    <motion.div
+      initial={{ opacity: 0.6, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ 
+        duration: 0.3,
+        delay: index * 0.05,
+        type: "spring",
+        stiffness: 100
+      }}
+      className="w-[200px] h-[300px] flex-shrink-0"
+    >
+      <Card className="w-[200px] space-y-5 p-4" radius="lg" shadow="none">
+        <Skeleton className="rounded-lg">
+          <div className="h-24 rounded-lg bg-default-300" />
         </Skeleton>
-        <Skeleton className="w-4/5 rounded-lg">
-          <div className="h-3 w-4/5 rounded-lg bg-default-200" />
-        </Skeleton>
-        <Skeleton className="w-2/5 rounded-lg">
-          <div className="h-3 w-2/5 rounded-lg bg-default-300" />
-        </Skeleton>
-      </div>
-    </Card>
-    </div>
+        <div className="space-y-3">
+          <Skeleton className="w-3/5 rounded-lg">
+            <div className="h-3 w-3/5 rounded-lg bg-default-200" />
+          </Skeleton>
+          <Skeleton className="w-4/5 rounded-lg">
+            <div className="h-3 w-4/5 rounded-lg bg-default-200" />
+          </Skeleton>
+          <Skeleton className="w-2/5 rounded-lg">
+            <div className="h-3 w-2/5 rounded-lg bg-default-300" />
+          </Skeleton>
+        </div>
+      </Card>
+    </motion.div>
   );
 
   // 갤러리 카드 컴포넌트 - 메모이제이션을 위해 내부 로직과 분리
   const GalleryCard = useCallback(
-    ({ gallery }) => (
-      <Link
-        href={`/galleries/${gallery.id}`}
-        className="flex-shrink-0 w-[200px] h-[247px] block"
-        onClick={(e) => {
-          // 드래그 중에는 링크 이동을 방지
-          if (isDraggingRef.current) {
-            e.preventDefault();
-          }
+    ({ gallery, index }) => (
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ 
+          type: "spring", 
+          stiffness: 120, 
+          damping: 15,
+          delay: index * 0.05 // 각 아이템마다 살짝 딜레이를 줘서 순차적으로 나타나게 함
         }}
+        className="flex-shrink-0"
       >
-        <Card className="h-[247px] overflow-hidden shadow hover:shadow-lg transition-shadow rounded-3xl">
-          <div className="relative">
-            <Image
-              src={gallery.thumbnail || "/images/noimage.jpg"}
-              alt={gallery.name || "갤러리 이미지"}
-              width={200}
-              height={153}
-              className="h-[153px] w-full object-cover"
-              unoptimized={gallery.thumbnail ? false : true}
-            />
-            {/* <div
-              className="absolute top-2 right-2 z-10 p-1 rounded-full bg-white/70"
-              onClick={(e) => toggleBookmark(e, gallery)}
-            >
-              {isBookmarked(gallery.id) ? (
-                <FaBookmark className="text-red-500 text-lg" />
-              ) : (
-                <FaRegBookmark className="text-gray-600 text-lg" />
-              )}
-            </div> */}
-          </div>
-          <CardBody className="flex flex-col justify-between h-full">
-            <div className="text-[16px] font-bold">{gallery.name}</div>
-            <div className="text-[10px] ">
-              <p className="line-clamp-1 text-[#BDBDBD]">
-                {gallery.address || "주소 정보 없음"}
-              </p>
+        <Link
+          href={`/galleries/${gallery.id}`}
+          className="flex-shrink-0 w-[200px] h-[247px] block"
+          onClick={(e) => {
+            // 드래그 중에는 링크 이동을 방지
+            if (isDraggingRef.current) {
+              e.preventDefault();
+            }
+          }}
+        >
+          <Card className="h-[247px] overflow-hidden shadow hover:shadow-lg transition-shadow rounded-3xl">
+            <div className="relative">
+              <Image
+                src={gallery.thumbnail || "/images/noimage.jpg"}
+                alt={gallery.name || "갤러리 이미지"}
+                width={200}
+                height={153}
+                className="h-[153px] w-full object-cover"
+                unoptimized={gallery.thumbnail ? false : true}
+              />
+              {/* <div
+                className="absolute top-2 right-2 z-10 p-1 rounded-full bg-white/70"
+                onClick={(e) => toggleBookmark(e, gallery)}
+              >
+                {isBookmarked(gallery.id) ? (
+                  <FaBookmark className="text-red-500 text-lg" />
+                ) : (
+                  <FaRegBookmark className="text-gray-600 text-lg" />
+                )}
+              </div> */}
             </div>
-            <div className="flex text-sm justify-between items-center">
-              <div className=" rounded-md text-[10px] text-[#BDBDBD] ">평균별점</div>
-              <div className="flex items-center gap-x-1">
-                
-                <span className="text-[10px] text-[#007AFF]">{gallery.visitor_rating || "1.0"}</span>
-                <FaStar className="text-[#007AFF] " />
+            <CardBody className="flex flex-col justify-between h-full">
+              <div className="text-[16px] font-bold">{gallery.name}</div>
+              <div className="text-[10px] ">
+                <p className="line-clamp-1 text-[#BDBDBD]">
+                  {gallery.address || "주소 정보 없음"}
+                </p>
               </div>
-            </div>
-          </CardBody>
-        </Card>
-      </Link>
+              <div className="flex text-sm justify-between items-center">
+                <div className=" rounded-md text-[10px] text-[#BDBDBD] ">평균별점</div>
+                <div className="flex items-center gap-x-1">
+                  
+                  <span className="text-[10px] text-[#007AFF]">{gallery.visitor_rating || "1.0"}</span>
+                  <FaStar className="text-[#007AFF] " />
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        </Link>
+      </motion.div>
     ),
     [isBookmarked, toggleBookmark]
   );
@@ -401,49 +426,68 @@ export default function GalleryCards({ selectedTab, user }) {
   }, []);
 
   return (
-    <div className="w-[90%] max-w-md  overflow-hidden">
-      {loading && page === 1 ? (
-        // 로딩 중 스켈레톤 UI - 이제 하나의 슬라이더로 표시
-        <div className="w-full">
-          <div
-            className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide"
-            style={{ scrollBehavior: "smooth" }}
+    <div className="w-[90%] max-w-md overflow-hidden">
+      <AnimatePresence mode="wait">
+        {loading && page === 1 ? (
+          // 로딩 중 스켈레톤 UI - 이제 하나의 슬라이더로 표시
+          <motion.div
+            key="skeletons"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="w-full"
           >
-            {Array(8)
-              .fill()
-              .map((_, index) => (
-                <SkeletonCard key={index} />
-              ))}
-          </div>
-        </div>
-      ) : (
-        // 단일 캐러셀로 변경된 갤러리 표시
-        <div className="w-full relative overflow-hidden">
-          {/* 갤러리 슬라이더 */}
-          <div
-            ref={sliderRef}
-            className="flex overflow-x-auto gap-4 pb-1 scrollbar-hide h-full px-2 slider-container"
-            style={{
-              scrollSnapType: "x mandatory",
-              scrollBehavior: "auto",
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-              WebkitOverflowScrolling: "touch",
-              cursor: "grab",
-              touchAction: "pan-x", 
-            }}
-            onMouseDown={handleMouseDown}
-            onTouchStart={handleTouchStart}
-          >
-            {/* 슬라이더 배경 div 제거하고 직접 이벤트 적용 */}
-            <div className="flex gap-4 relative z-10">
-              {gallerys.map((gallery, index) => (
-                <GalleryCard key={index} gallery={gallery} />
-              ))}
+            <div
+              className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide"
+              style={{ scrollBehavior: "smooth" }}
+            >
+              {Array(8)
+                .fill()
+                .map((_, index) => (
+                  <SkeletonCard key={index} index={index} />
+                ))}
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        ) : (
+          // 단일 캐러셀로 변경된 갤러리 표시
+          <motion.div
+            key="galleries"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="w-full relative overflow-hidden"
+          >
+            {/* 갤러리 슬라이더 */}
+            <div
+              ref={sliderRef}
+              className="flex overflow-x-auto gap-4 pb-1 scrollbar-hide h-full px-2 slider-container"
+              style={{
+                scrollSnapType: "x mandatory",
+                scrollBehavior: "auto",
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                WebkitOverflowScrolling: "touch",
+                cursor: "grab",
+                touchAction: "pan-x", 
+              }}
+              onMouseDown={handleMouseDown}
+              onTouchStart={handleTouchStart}
+            >
+              {/* 슬라이더 배경 div 제거하고 직접 이벤트 적용 */}
+              <motion.div 
+                className="flex gap-4 relative z-10"
+                initial={{ x: 20 }}
+                animate={{ x: 0 }}
+                transition={{ type: "spring", stiffness: 150, damping: 20 }}
+              >
+                {gallerys.map((gallery, index) => (
+                  <GalleryCard key={gallery.id} gallery={gallery} index={index} />
+                ))}
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

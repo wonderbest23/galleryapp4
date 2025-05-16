@@ -20,6 +20,120 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaCalendar } from "react-icons/fa6";
 import { FaMoneyBillWaveAlt } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+
+// 스켈레톤 컴포넌트
+const SkeletonCard = ({ index }) => (
+  <motion.div
+    key={`skeleton-${index}`}
+    initial={{ opacity: 0.6, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+    transition={{ duration: 0.3 }}
+    className="w-full max-w-[600px] flex items-center gap-3 justify-center mx-auto mb-4"
+  >
+    <div>
+      <Skeleton className="flex rounded-full w-12 h-12" />
+    </div>
+    <div className="w-full flex flex-col gap-2">
+      <Skeleton className="h-3 w-36 rounded-lg" />
+      <Skeleton className="h-3 w-24 rounded-lg" />
+    </div>
+  </motion.div>
+);
+
+// 전시회 카드 컴포넌트
+const ExhibitionCard = ({ exhibition, index, isBookmarked, toggleBookmark }) => (
+  <motion.div
+    layout
+    key={`exhibition-${exhibition.id}`}
+    initial={{ opacity: 0, y: 20, scale: 0.9 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    transition={{ 
+      type: "spring", 
+      stiffness: 100, 
+      damping: 15,
+      delay: index * 0.05 // 각 아이템마다 살짝 딜레이를 줘서 순차적으로 나타나게 함
+    }}
+    className="w-full mb-4"
+  >
+    <Link href={`/exhibition/${exhibition.id}`} className="w-full">
+      <Card
+        classNames={{ body: "p-2 justify-center items-center" }}
+        className="w-full max-w-[600px]"
+        shadow="sm"
+      >
+        <CardBody className="flex gap-4 flex-row w-full h-full justify-center items-center">
+          <div className="flex w-1/2 aspect-square overflow-hidden rounded justify-center items-center">
+            <Image
+              src={exhibition.photo || "/images/noimage.jpg"}
+              alt={exhibition.name}
+              width={72}
+              height={82}
+              className="object-cover"
+            />
+          </div>
+          <div className="flex flex-col w-full justify-center items-center h-full">
+            <div className="flex flex-row justify-between items-start w-full">
+              <div className="flex flex-col">
+                <div className="text-[10px] ">
+                  {exhibition.name || "없음"}
+                </div>
+                <div className="text-[12px] font-bold">
+                  {exhibition.contents}
+                </div>
+              </div>
+            </div>
+
+            <Divider
+              orientation="horizontal"
+              className=" bg-gray-300 mt-2"
+            />
+            <div className="text-xs flex flex-col my-2 w-full">
+              <div className="flex flex-row gap-1 items-center">
+                <FaCalendar className="w-3 h-3 text-[#007AFF]" />
+                <span className="text-[10px]">
+                  {exhibition.start_date?.replace(
+                    /(\d{4})(\d{2})(\d{2})/,
+                    "$1년$2월$3일"
+                  )}{" "}
+                  ~{" "}
+                  {exhibition.end_date?.replace(
+                    /(\d{4})(\d{2})(\d{2})/,
+                    "$1년$2월$3일"
+                  )}
+                </span>
+              </div>
+              <div className="flex flex-row gap-1 items-center">
+                <FaMoneyBillWaveAlt className="w-3 h-3 text-[#007AFF]" />
+                <span className="text-[10px]">
+                  {exhibition.price
+                    ?.toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                  원
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 북마크 아이콘을 카드 우측 하단으로 이동 */}
+          <div className="absolute top-2 right-2">
+            <div
+              className="bg-[#eee] rounded-3xl p-1"
+              onClick={(e) => toggleBookmark(e, exhibition)}
+            >
+              {isBookmarked(exhibition.id) ? (
+                <FaBookmark className="text-red-500 text-xs cursor-pointer font-bold" />
+              ) : (
+                <FaRegBookmark className="text-white text-xs cursor-pointer font-bold" />
+              )}
+            </div>
+          </div>
+        </CardBody>
+      </Card>
+    </Link>
+  </motion.div>
+);
 
 export function ExhibitionCards({ exhibitionCategory, user }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -50,7 +164,11 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
 
     if (!user) {
       // 사용자가 로그인하지 않은 경우 처리
-      alert("북마크를 추가하려면 로그인이 필요합니다.");
+      addToast({
+        title: "로그인 필요",
+        description: "북마크를 추가하려면 로그인이 필요합니다.",
+        color: "warning",
+      });
       return;
     }
 
@@ -104,7 +222,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
         });
       }
     } catch (error) {
-      console.error("북마크 토글 에러:", error);
+      console.log("북마크 토글 에러:", error);
 
       // 에러 토스트 표시
       addToast({
@@ -134,7 +252,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
       // 북마크 데이터를 Zustand 스토어에 저장
       setBookmarks(data || []);
     } catch (error) {
-      console.error("북마크 로드 에러:", error);
+      console.log("북마크 로드 에러:", error);
     } finally {
       setLoadingBookmarks(false);
     }
@@ -173,7 +291,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
         const { data, error, count } = await query.range(from, to);
 
         if (error) {
-          console.error("Error fetching exhibitions:", error);
+          console.log("Error fetching exhibitions:", error);
           return;
         }
 
@@ -209,127 +327,78 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
   }, [getExhibitions]);
 
   return (
-    <>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+      className="w-full"
+    >
       <div className="flex flex-col items-center gap-4 w-[90%] justify-center">
         <div className="w-full flex flex-col justify-center items-center gap-y-4">
-          {loading && page === 1
-            ? // 처음 로딩 중 스켈레톤 UI 표시
-              Array(5)
-                .fill()
-                .map((_, index) => (
-                  <div
-                    key={index}
-                    className="w-full max-w-[600px] flex items-center gap-3 justify-center mx-auto"
-                  >
-                    <div>
-                      <Skeleton className="flex rounded-full w-12 h-12" />
-                    </div>
-                    <div className="w-full flex flex-col gap-2">
-                      <Skeleton className="h-3 w-36 rounded-lg" />
-                      <Skeleton className="h-3 w-24 rounded-lg" />
-                    </div>
-                  </div>
-                ))
-            : // 데이터 로드 완료 후 실제 전시회 목록 표시
-              exhibitions.map((exhibition, index) => (
-                <Link key={index} href={`/exhibition/${exhibition.id}`} className="w-full">
-                  <Card
-                    classNames={{ body: "p-2 justify-center items-center" }}
-                    key={index}
-                    className="w-full max-w-[600px] "
-                    shadow="sm"
-                  >
-                    <CardBody className="flex gap-4 flex-row w-full h-full justify-center items-center">
-                      <div className="flex w-1/2 aspect-square overflow-hidden rounded justify-center items-center">
-                        <Image
-                          src={exhibition.photo || "/images/noimage.jpg"}
-                          alt={exhibition.name}
-                          width={72}
-                          height={82}
-                          className="object-cover"
-                          unoptimized={exhibition.photo ? false : true}
-                        />
-                      </div>
-                      <div className="flex flex-col w-full justify-center items-center h-full">
-                        <div className="flex flex-row justify-between items-start w-full">
-                          <div className="flex flex-col">
-                            <div className="text-[10px] ">
-                              {exhibition.name || "없음"}
-                            </div>
-                            <div className="text-[12px] font-bold">
-                              {exhibition.contents}
-                            </div>
-                          </div>
-                        </div>
-
-                        <Divider
-                          orientation="horizontal"
-                          className=" bg-gray-300 mt-2"
-                        />
-                        <div className="text-xs flex flex-col my-2 w-full">
-                          <div className="flex flex-row gap-1 items-center">
-                            <FaCalendar className="w-3 h-3 text-[#007AFF]" />
-                            <span className="text-[10px]">
-                              {exhibition.start_date?.replace(
-                                /(\d{4})(\d{2})(\d{2})/,
-                                "$1년$2월$3일"
-                              )}{" "}
-                              ~{" "}
-                              {exhibition.end_date?.replace(
-                                /(\d{4})(\d{2})(\d{2})/,
-                                "$1년$2월$3일"
-                              )}
-                            </span>
-                          </div>
-                          <div className="flex flex-row gap-1 items-center">
-                            <FaMoneyBillWaveAlt className="w-3 h-3 text-[#007AFF]" />
-                            <span className="text-[10px]">
-                              {exhibition.price
-                                ?.toString()
-                                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                              원
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 북마크 아이콘을 카드 우측 하단으로 이동 */}
-                      <div className="absolute top-2 right-2">
-                        <div
-                          className="bg-[#eee] rounded-3xl p-1"
-                          onClick={(e) => toggleBookmark(e, exhibition)}
-                        >
-                          {isBookmarked(exhibition.id) ? (
-                            <FaBookmark className="text-red-500 text-xs cursor-pointer font-bold" />
-                          ) : (
-                            <FaRegBookmark className="text-white text-xs cursor-pointer font-bold" />
-                          )}
-                        </div>
-                      </div>
-                    </CardBody>
-                  </Card>
-                </Link>
-              ))}
+          <AnimatePresence mode="wait">
+            {loading && page === 1 ? (
+              // 스켈레톤 UI
+              <motion.div
+                key="skeletons"
+                className="w-full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                {Array(5).fill().map((_, index) => (
+                  <SkeletonCard key={index} index={index} />
+                ))}
+              </motion.div>
+            ) : (
+              // 실제 전시회 목록
+              <motion.div
+                key="exhibitions"
+                className="w-full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ 
+                  duration: 0.5,
+                  staggerChildren: 0.1 
+                }}
+              >
+                {exhibitions.map((exhibition, index) => (
+                  <ExhibitionCard
+                    key={exhibition.id}
+                    exhibition={exhibition}
+                    index={index}
+                    isBookmarked={isBookmarked}
+                    toggleBookmark={toggleBookmark}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* 추가 데이터 로딩 중 표시 */}
           {loading && page > 1 && (
             <div className="flex justify-center w-full py-4">
-              {/* <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div> */}
               <Spinner variant="wave" size="lg" color="primary" />
             </div>
           )}
         </div>
-        {hasMore && !loading ? (
-          <FaPlusCircle
-            className="text-gray-500 text-2xl font-bold hover:cursor-pointer mb-4"
-            onClick={loadMore}
-          />
-        ) : (
-          <div className="text-gray-500 text-sm mb-8">
-            모든 전시회를 불러왔습니다
-          </div>
-        )}
+        
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          {hasMore && !loading ? (
+            <FaPlusCircle
+              className="text-gray-500 text-2xl font-bold hover:cursor-pointer mb-4 hover:scale-110 transition-transform"
+              onClick={loadMore}
+            />
+          ) : (
+            <div className="text-gray-500 text-sm mb-8">
+              모든 전시회를 불러왔습니다
+            </div>
+          )}
+        </motion.div>
       </div>
-    </>
+    </motion.div>
   );
 }

@@ -97,7 +97,7 @@
 /* slick-theme.css의 핵심 스타일 */
 .slick-dots {
   position: absolute;
-  bottom: 20px;
+  bottom: 5px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -131,7 +131,7 @@
 
 /* 슬라이더 커스텀 스타일 */
 .product-slider .slick-dots {
-  bottom: 20px;
+  bottom: 5px;
   display: flex;
   justify-content: center;
   align-items: center;

@@ -68,13 +68,13 @@ export function MagazineCarousel() {
     useTransform: true,
     customPaging: (i) => (
       <div
-        className="w-2 h-2 rounded-full cursor-pointer"
+        className="dot-button"
         style={{
-          backgroundColor: i === activeSlide ? "#007AFF" : "#FFFFFF"
+          backgroundColor: i === activeSlide ? "#007AFF" : "#FFFFFF",
         }}
       />
     ),
-    dotsClass: "slick-dots flex gap-2 justify-center absolute bottom-12 left-0 right-0 z-10",
+    dotsClass: "slick-dots flex justify-center absolute bottom-12 left-0 right-0 z-10 w-3",
     beforeChange: (current, next) => setActiveSlide(next),
     initialSlide: 0,
     responsive: [
@@ -174,7 +174,53 @@ export function MagazineCarousel() {
                   z-index: 10;
                   display: flex !important;
                   justify-content: center;
-                  gap: 0.5rem;
+                  gap: 0.05rem;
+                  padding: 0;
+                  margin: 0;
+                  list-style: none;
+                }
+                
+                .slick-container .slick-dots li {
+                  position: relative;
+                  display: inline-block;
+                  width: 10px;
+                  height: 10px;
+                  margin: 0 2px;
+                  padding: 0;
+                  cursor: pointer;
+                }
+                
+                .slick-container .slick-dots li button {
+                  font-size: 0;
+                  line-height: 0;
+                  display: block;
+                  width: 8px;
+                  height: 8px;
+                  padding: 0;
+                  cursor: pointer;
+                  color: transparent;
+                  border: 0;
+                  outline: none;
+                  background: transparent;
+                }
+                
+                .slick-container .slick-dots li .dot-button {
+                  display: block;
+                  width: 8px;
+                  height: 8px;
+                  border-radius: 50%;
+                }
+                
+                .slick-container .slick-dots li.slick-active .dot-button {
+                  width: 10px;
+                  height: 10px;
+                }
+                
+                /* 이미지 클릭 시 하이라이트 제거 */
+                img {
+                  -webkit-tap-highlight-color: transparent;
+                  outline: none;
+                  user-select: none;
                 }
               `}</style>
             </div>

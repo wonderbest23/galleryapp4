@@ -380,7 +380,7 @@ function ExhibitionListContent() {
           <h3 className="text-[18px] font-bold">인기 전시회</h3>
         </div>
         {loadingPopular ? (
-          <div className="flex overflow-x-auto gap-4 py-2">
+          <div className="flex overflow-x-auto gap-4 py-2 scrollbar-hide">
             {Array(3).fill(null).map((_, i) => (
               <div key={i} className="min-w-[180px] flex-shrink-0">
                 <Skeleton className="w-full h-[100px] rounded-lg" />

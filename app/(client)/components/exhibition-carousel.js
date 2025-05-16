@@ -7,6 +7,8 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+
 export function ExhibitionCarousel() {
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,45 +50,87 @@ export function ExhibitionCarousel() {
     )
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        duration: 0.5,
+        when: "beforeChildren",
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5 }
+    }
+  };
+
   return (
-    <div className="relative py-5 w-full flex justify-center items-center">
+    <motion.div
+      className="relative py-5 w-full flex justify-center items-center"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       <Card className="w-full" shadow="none">
         <CardBody className="p-0 w-full flex justify-center items-center">
           {loading ? (
-            <Card className="w-[300px] space-y-5 p-4" radius="lg" shadow="none" >
-              <Skeleton className="rounded-lg">
-                <div className="h-48 rounded-lg bg-default-300" />
-              </Skeleton>
-              <div className="space-y-3">
-                <Skeleton className="w-3/5 rounded-lg">
-                  <div className="h-3 w-3/5 rounded-lg bg-default-200" />
+            <motion.div
+              variants={itemVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <Card className="w-[300px] space-y-5 p-4" radius="lg" shadow="none" >
+                <Skeleton className="rounded-lg">
+                  <div className="h-48 rounded-lg bg-default-300" />
                 </Skeleton>
-                <Skeleton className="w-4/5 rounded-lg">
-                  <div className="h-3 w-4/5 rounded-lg bg-default-200" />
-                </Skeleton>
-                <Skeleton className="w-2/5 rounded-lg">
-                  <div className="h-3 w-2/5 rounded-lg bg-default-300" />
-                </Skeleton>
-              </div>
-            </Card>
+                <div className="space-y-3">
+                  <Skeleton className="w-3/5 rounded-lg">
+                    <div className="h-3 w-3/5 rounded-lg bg-default-200" />
+                  </Skeleton>
+                  <Skeleton className="w-4/5 rounded-lg">
+                    <div className="h-3 w-4/5 rounded-lg bg-default-200" />
+                  </Skeleton>
+                  <Skeleton className="w-2/5 rounded-lg">
+                    <div className="h-3 w-2/5 rounded-lg bg-default-300" />
+                  </Skeleton>
+                </div>
+              </Card>
+            </motion.div>
           ) : (
-            <div className="w-[90%] relative">
+            <motion.div
+              className="w-[90%] relative"
+              variants={itemVariants}
+            >
               <Slider {...settings}>
                 {banners.map((banner, index) => (
                   <div key={index}>
-                    <Image
-                      src={banner?.url || `https://picsum.photos/800/400?random=${index}`}
-                      alt={banner?.title || `Slide ${index + 1}`}
-                      className="w-full h-[200px] object-cover rounded-2xl"
-                      style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
-                      width={800}
-                      height={400}
-                      priority={index === 0}
-                    />
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <Image
+                        src={banner?.url || `/noimage.jpg`}
+                        alt={banner?.title || `Slide ${index + 1}`}
+                        className="w-full h-[200px] object-cover rounded-2xl"
+                        style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+                        width={800}
+                        height={400}
+                        priority={index === 0}
+                      />
+                    </motion.div>
                   </div>
                 ))}
               </Slider>
-            </div>
+            </motion.div>
           )}
         </CardBody>
       </Card>
@@ -132,7 +176,7 @@ export function ExhibitionCarousel() {
           height: 8px;
           border-radius: 50%;
           background-color: white;
-          
+          transition: all 0.3s ease;
         }
         .custom-dots li.slick-active .dot-button {
           background-color: #007AFF !important;
@@ -147,6 +191,6 @@ export function ExhibitionCarousel() {
           user-select: none;
         }
       `}</style>
-    </div>
+    </motion.div>
   );
 }

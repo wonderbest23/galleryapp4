@@ -28,6 +28,11 @@ import { FaArrowLeft } from "react-icons/fa";
 import { LuSend } from "react-icons/lu";
 import { loadTossPayments } from "@tosspayments/tosspayments-sdk";
 import { FaCalendar } from "react-icons/fa6";
+import { FaStar } from "react-icons/fa";
+import { FaMap } from "react-icons/fa";
+import { FaRegCalendar } from "react-icons/fa";
+import { FaMoneyBill } from "react-icons/fa";
+
 
 export default function App() {
   const { id } = useParams();
@@ -391,7 +396,7 @@ export default function App() {
       ) : (
         <div className="max-w-md mx-auto bg-white min-h-screen">
           {/* 상단 네비게이션 바 */}
-          <div className="bg-white flex items-center">
+          <div className="w-full mx-auto bg-white flex items-center">
             <Button
               isIconOnly
               variant="light"
@@ -430,7 +435,7 @@ export default function App() {
           </div>
 
           {/* Restaurant Info */}
-          <div className="p-4">
+          <div className="w-[90%] mx-auto mt-4">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-[10px] text-[#494949]">
@@ -443,11 +448,7 @@ export default function App() {
                 <div className="flex items-center gap-1 mt-1">
                   <div className="flex items-center">
                     {/* <Icon icon="lucide:star" className="text-yellow-400" /> */}
-                    <img
-                      src="/exhibition/미니별점.png"
-                      alt="별점"
-                      className="w-4 h-4"
-                    />
+                    <FaStar className="w-3 h-3 text-[#007AFF]" />
                     <span className="ml-1">
                       {exhibition?.review_average?.toFixed(1) || "0.0"}
                     </span>
@@ -462,7 +463,7 @@ export default function App() {
 
             <div className="mt-4 space-y-2 text-sm text-gray-600">
               <div className="flex items-center gap-2">
-                <FaCalendar className="w-4 h-4 text-[#007AFF]" />
+                <FaCalendar className="w-3 h-3 text-[#007AFF]" />
                 <span>
                   {exhibition?.start_date?.replace(
                     /(\d{4})(\d{2})(\d{2})/,
@@ -476,19 +477,12 @@ export default function App() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <img
-                  src="/exhibition/미니지도.svg"
-                  alt="지도"
-                  className="w-4 h-4"
-                />
+                
+                <FaMap className="w-3 h-3 text-[#007AFF]" />
                 <span>{exhibition?.gallery?.address}</span>
               </div>
               <div className="flex items-center gap-2">
-                <img
-                  src="/exhibition/미니가격.png"
-                  alt="가격"
-                  className="w-4 h-4"
-                />
+                <FaMoneyBill className="w-3 h-3 text-[#007AFF]" />
                 <span>
                   {exhibition?.price
                     ?.toString()
@@ -574,7 +568,7 @@ export default function App() {
             {/* 탭 컨텐츠 */}
             <div className="px-2 w-full">
               {selected === "home" && (
-                <Card className="my-4 mx-2">
+                <Card className="my-4 mx-2 p-2">
                   <CardBody>
                     <h3 className="text-lg font-bold mb-2">전시회 안내</h3>
                     <p>{exhibition?.add_info}</p>
