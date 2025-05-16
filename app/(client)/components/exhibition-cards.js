@@ -54,17 +54,16 @@ const ExhibitionCard = ({ exhibition, index, isBookmarked, toggleBookmark }) => 
     <Link href={`/exhibition/${exhibition.id}`} className="w-full justify-center items-center">
       <Card
         classNames={{ body: "p-2 justify-center items-center" }}
-        className="w-full max-w-[600px]"
+        className="w-full h-full"
         shadow="sm"
       >
-        <CardBody className="flex gap-4 flex-row w-full h-full justify-center items-center">
-          <div className="flex w-1/2 aspect-square overflow-hidden rounded justify-center items-center">
+        <CardBody classNames={{ body: "p-0" }} className="flex gap-4 flex-row w-full h-full justify-center items-center ">
+          <div className="flex aspect-square h-20 rounded justify-center items-center relative">
             <Image
               src={exhibition.photo || "/images/noimage.jpg"}
               alt={exhibition.name}
-              width={72}
-              height={82}
-              className="object-cover"
+              fill
+              className="object-cover rounded"
             />
           </div>
           <div className="flex flex-col w-full justify-center items-center h-full">
