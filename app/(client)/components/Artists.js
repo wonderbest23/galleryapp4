@@ -1,25 +1,61 @@
 "use client";
-import React, { useRef, useState, useEffect, useCallback } from "react";
-import { FaChevronRight } from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react";
+import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import { Card, CardBody, Skeleton } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const Artists = () => {
   const router = useRouter();
-  const artistSliderRef = useRef(null);
-  const workSliderRef = useRef(null);
-  const anotherSliderRef = useRef(null);
-  const isDraggingRef = useRef(false);
-  const isSliderClickRef = useRef(false);
   const [artists, setArtists] = useState([]);
   const [works, setWorks] = useState([]);
   const [recommendedWorks, setRecommendedWorks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
+  
+  // 슬라이더 ref
+  const artistSliderRef = useRef(null);
+  const workSliderRef = useRef(null);
+  const recommendedSliderRef = useRef(null);
+  
+  // 슬라이더 설정
+  const sliderSettings = {
+    dots: false,
+    infinite: false,
+    speed: 500,
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    arrows: false,
+    variableWidth: true,
+    swipeToSlide: true,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 3,
+        }
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 2,
+        }
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 1,
+        }
+      }
+    ]
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -56,7 +92,7 @@ const Artists = () => {
 
         setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.log("Error fetching data:", error);
         setIsLoading(false);
       }
     };
@@ -64,76 +100,22 @@ const Artists = () => {
     fetchData();
   }, []);
 
-  const handleMouseDown = useCallback((e, ref) => {
-    isSliderClickRef.current = true;
-    e.preventDefault();
-    if (ref.current) {
-      isDraggingRef.current = false;
-      ref.current.style.cursor = "grabbing";
-      const slider = ref.current;
-      const startX = e.pageX;
-      const scrollLeft = slider.scrollLeft;
-      const onMouseMove = (e) => {
-        if (!isSliderClickRef.current) return;
-        e.preventDefault();
-        isDraggingRef.current = true;
-        const x = e.pageX;
-        const walk = startX - x;
-        slider.scrollLeft = scrollLeft + walk;
-      };
-      const onMouseUp = () => {
-        isSliderClickRef.current = false;
-        slider.style.cursor = "grab";
-        setTimeout(() => {
-          isDraggingRef.current = false;
-        }, 10);
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
-      };
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
+  const handleItemClick = (e, path) => {
+    router.push(path);
+  };
+  
+  // 슬라이더 이전/다음 버튼 핸들러
+  const goPrev = (sliderRef) => {
+    if (sliderRef.current) {
+      sliderRef.current.slickPrev();
     }
-  }, []);
-
-  const handleTouchStart = useCallback((e, ref) => {
-    isSliderClickRef.current = true;
-    if (ref.current) {
-      isDraggingRef.current = false;
-      const slider = ref.current;
-      const startX = e.touches[0].clientX;
-      const scrollLeft = slider.scrollLeft;
-      const onTouchMove = (e) => {
-        if (!isSliderClickRef.current) return;
-        isDraggingRef.current = true;
-        const x = e.touches[0].clientX;
-        const walk = startX - x;
-        slider.scrollLeft = scrollLeft + walk;
-      };
-      const onTouchEnd = () => {
-        isSliderClickRef.current = false;
-        setTimeout(() => {
-          isDraggingRef.current = false;
-        }, 10);
-        slider.removeEventListener("touchmove", onTouchMove);
-        slider.removeEventListener("touchend", onTouchEnd);
-      };
-      slider.addEventListener("touchmove", onTouchMove, { passive: false });
-      slider.addEventListener("touchend", onTouchEnd);
+  };
+  
+  const goNext = (sliderRef) => {
+    if (sliderRef.current) {
+      sliderRef.current.slickNext();
     }
-  }, []);
-
-  // 클릭 핸들러 함수 추가 - 드래그 중인 경우 클릭 이벤트 방지
-  const handleItemClick = useCallback(
-    (e, path) => {
-      if (isDraggingRef.current) {
-        e.preventDefault();
-        e.stopPropagation();
-        return;
-      }
-      router.push(path);
-    },
-    [router]
-  );
+  };
 
   // 스켈레톤 아티스트 카드
   const SkeletonArtistCard = ({ index }) => (
@@ -168,9 +150,9 @@ const Artists = () => {
         duration: 0.3, 
         delay: index * 0.05
       }}
-      className="flex-shrink-0 w-[100px] h-full block"
+      className="flex-shrink-0 w-[100px] h-full block px-1 py-1"
     >
-      <Card className="h-full overflow-hidden shadow hover:shadow-lg transition-shadow rounded-xl">
+      <Card  className="h-full overflow-hidden shadow hover:shadow-lg transition-shadow rounded-xl">
         <div
           onClick={(e) => handleItemClick(e, `/artist/${artist.id}`)}
           className="relative cursor-pointer w-[100px] aspect-square"
@@ -202,7 +184,7 @@ const Artists = () => {
         duration: 0.3, 
         delay: index * 0.05
       }}
-      className={`flex ${size === "normal" ? "w-[150px]" : "w-[125px]"} h-full`}
+      className={`flex ${size === "normal" ? "w-[150px]" : "w-[125px]"} h-full px-1`}
     >
       <Card
         className={`h-full ${size === "normal" ? "w-[150px]" : "w-[125px]"} overflow-hidden hover:shadow-md transition-shadow rounded-xl`}
@@ -257,6 +239,24 @@ const Artists = () => {
         )}
       </Card>
     </motion.div>
+  );
+
+  // 슬라이더 내비게이션 버튼 컴포넌트
+  const SliderNavigation = ({ prevHandler, nextHandler }) => (
+    <div className="flex items-center gap-2 absolute right-0 top-[-30px]">
+      <button
+        onClick={prevHandler}
+        className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-500 hover:bg-gray-100"
+      >
+        <FaChevronLeft size={12} />
+      </button>
+      <button
+        onClick={nextHandler}
+        className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-500 hover:bg-gray-100"
+      >
+        <FaChevronRight size={12} />
+      </button>
+    </div>
   );
 
   if (isLoading) {
@@ -319,56 +319,58 @@ const Artists = () => {
       </div>
       {/* 아티스트 가로방향 캐러샐*/}
       <div className="w-full relative overflow-hidden mt-4">
+        <SliderNavigation 
+          prevHandler={() => goPrev(artistSliderRef)}
+          nextHandler={() => goNext(artistSliderRef)}
+        />
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          ref={artistSliderRef}
-          className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide h-full slider-container p-1"
-          style={{
-            scrollSnapType: "x mandatory",
-            scrollBehavior: "auto",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-            WebkitOverflowScrolling: "touch",
-            cursor: "grab",
-            touchAction: "pan-x",
-          }}
-          onMouseDown={(e) => handleMouseDown(e, artistSliderRef)}
-          onTouchStart={(e) => handleTouchStart(e, artistSliderRef)}
+          className="slider-container"
         >
-          {artists.map((artist, index) => (
-            <ArtistCard key={artist.id} artist={artist} index={index} />
-          ))}
+          <Slider ref={artistSliderRef} {...sliderSettings}>
+            {artists.map((artist, index) => (
+              <ArtistCard key={artist.id} artist={artist} index={index} />
+            ))}
+          </Slider>
         </motion.div>
+      </div>
+      
+      <div className="flex flex-row items-center justify-between w-full mt-8">
+        <div className="flex flex-col items-center justify-center text-[18px] font-bold">
+          최신 작품
+        </div>
+        <div
+          onClick={() => router.push("/artstore")}
+          className="flex flex-row items-center justify-center cursor-pointer"
+        >
+          <p className="text-[#007AFF] text-sm font-bold">SEE ALL</p>
+          <FaChevronRight className="text-[#007AFF] text-sm font-bold" />
+        </div>
       </div>
       {/* 작품 가로방향 캐러샐 */}
       <div className="w-full relative overflow-hidden mt-4">
+        <SliderNavigation 
+          prevHandler={() => goPrev(workSliderRef)}
+          nextHandler={() => goNext(workSliderRef)}
+        />
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          ref={workSliderRef}
-          className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide h-full slider-container p-1"
-          style={{
-            scrollSnapType: "x mandatory",
-            scrollBehavior: "auto",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-            WebkitOverflowScrolling: "touch",
-            cursor: "grab",
-            touchAction: "pan-x",
-          }}
-          onMouseDown={(e) => handleMouseDown(e, workSliderRef)}
-          onTouchStart={(e) => handleTouchStart(e, workSliderRef)}
+          className="slider-container"
         >
-          {works.map((work, index) => (
-            <WorkCard key={work.id} work={work} index={index} size="normal" />
-          ))}
+          <Slider ref={workSliderRef} {...sliderSettings}>
+            {works.map((work, index) => (
+              <WorkCard key={work.id} work={work} index={index} size="normal" />
+            ))}
+          </Slider>
         </motion.div>
       </div>
-      {/* // Top of Week 가로방향 캐러샐 */}
-      <div className="flex flex-row items-center justify-between w-full">
+      
+      {/* Top of Week 가로방향 캐러샐 */}
+      <div className="flex flex-row items-center justify-between w-full mt-8">
         <div className="flex flex-col items-center justify-center text-[18px] font-bold">
           Top of Week
         </div>
@@ -381,27 +383,21 @@ const Artists = () => {
         </div>
       </div>
       <div className="w-full relative overflow-hidden mt-4">
+        <SliderNavigation 
+          prevHandler={() => goPrev(recommendedSliderRef)}
+          nextHandler={() => goNext(recommendedSliderRef)}
+        />
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          ref={anotherSliderRef}
-          className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide h-full slider-container p-1"
-          style={{
-            scrollSnapType: "x mandatory",
-            scrollBehavior: "auto",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-            WebkitOverflowScrolling: "touch",
-            cursor: "grab",
-            touchAction: "pan-x",
-          }}
-          onMouseDown={(e) => handleMouseDown(e, anotherSliderRef)}
-          onTouchStart={(e) => handleTouchStart(e, anotherSliderRef)}
+          className="slider-container"
         >
-          {recommendedWorks.map((work, index) => (
-            <WorkCard key={work.id} work={work} index={index} size="small" />
-          ))}
+          <Slider ref={recommendedSliderRef} {...sliderSettings}>
+            {recommendedWorks.map((work, index) => (
+              <WorkCard key={work.id} work={work} index={index} size="small" />
+            ))}
+          </Slider>
         </motion.div>
       </div>
     </div>

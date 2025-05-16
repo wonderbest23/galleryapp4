@@ -45,3 +45,22 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
 }
+
+/* React-Slick 슬라이더 스타일 커스터마이징 */
+.slider-container {
+  padding: 4px 0;
+}
+
+.slick-track {
+  display: flex !important;
+  gap: 16px;
+  margin-left: 0 !important;
+}
+
+.slick-slide {
+  height: inherit !important;
+}
+
+.slick-slide > div {
+  height: 100%;
+}
