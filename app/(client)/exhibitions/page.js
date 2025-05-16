@@ -23,17 +23,19 @@ import { FaArrowLeft } from "react-icons/fa6";
 import Link from "next/link";
 import { FaRegStar, FaStar } from "react-icons/fa";
 import { FiPlusCircle } from "react-icons/fi";
+import Image from "next/image";
+import { FaMap } from "react-icons/fa";
 
 // useSearchParams를 사용하는 별도의 클라이언트 컴포넌트
 function ExhibitionListContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams({ suspense: true });
   const initialIsBookmark =
     searchParams.get("isBookmark") === "true" ||
     searchParams.get("isBookmark") === "1";
   const [selectedTab, setSelectedTab] = useState("all");
   const [exhibitions, setExhibitions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [selectedRegion, setSelectedRegion] = useState("");
@@ -41,9 +43,10 @@ function ExhibitionListContent() {
   const [bookmarks, setBookmarks] = useState([]);
   const [user, setUser] = useState(null);
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [popularExhibitions, setPopularExhibitions] = useState([]);
+  const [loadingPopular, setLoadingPopular] = useState(true);
   const [highRatingExhibitions, setHighRatingExhibitions] = useState([]);
+  const [loadingHighRating, setLoadingHighRating] = useState(true);
   const [tabLoading, setTabLoading] = useState(false);
 
   const supabase = createClient();
@@ -55,6 +58,57 @@ function ExhibitionListContent() {
     setTabLoading(true); // 탭 변경 시 로딩 상태 활성화
     // 데이터를 즉시 다시 불러오기 위해 useEffect 의존성 배열에 isBookmark 추가됨
   }, [selectedTab, isBookmark, selectedRegion]);
+
+  // 인기 전시회 및 높은 평점 전시회 데이터 불러오기
+  useEffect(() => {
+    const fetchRecommendedExhibitions = async () => {
+      setLoadingPopular(true);
+      setLoadingHighRating(true);
+      
+      try {
+        // 인기 전시회 데이터 불러오기
+        const { data: popularExhibitionsData, error: popularExhibitionsError } =
+          await supabase
+            .from("exhibition")
+            .select("*,gallery:naver_gallery_url(*)")
+            .eq("isRecommended", true)
+            .gte("end_date", new Date().toISOString())
+            .limit(5);
+
+        if (popularExhibitionsError) {
+          console.log("인기 전시회 데이터 로드 오류:", popularExhibitionsError);
+        } else {
+          setPopularExhibitions(popularExhibitionsData);
+        }
+        setLoadingPopular(false);
+
+        // 높은 평점 전시회 데이터 불러오기
+        const {
+          data: highRatingExhibitionsData,
+          error: highRatingExhibitionsError,
+        } = await supabase
+          .from("exhibition")
+          .select("*,gallery:naver_gallery_url(*)")
+          .not("gallery", "is", null)
+          .order("review_average", { ascending: false })
+          .gte("end_date", new Date().toISOString())
+          .limit(9);
+          
+        if (highRatingExhibitionsError) {
+          console.log("높은 평점 전시회 데이터 로드 오류:", highRatingExhibitionsError);
+        } else {
+          setHighRatingExhibitions(highRatingExhibitionsData);
+        }
+        setLoadingHighRating(false);
+      } catch (error) {
+        console.log("전시회 추천 데이터 로드 오류:", error);
+        setLoadingPopular(false);
+        setLoadingHighRating(false);
+      }
+    };
+
+    fetchRecommendedExhibitions();
+  }, []);
 
   useEffect(() => {
     const fetchExhibitions = async () => {
@@ -74,6 +128,7 @@ function ExhibitionListContent() {
           setExhibitions([]);
           setHasMore(false);
           setLoading(false);
+          setTabLoading(false);
           return;
         }
 
@@ -81,41 +136,6 @@ function ExhibitionListContent() {
         if (isBookmark && user && loadingBookmarks) {
           console.log("북마크 데이터 로딩 중, 대기");
           return; // 북마크 데이터가 로드될 때까지 대기
-        }
-
-        const { data: popularExhibitionsData, error: popularExhibitionsError } =
-          await supabase
-            .from("exhibition")
-            .select("*,gallery:naver_gallery_url(*)")
-            .eq("isRecommended", true)
-            .gte("end_date", new Date().toISOString())
-            .limit(5);
-
-        if (popularExhibitionsError) {
-          console.error(
-            "인기 전시회 데이터 로드 오류:",
-            popularExhibitionsError
-          );
-        } else {
-          setPopularExhibitions(popularExhibitionsData);
-        }
-        const {
-          data: highRatingExhibitionsData,
-          error: highRatingExhibitionsError,
-        } = await supabase
-          .from("exhibition")
-          .select("*,gallery:naver_gallery_url(*)")
-          .not("gallery", "is", null)
-          .order("review_average", { ascending: false })
-          .gte("end_date", new Date().toISOString())
-          .limit(9);
-        if (highRatingExhibitionsError) {
-          console.error(
-            "인기 전시회 데이터 로드 오류:",
-            highRatingExhibitionsError
-          );
-        } else {
-          setHighRatingExhibitions(highRatingExhibitionsData);
         }
 
         let query = supabase
@@ -154,6 +174,7 @@ function ExhibitionListContent() {
             setExhibitions([]);
             setHasMore(false);
             setLoading(false);
+            setTabLoading(false);
             return;
           }
 
@@ -174,9 +195,8 @@ function ExhibitionListContent() {
 
         setHasMore(data.length === 5);
       } catch (error) {
-        console.error("전시회 데이터를 가져오는 중 오류 발생:", error);
+        console.log("전시회 데이터를 가져오는 중 오류 발생:", error);
       } finally {
-        setIsLoading(false);
         setLoading(false);
         setTabLoading(false); // 데이터 로드 완료 시 탭 로딩 상태 비활성화
       }
@@ -229,7 +249,7 @@ function ExhibitionListContent() {
       console.log("북마크 데이터 로드 완료:", data?.length || 0);
       setBookmarks(data || []);
     } catch (error) {
-      console.error("북마크 로드 에러:", error);
+      console.log("북마크 로드 에러:", error);
     } finally {
       setLoadingBookmarks(false);
     }
@@ -249,7 +269,11 @@ function ExhibitionListContent() {
 
     if (!user) {
       // 사용자가 로그인하지 않은 경우 처리
-      alert("북마크를 추가하려면 로그인이 필요합니다.");
+      addToast({
+        title: "로그인 필요",
+        description: "북마크를 추가하려면 로그인이 필요합니다.",
+        color: "warning",
+      });
       return;
     }
 
@@ -303,7 +327,7 @@ function ExhibitionListContent() {
         });
       }
     } catch (error) {
-      console.error("북마크 토글 에러:", error);
+      console.log("북마크 토글 에러:", error);
 
       // 에러 토스트 표시
       addToast({
@@ -334,222 +358,236 @@ function ExhibitionListContent() {
     }
     window.history.pushState({}, "", url);
   };
-  console.log("popularExhibitions", popularExhibitions);
+
   return (
     <div className="flex flex-col items-center justify-center">
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center w-full h-full gap-y-6 mt-12">
-          {Array(5)
-            .fill(null)
-            .map((_, index) => (
-              <div
-                key={index}
-                className="max-w-[300px] w-full flex items-center gap-3"
-              >
-                <div>
-                  <Skeleton className="flex rounded-full w-12 h-12" />
-                </div>
-                <div className="w-full flex flex-col gap-2">
-                  <Skeleton className="h-3 w-3/5 rounded-lg" />
-                  <Skeleton className="h-3 w-4/5 rounded-lg" />
-                </div>
+      <div className="bg-white flex items-center w-[90%] justify-between">
+        <Button
+          isIconOnly
+          variant="light"
+          className="mr-2"
+          onPress={() => router.push("/")}
+        >
+          <FaArrowLeft className="text-xl" />
+        </Button>
+        <h2 className="text-lg font-bold text-center flex-grow">전시회</h2>
+        <div className="w-10"></div>
+      </div>
+
+      {/* 인기 전시회 캐러셀 */}
+      <div className="w-[90%] mt-4 mb-2">
+        <div className="flex justify-between items-center mb-1">
+          <h3 className="text-[18px] font-bold">인기 전시회</h3>
+        </div>
+        {loadingPopular ? (
+          <div className="flex overflow-x-auto gap-4 py-2">
+            {Array(3).fill(null).map((_, i) => (
+              <div key={i} className="min-w-[180px] flex-shrink-0">
+                <Skeleton className="w-full h-[100px] rounded-lg" />
+                <Skeleton className="w-3/4 h-4 mt-2 rounded-lg" />
+                <Skeleton className="w-1/2 h-3 mt-1 rounded-lg" />
               </div>
             ))}
-        </div>
-      ) : (
-        <>
-          <div className="bg-white flex items-center w-[90%] justify-between">
-            <Button
-              isIconOnly
-              variant="light"
-              className="mr-2"
-              onPress={() => router.push("/")}
-            >
-              <FaArrowLeft className="text-xl" />
-            </Button>
-            <h2 className="text-lg font-bold text-center flex-grow">전시회</h2>
-            <div className="w-10"></div>
           </div>
+        ) : (
+          <ExhibitionCarousel
+            exhibitions={popularExhibitions}
+            user={user}
+            bookmarks={bookmarks}
+            toggleBookmark={toggleBookmark}
+            isBookmarked={isBookmarked}
+          />
+        )}
+      </div>
 
-          {/* 가로 방향 캐러셀 추가 */}
-          <div className="w-[90%] mt-4 mb-2 ">
-            <div className="flex justify-between items-center mb-1">
-              <h3 className="text-[18px] font-bold">인기 전시회</h3>
-            </div>
-            <ExhibitionCarousel
-              exhibitions={popularExhibitions}
-              user={user}
-              bookmarks={bookmarks}
-              toggleBookmark={toggleBookmark}
-              isBookmarked={isBookmarked}
+      {/* 커스텀 탭바 및 필터 영역 */}
+      <div className="w-[90%] flex flex-col mb-4">
+        {/* 커스텀 탭바 - 전체 폭의 2/3 크기로 중앙 정렬 */}
+        <div className="flex w-full border-t border-gray-200 mb-2">
+          <div className="w-1/6"></div>
+          <div className="flex w-2/3">
+            <button
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "all" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
+              onClick={() => setSelectedTab("all")}
+            >
+              전시회
+            </button>
+            <button
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "free" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
+              onClick={() => setSelectedTab("free")}
+            >
+              무료전시
+            </button>
+            <button
+              className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "recommended" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
+              onClick={() => setSelectedTab("recommended")}
+            >
+              추천전시
+            </button>
+          </div>
+          <div className="w-1/6"></div>
+        </div>
+
+        {/* 필터 영역 */}
+        <div className="flex justify-between items-center w-full bg-white mb-4">
+          <Select
+            selectedKeys={selectedRegion ? [selectedRegion] : []}
+            onChange={(e) => setSelectedRegion(e.target.value)}
+            className="w-1/4"
+            placeholder="지역"
+            size="sm"
+          >
+            <SelectItem key="서울" value="서울">
+              서울
+            </SelectItem>
+            <SelectItem key="인천" value="인천">
+              인천
+            </SelectItem>
+            <SelectItem key="경기" value="경기">
+              경기
+            </SelectItem>
+            <SelectItem key="대전" value="대전">
+              대전
+            </SelectItem>
+            <SelectItem key="충북" value="충북">
+              충북
+            </SelectItem>
+            <SelectItem key="충남" value="충남">
+              충남
+            </SelectItem>
+            <SelectItem key="대구" value="대구">
+              대구
+            </SelectItem>
+            <SelectItem key="경북" value="경북">
+              경북
+            </SelectItem>
+            <SelectItem key="경남" value="경남">
+              경남
+            </SelectItem>
+            <SelectItem key="부산" value="부산">
+              부산
+            </SelectItem>
+            <SelectItem key="울산" value="울산">
+              울산
+            </SelectItem>
+            <SelectItem key="광주" value="광주">
+              광주
+            </SelectItem>
+            <SelectItem key="전남" value="전남">
+              전남
+            </SelectItem>
+            <SelectItem key="전북" value="전북">
+              전북
+            </SelectItem>
+            <SelectItem key="강원" value="강원">
+              강원
+            </SelectItem>
+            <SelectItem key="제주" value="제주">
+              제주
+            </SelectItem>
+          </Select>
+
+          <Checkbox
+            size="sm"
+            color="primary"
+            value={isBookmark}
+            isSelected={isBookmark}
+            onChange={(e) => {
+              setIsBookmark(e.target.checked);
+              updateBookmarkUrlParam(e.target.checked);
+            }}
+          >
+            북마크
+          </Checkbox>
+        </div>
+
+        {/* 전시회 카드 */}
+        {tabLoading ? (
+          <div className="flex justify-center items-center w-full my-4">
+            <Spinner variant="wave" size="lg" color="primary" />
+          </div>
+        ) : (
+          <ExhibitionCards
+            exhibitions={exhibitions}
+            user={user}
+            bookmarks={bookmarks}
+            toggleBookmark={toggleBookmark}
+            isBookmarked={isBookmarked}
+          />
+        )}
+
+        {!tabLoading && exhibitions.length > 0 && hasMore ? (
+          <div className="flex justify-center items-center mt-4">
+            <FiPlusCircle
+              className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
+              onClick={loadMore}
             />
           </div>
-
-          {/* 커스텀 탭바 및 필터 영역 */}
-          <div className="w-[90%] flex flex-col mb-4">
-            {/* 커스텀 탭바 - 전체 폭의 2/3 크기로 중앙 정렬 */}
-            <div className="flex w-full border-t border-gray-200 mb-2">
-              <div className="w-1/6"></div>
-              <div className="flex w-2/3">
-                <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "all" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
-                  onClick={() => setSelectedTab("all")}
-                >
-                  전시회
-                </button>
-                <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "free" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
-                  onClick={() => setSelectedTab("free")}
-                >
-                  무료전시
-                </button>
-                <button
-                  className={`text-[12px] flex-1 py-3 text-center font-medium ${selectedTab === "recommended" ? "border-t-4 border-black text-black" : "text-gray-500"}`}
-                  onClick={() => setSelectedTab("recommended")}
-                >
-                  추천전시
-                </button>
-              </div>
-              <div className="w-1/6"></div>
-            </div>
-
-            {/* 필터 영역 */}
-            <div className="flex justify-between items-center w-full bg-white mb-4">
-              <Select
-                selectedKeys={selectedRegion ? [selectedRegion] : []}
-                onChange={(e) => setSelectedRegion(e.target.value)}
-                className="w-1/4"
-                placeholder="지역"
-                size="sm"
-              >
-                <SelectItem key="서울" value="서울">
-                  서울
-                </SelectItem>
-                <SelectItem key="인천" value="인천">
-                  인천
-                </SelectItem>
-                <SelectItem key="경기" value="경기">
-                  경기
-                </SelectItem>
-                <SelectItem key="대전" value="대전">
-                  대전
-                </SelectItem>
-                <SelectItem key="충북" value="충북">
-                  충북
-                </SelectItem>
-                <SelectItem key="충남" value="충남">
-                  충남
-                </SelectItem>
-                <SelectItem key="대구" value="대구">
-                  대구
-                </SelectItem>
-                <SelectItem key="경북" value="경북">
-                  경북
-                </SelectItem>
-                <SelectItem key="경남" value="경남">
-                  경남
-                </SelectItem>
-                <SelectItem key="부산" value="부산">
-                  부산
-                </SelectItem>
-                <SelectItem key="울산" value="울산">
-                  울산
-                </SelectItem>
-                <SelectItem key="광주" value="광주">
-                  광주
-                </SelectItem>
-                <SelectItem key="전남" value="전남">
-                  전남
-                </SelectItem>
-                <SelectItem key="전북" value="전북">
-                  전북
-                </SelectItem>
-                <SelectItem key="강원" value="강원">
-                  강원
-                </SelectItem>
-                <SelectItem key="제주" value="제주">
-                  제주
-                </SelectItem>
-              </Select>
-
-              <Checkbox
-                size="sm"
-                color="primary"
-                value={isBookmark}
-                isSelected={isBookmark}
-                onChange={(e) => {
-                  setIsBookmark(e.target.checked);
-                  updateBookmarkUrlParam(e.target.checked);
-                }}
-              >
-                북마크
-              </Checkbox>
-            </div>
-            {/* 전시회 카드 */}
-            {tabLoading ? (
-              <div className="flex justify-center items-center w-full my-8">
-                <Spinner variant="wave" size="lg" color="primary" />
-              </div>
-            ) : (
-              <ExhibitionCards
-                exhibitions={exhibitions}
-                user={user}
-                bookmarks={bookmarks}
-                toggleBookmark={toggleBookmark}
-                isBookmarked={isBookmarked}
-              />
-            )}
-
-            {!tabLoading && hasMore ? (
-              <div className="flex justify-center items-center mt-4">
-                <FiPlusCircle
-                  className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
-                  onClick={loadMore}
-                />
-              </div>
-            ) : !tabLoading && (
-              <div className="flex justify-center items-center">
-                <p className="text-gray-500 my-4">모든 전시회를 불러왔습니다</p>
-              </div>
-            )}
+        ) : !tabLoading && exhibitions.length > 0 && (
+          <div className="flex justify-center items-center">
+            <p className="text-gray-500 my-4">모든 전시회를 불러왔습니다</p>
           </div>
+        )}
+        
+        {!tabLoading && exhibitions.length === 0 && (
+          <div className="flex justify-center items-center py-8">
+            <p className="text-gray-500">표시할 전시회가 없습니다</p>
+          </div>
+        )}
+      </div>
 
-          <Divider
-            orientation="horizontal"
-            className="w-[90%] my-4 bg-[#eee]"
-          />
-          <div className="w-[90%] flex flex-col justify-center items-center mb-24">
-            <div className="w-full flex justify-between items-center">
-              <h1 className="text-[18px] font-bold">예술랭픽</h1>
-            </div>
+      <Divider
+        orientation="horizontal"
+        className="w-[90%] my-4 bg-[#eee]"
+      />
 
-            <div className="w-full grid grid-cols-3 gap-4 mt-6">
-              {highRatingExhibitions.map((exhibition) => (
-                <div key={exhibition.id}>
-                  <Link href={`/exhibition/${exhibition.id}`}>
-                    <img
+      {/* 예술랭픽 섹션 */}
+      <div className="w-[90%] flex flex-col justify-center items-center mb-24">
+        <div className="w-full flex justify-between items-center">
+          <h1 className="text-[18px] font-bold">예술랭픽</h1>
+        </div>
+
+        {loadingHighRating ? (
+          <div className="w-full grid grid-cols-3 gap-4 mt-6">
+            {Array(6).fill(null).map((_, i) => (
+              <div key={i}>
+                <Skeleton className="w-full h-[100px] rounded-lg" />
+                <Skeleton className="w-3/4 h-3 mt-2 rounded-lg" />
+                <Skeleton className="w-1/2 h-2 mt-1 rounded-lg" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="w-full grid grid-cols-3 gap-4 mt-6">
+            {highRatingExhibitions.map((exhibition) => (
+              <div key={exhibition.id}>
+                <Link href={`/exhibition/${exhibition.id}`}>
+                  <div className="relative w-full h-[100px]">
+                    <Image
                       src={exhibition.photo}
                       alt={exhibition.name}
-                      className="w-full h-[100px] aspect-square object-cover rounded-lg"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover rounded-lg"
                     />
-                    <div className="text-[14px] font-bold line-clamp-1">
-                      {exhibition.contents || "없음"}
-                    </div>
-                    <div className="text-[13px] text-gray-500 flex items-center justify-start flex gap-1">
-                      <span className="text-yellow-500">
-                        <FaStar className="text-[#007AFF]" />
-                      </span>
-                      <span>
-                        {exhibition.review_average || "1.0"} ({exhibition.review_count || 0})
-                      </span>
-                    </div>
-                  </Link>
-                </div>
-              ))}
-            </div>
+                  </div>
+                  <div className="text-[14px] font-bold line-clamp-1">
+                    {exhibition.contents || "없음"}
+                  </div>
+                  <div className="text-[13px] text-gray-500 flex items-center justify-start gap-1">
+                    <span className="text-yellow-500">
+                      <FaStar className="text-[#007AFF]" />
+                    </span>
+                    <span>
+                      {exhibition.review_average || "1.0"} ({exhibition.review_count || 0})
+                    </span>
+                  </div>
+                </Link>
+              </div>
+            ))}
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }
@@ -559,7 +597,7 @@ export default function ExhibitionList() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center w-full h-screen">
+        <div className="flex items-center justify-center w-full h-full mt-8">
           <Spinner variant="wave" size="lg" color="primary" />
         </div>
       }

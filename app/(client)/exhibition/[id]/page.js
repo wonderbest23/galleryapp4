@@ -27,6 +27,7 @@ import CardReview from "./components/card-review";
 import { FaArrowLeft } from "react-icons/fa";
 import { LuSend } from "react-icons/lu";
 import { loadTossPayments } from "@tosspayments/tosspayments-sdk";
+import { FaCalendar } from "react-icons/fa6";
 
 export default function App() {
   const { id } = useParams();
@@ -461,11 +462,7 @@ export default function App() {
 
             <div className="mt-4 space-y-2 text-sm text-gray-600">
               <div className="flex items-center gap-2">
-                <img
-                  src="/exhibition/미니달력.svg"
-                  alt="달력"
-                  className="w-4 h-4"
-                />
+                <FaCalendar className="w-4 h-4 text-[#007AFF]" />
                 <span>
                   {exhibition?.start_date?.replace(
                     /(\d{4})(\d{2})(\d{2})/,

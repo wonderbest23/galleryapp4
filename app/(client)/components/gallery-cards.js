@@ -12,6 +12,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import useBookmarkStore from "./bookmarkStore";
 import { addToast } from "@heroui/react";
+import Image from "next/image";
 
 export default function GalleryCards({ selectedTab, user }) {
   const [gallerys, setGallerys] = useState([]);
@@ -259,10 +260,13 @@ export default function GalleryCards({ selectedTab, user }) {
       >
         <Card className="h-[247px] overflow-hidden shadow hover:shadow-lg transition-shadow rounded-3xl">
           <div className="relative">
-            <img
+            <Image
               src={gallery.thumbnail || "/images/noimage.jpg"}
               alt={gallery.name || "갤러리 이미지"}
+              width={200}
+              height={153}
               className="h-[153px] w-full object-cover"
+              unoptimized={gallery.thumbnail ? false : true}
             />
             {/* <div
               className="absolute top-2 right-2 z-10 p-1 rounded-full bg-white/70"

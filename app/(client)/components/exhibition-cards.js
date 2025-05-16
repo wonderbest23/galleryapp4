@@ -18,6 +18,9 @@ import { createClient } from "@/utils/supabase/client";
 import useBookmarkStore from "./bookmarkStore";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { FaCalendar } from "react-icons/fa6";
+import { FaMoneyBillWaveAlt } from "react-icons/fa";
+
 export function ExhibitionCards({ exhibitionCategory, user }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [exhibitions, setExhibitions] = useState([]);
@@ -238,10 +241,13 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
                   >
                     <CardBody className="flex gap-4 flex-row w-full h-full justify-center items-center">
                       <div className="flex w-1/2 aspect-square overflow-hidden rounded justify-center items-center">
-                        <img
+                        <Image
                           src={exhibition.photo || "/images/noimage.jpg"}
                           alt={exhibition.name}
-                          className="w-[72px] h-[82px] object-cover"
+                          width={72}
+                          height={82}
+                          className="object-cover"
+                          unoptimized={exhibition.photo ? false : true}
                         />
                       </div>
                       <div className="flex flex-col w-full justify-center items-center h-full">
@@ -261,12 +267,8 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
                           className=" bg-gray-300 mt-2"
                         />
                         <div className="text-xs flex flex-col my-2 w-full">
-                          <div className="flex flex-row gap-1">
-                            <img
-                              src="/exhibitioncard/미니달력.svg"
-                              alt="미니달력"
-                              className="w-[15px] h-[15px]"
-                            />
+                          <div className="flex flex-row gap-1 items-center">
+                            <FaCalendar className="w-3 h-3 text-[#007AFF]" />
                             <span className="text-[10px]">
                               {exhibition.start_date?.replace(
                                 /(\d{4})(\d{2})(\d{2})/,
@@ -279,12 +281,8 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
                               )}
                             </span>
                           </div>
-                          <div className="flex flex-row gap-1">
-                            <img
-                              src="/exhibitioncard/미니가격.png"
-                              alt="미니가격"
-                              className="w-[15px] h-[15px]"
-                            />
+                          <div className="flex flex-row gap-1 items-center">
+                            <FaMoneyBillWaveAlt className="w-3 h-3 text-[#007AFF]" />
                             <span className="text-[10px]">
                               {exhibition.price
                                 ?.toString()

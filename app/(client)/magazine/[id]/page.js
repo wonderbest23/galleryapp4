@@ -50,7 +50,7 @@ export default function page({params}) {
           <FaArrowLeft className="text-xl" />
         </Button>
         <h2 className="text-lg font-bold text-center flex-grow">매거진</h2>
-        <div className="w-10"></div>
+        
       </div>
       <div className="w-[100%] flex flex-col gap-4">
         <MagazineCarousel magazine={magazine}/>

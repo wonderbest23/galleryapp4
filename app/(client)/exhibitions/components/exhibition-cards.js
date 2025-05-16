@@ -7,6 +7,10 @@ import { FaRegStar } from "react-icons/fa";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 import Link from "next/link";
 import { FaPlusCircle } from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
+import { FaMap } from "react-icons/fa";
+import { FaMoneyBillWaveAlt } from "react-icons/fa";
+import { FaCalendar } from "react-icons/fa6";
 
 export function ExhibitionCards({
   exhibitions,
@@ -63,11 +67,8 @@ export function ExhibitionCards({
                     />
                     <div className="text-xs flex flex-col mt-2">
                       <div className="flex flex-row gap-1 text-[10px]">
-                        <img
-                          src="/exhibition/미니달력.svg"
-                          alt="미니달력"
-                          className="w-4 h-4"
-                        />
+                        <FaCalendar className="w-3 h-3 text-[#007AFF]" />
+
                         {exhibition.start_date?.replace(
                           /(\d{4})(\d{2})(\d{2})/,
                           "$1년$2월$3일"
@@ -79,22 +80,16 @@ export function ExhibitionCards({
                         )}
                       </div>
                       <div className="flex flex-row gap-1 text-[10px]">
-                        <img
-                          src="/exhibition/미니가격.png"
-                          alt="미니가격"
-                          className="w-4 h-4"
-                        />
+                        <FaMoneyBillWaveAlt className="w-3 h-3 text-[#007AFF]" />
+                        
                         {exhibition.price
                           ?.toString()
                           .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
                         원
                       </div>
                       <div className="flex flex-row gap-1 text-[10px]">
-                        <img
-                          src="/exhibition/미니별점.png"
-                          alt="미니별점"
-                          className="w-4 h-4"
-                        />
+                        <FaStar className="w-3 h-3 text-[#007AFF]" />
+                        
                         {exhibition.review_average === 0 ? "1.0" : exhibition.review_average?.toFixed(1) || "1.0"} (
                         {exhibition.review_count || 0})
                       </div>
