@@ -38,8 +38,8 @@ import Image from "next/image";
 
 export function CategoryButtons() {
   return (
-    <div className="flex flex-row gap-2 px-4 w-full justify-evenly items-center">
-      <Link href="/exhibitions">
+    <div className="grid grid-cols-6 gap-2 px-4 w-full justify-evenly items-center">
+      <Link href="/exhibitions" className="flex flex-col items-center col-span-1">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
           <FaCalendarAlt className="w-6 h-6 text-[#007AFF]" />
         </div>
@@ -47,7 +47,7 @@ export function CategoryButtons() {
           <span className="text-[10px] font-bold">전시회</span>
         </div>
       </Link>
-      <Link href="/galleries">
+      <Link href="/galleries" className="flex flex-col items-center col-span-1">
       <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
             <FaHouseCircleCheck className="w-6 h-6 text-[#007AFF]" />
         </div>
@@ -55,7 +55,7 @@ export function CategoryButtons() {
           <span className="text-[10px] font-bold">갤러리</span>
         </div>
       </Link>
-      <Link href="/magazineList">
+      <Link href="/magazineList" className="flex flex-col items-center col-span-1">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
           <FaBook className="w-6 h-6 text-[#007AFF]" />
         </div>
@@ -63,7 +63,7 @@ export function CategoryButtons() {
           <span className="text-[10px] font-bold">매거진</span>
         </div>
       </Link>
-      <Link href="/artstore">
+      <Link href="/artstore" className="flex flex-col items-center col-span-1">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
           <FaShopify className="w-6 h-6 text-[#007AFF]" />
         </div>
@@ -71,7 +71,7 @@ export function CategoryButtons() {
           <span className="text-[10px] font-bold">아트샵</span>
         </div>
       </Link>
-      <Link href="/eventList">
+      <Link href="/eventList" className="flex flex-col items-center col-span-1">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
           <MdEventAvailable className="w-6 h-6 text-[#007AFF]" />
         </div>
@@ -79,7 +79,7 @@ export function CategoryButtons() {
           <span className="text-[10px] font-bold">이벤트</span>
         </div>
       </Link>
-      <Link href="/cooperationList">
+      <Link href="/cooperationList" className="flex flex-col items-center col-span-1">
         <div className="flex flex-col items-center text-sm bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 w-[50px] h-[50px] justify-center shadow-md">
           <FaHandsHelping className="w-6 h-6 text-[#007AFF]" />
         </div>

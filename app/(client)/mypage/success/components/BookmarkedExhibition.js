@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardBody, Divider } from "@heroui/react";
 import { FaRegCalendar } from "react-icons/fa";
-import { IoMdPin } from "react-icons/io";
 import { FaRegStar } from "react-icons/fa";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 import Link from "next/link";
@@ -14,6 +13,7 @@ import { FaTag } from "react-icons/fa6";
 import { Spinner } from "@heroui/spinner";
 import { FaMoneyBillWaveAlt } from "react-icons/fa";
 import { FaCalendar } from "react-icons/fa6";
+import { IoMdPin } from "react-icons/io";
 
 
 export default function BookmarkedExhibition({ user }) {
@@ -202,8 +202,8 @@ export default function BookmarkedExhibition({ user }) {
                       />
                       <div className="text-xs flex flex-col my-2">
                         {item.type === 'gallery' ? (
-                          <div className="flex flex-row gap-1">
-                            <FaMapPin className="w-3 h-3 text-[#007AFF]" />
+                          <div className="flex flex-row gap-1 items-center">
+                            <IoMdPin className="w-3 h-3 text-[#007AFF]" />
                             {item.address}
                           </div>
                         ) : item.type === 'product' ? (
@@ -223,15 +223,15 @@ export default function BookmarkedExhibition({ user }) {
                           </>
                         ) : (
                           <>
-                            <div className="flex flex-row gap-1">
+                            <div className="flex flex-row gap-1 items-center">
                               <FaCalendar className="w-3 h-3 text-[#007AFF]" />
                               {item.start_date?.substring(0,4)}년 {item.start_date?.substring(4,6)}월 {item.start_date?.substring(6,8)}일 ~ {item.end_date?.substring(0,4)}년 {item.end_date?.substring(4,6)}월 {item.end_date?.substring(6,8)}일
                             </div>
-                            <div className="flex flex-row gap-1">
-                              <FaMapPin className="w-3 h-3 text-[#007AFF]" />
+                            <div className="flex flex-row gap-1 items-center">
+                              <IoMdPin className="w-3 h-3 text-[#007AFF]" />
                               {item.gallery.address}
                             </div>
-                            <div className="flex flex-row gap-1">
+                            <div className="flex flex-row gap-1 items-center">
                               <FaMoneyBillWaveAlt className="w-3 h-3 text-[#007AFF]" />
                               {formatPrice(item.price)}원
                             </div>

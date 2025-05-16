@@ -113,14 +113,14 @@ const OrderHistory = ({ user }) => {
                       className="bg-gray-300 mt-2"
                     />
                     <div className="text-xs flex flex-col my-2 w-full">
-                      <div className="flex flex-row gap-1">
+                      <div className="flex flex-row gap-1 items-center">
                         <FaCalendar className="w-3 h-3 text-[#007AFF]" />
                         
                         <span className="text-[10px]">
                           결제금액: {Number(order.amount).toLocaleString()}원
                         </span>
                       </div>
-                      <div className="flex flex-row gap-1">
+                      <div className="flex flex-row gap-1 items-center">
                         <FaMoneyBillWaveAlt className="w-3 h-3 text-[#007AFF]" />
                         
                         <span className="text-[10px]">
