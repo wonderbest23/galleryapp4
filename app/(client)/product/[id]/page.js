@@ -28,8 +28,6 @@ import Image from "next/image";
 import { cn } from "@/utils/cn";
 import { LuWallet } from "react-icons/lu";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
-import Slider from "react-slick";
-import "./product-slider.css";
 
 // 리뷰 컴포넌트 추가
 
@@ -69,68 +67,7 @@ export default function App() {
   });
 
   const [isBookmarked, setIsBookmarked] = useState(false);
-
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  // 커스텀 화살표 컴포넌트
-  const PrevArrow = (props) => {
-    const { className, style, onClick } = props;
-    return (
-      <div
-        className={className}
-        style={{ ...style, display: "block", left: "10px", zIndex: 1 }}
-        onClick={onClick}
-      >
-        <FaChevronLeft className="text-white text-xl" />
-      </div>
-    );
-  };
-
-  const NextArrow = (props) => {
-    const { className, style, onClick } = props;
-    return (
-      <div
-        className={className}
-        style={{ ...style, display: "block", right: "10px", zIndex: 1 }}
-        onClick={onClick}
-      >
-        <FaChevronRight className="text-white text-xl" />
-      </div>
-    );
-  };
-
-  // 슬라이더 설정
-  const sliderSettings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    arrows: false,
-    autoplay: true,
-    autoplaySpeed: 3000,
-    pauseOnHover: true,
-    adaptiveHeight: true,
-    responsive: [
-      {
-        breakpoint: 768,
-        settings: {
-          arrows: false,
-        }
-      }
-    ],
-    customPaging: (i) => (
-      <div 
-        className={`w-2 h-2 mx-1 rounded-full ${
-          i === currentSlide ? 'bg-[#007AFF]' : 'bg-white '
-        }`} 
-      />
-    ),
-    dotsClass: "slick-dots custom-dots",
-    beforeChange: (oldIndex, newIndex) => {
-      setCurrentSlide(newIndex);
-    }
-  };
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -194,10 +131,6 @@ export default function App() {
     fetchBookmarkStatus();
   }, [id]);
 
-  
-
-  
-
   // 모든 데이터가 로드되었는지 확인하는 useEffect
   useEffect(() => {
     if (
@@ -208,13 +141,24 @@ export default function App() {
     }
   }, [dataLoaded]);
 
-  
-  
-
   // 제품 이미지 없는 경우 기본 이미지 설정
   const productImages = product?.image?.length > 0 
     ? product.image 
     : ['/noimage.jpg'];
+
+  // 다음 이미지로 이동
+  const nextImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === productImages.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  // 이전 이미지로 이동
+  const prevImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === 0 ? productImages.length - 1 : prevIndex - 1
+    );
+  };
 
   // 북마크 토글 함수
   const toggleBookmark = async () => {
@@ -302,24 +246,36 @@ export default function App() {
             <h2 className="text-lg font-medium"></h2>
           </div>
 
-          {/* 이미지 슬라이더 - React Slick 사용 */}
-          <div className="w-full aspect-square">
-            <Slider {...sliderSettings} className="product-slider">
-              {productImages.map((image, index) => (
-                <div key={index} className="w-full h-full">
-                  <div className="relative w-full aspect-square">
-                    <Image 
-                      src={image} 
-                      alt={`제품 이미지 ${index + 1}`}
-                      className="object-cover rounded-bl-3xl"
-                      fill
-                      priority={index === 0}
-                      unoptimized
-                    />
-                  </div>
-                </div>
-              ))}
-            </Slider>
+          {/* 이미지 슬라이더 - 커스텀 구현 */}
+          <div className="w-full aspect-square relative">
+            <div className="relative w-full h-full">
+              <Image 
+                src={productImages[currentImageIndex]} 
+                alt={`제품 이미지 ${currentImageIndex + 1}`}
+                className="object-cover rounded-bl-3xl"
+                fill
+                priority
+                unoptimized
+              />
+              
+              {/* 네비게이션 화살표 */}
+
+              
+
+              
+              {/* 이미지 인디케이터 */}
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                {productImages.map((_, index) => (
+                  <div 
+                    key={index}
+                    className={`w-2 h-2 rounded-full ${
+                      index === currentImageIndex ? 'bg-[#007AFF]' : 'bg-white opacity-70'
+                    }`}
+                    onClick={() => setCurrentImageIndex(index)}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="w-[90%] h-full mt-4">

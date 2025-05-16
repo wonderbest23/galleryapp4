@@ -26,10 +26,6 @@ import { FaArrowLeft } from "react-icons/fa";
 import { LuSend } from "react-icons/lu";
 import Image from "next/image";
 import { cn } from "@/utils/cn";
-import Slider from "react-slick";
-// import "slick-carousel/slick/slick.css";
-// import "slick-carousel/slick/slick-theme.css";
-import "./product-slider.css";
 
 export default function App() {
   const [selected, setSelected] = useState("home");
@@ -40,7 +36,6 @@ export default function App() {
   const [productsCount, setProductsCount] = useState(8);
   const [hasMoreProducts, setHasMoreProducts] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [currentSlide, setCurrentSlide] = useState(0);
   const router = useRouter();
   const { id } = useParams();
   const supabase = createClient();
@@ -66,65 +61,6 @@ export default function App() {
   });
 
   const [isBookmarked, setIsBookmarked] = useState(false);
-
-  // 커스텀 화살표 컴포넌트
-  const PrevArrow = (props) => {
-    const { className, style, onClick } = props;
-    return (
-      <div
-        className={className}
-        style={{ ...style, display: "block", left: "10px", zIndex: 1 }}
-        onClick={onClick}
-      >
-        <FaChevronLeft className="text-white text-xl" />
-      </div>
-    );
-  };
-
-  const NextArrow = (props) => {
-    const { className, style, onClick } = props;
-    return (
-      <div
-        className={className}
-        style={{ ...style, display: "block", right: "10px", zIndex: 1 }}
-        onClick={onClick}
-      >
-        <FaChevronRight className="text-white text-xl" />
-      </div>
-    );
-  };
-
-  // 슬라이더 설정
-  const sliderSettings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 3000,
-    pauseOnHover: true,
-    adaptiveHeight: true,
-    responsive: [
-      {
-        breakpoint: 768,
-        settings: {
-          arrows: false,
-        },
-      },
-    ],
-    customPaging: (i) => (
-      <div
-        className={`w-2 h-2 mx-1 rounded-full ${
-          i === currentSlide ? "bg-[#007AFF]" : "bg-white "
-        }`}
-      />
-    ),
-    dotsClass: "slick-dots custom-dots",
-    beforeChange: (oldIndex, newIndex) => {
-      setCurrentSlide(newIndex);
-    },
-  };
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -185,11 +121,10 @@ export default function App() {
     setSelectedProduct(product);
   };
 
-  // 선택된 제품의 이미지 또는 기본 이미지
-  const productImages =
-    selectedProduct?.image?.length > 0
-      ? selectedProduct.image
-      : [profiles?.avatar_url || "/noimage.jpg"];
+  // 선택된 제품의 첫 번째 이미지 또는 기본 이미지
+  const productImage = selectedProduct?.image?.length > 0
+    ? selectedProduct.image[0]
+    : profiles?.avatar_url || "/noimage.jpg";
 
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen">
@@ -214,23 +149,20 @@ export default function App() {
             <h2 className="text-lg font-medium"></h2>
           </div>
 
-          {/* 이미지 슬라이더 */}
-          <div className="w-full h-full">
-            <Slider {...sliderSettings} className="h-full">
-              {productImages.map((image, index) => (
-                <div key={index} className="w-full h-[40vh] ">
-                  <div className="relative w-full h-full">
-                    <Image
-                      src={image}
-                      alt={`작품 이미지 ${index + 1}`}
-                      className="object-cover rounded-b-3xl"
-                      fill
-                      priority={index === 0}
-                    />
-                  </div>
+          {/* 단일 이미지 */}
+          <div className="relative w-full flex justify-center items-center">
+            
+                <div className="w-full relative">
+                  <Image
+                    src={productImage}
+                    alt="작품 이미지"
+                    className="w-full h-[40vh] object-cover rounded-b-3xl "
+                    width={800}
+                    height={600}
+                    priority
+                  />
                 </div>
-              ))}
-            </Slider>
+            
           </div>
 
           {/* Artist Info */}
@@ -303,6 +235,24 @@ export default function App() {
           </div>
         </div>
       )}
+      <style jsx global>{`
+        /* 이미지 클릭 시 하이라이트 제거 */
+        img {
+          -webkit-tap-highlight-color: transparent;
+          outline: none;
+          user-select: none;
+        }
+        
+        /* 스크롤바 완전히 제거 */
+        ::-webkit-scrollbar {
+          display: none;
+        }
+        
+        /* Firefox 대응 */
+        * {
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }
