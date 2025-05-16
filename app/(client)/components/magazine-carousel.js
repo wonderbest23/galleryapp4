@@ -185,6 +185,7 @@ export function MagazineCarousel() {
           )}
         </div>
       )}
+      
     </div>
   );
 }
