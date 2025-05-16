@@ -339,83 +339,57 @@ function ExhibitionListContent() {
   console.log("popularExhibitions", popularExhibitions);
   return (
     <div className="flex flex-col items-center justify-center">
-      
+      <div className="bg-white flex items-center w-[90%] justify-between">
+        <Button
+          isIconOnly
+          variant="light"
+          className="mr-2"
+          onPress={() => router.push("/")}
+        >
+          <FaArrowLeft className="text-xl" />
+        </Button>
+        <h2 className="text-lg font-bold text-center flex-grow">아트샵</h2>
+        <div className="w-10"></div>
+      </div>
 
-
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center w-full h-full gap-y-6 mt-12">
-          {Array(5)
-            .fill(null)
-            .map((_, index) => (
-              <div
-                key={index}
-                className="max-w-[300px] w-full flex items-center gap-3"
-              >
-                <div>
-                  <Skeleton className="flex rounded-full w-12 h-12" />
-                </div>
-                <div className="w-full flex flex-col gap-2">
-                  <Skeleton className="h-3 w-3/5 rounded-lg" />
-                  <Skeleton className="h-3 w-4/5 rounded-lg" />
-                </div>
-              </div>
-            ))}
+      {/* 가로 방향 캐러셀 추가 */}
+      <TopArts />
+      <div className="w-[90%] mt-4 mb-2 ">
+        <div className="flex justify-between items-center mb-1">
+          <h3 className="text-[18px] font-bold">아티스트</h3>
+          <div
+            onClick={() => router.push("/artists")}
+            className="flex items-center gap-2 hover:cursor-pointer"
+          >
+            <p className="text-[14px] text-[#0961F5] font-bold">SEE ALL</p>
+            <FaChevronRight className="text-[#0961F5] text-sm font-bold" />
+          </div>
         </div>
-      ) : (
-        <>
-        
-          <div className="bg-white flex items-center w-full justify-between">
-            <Button
-              isIconOnly
-              variant="light"
-              className="mr-2"
-              onPress={() => router.push("/")}
-            >
-              <FaArrowLeft className="text-xl" />
-            </Button>
-            <h2 className="text-lg font-bold text-center flex-grow">아트샵</h2>
-            <div className="w-10"></div>
+
+        <MiddleArtists
+          exhibitions={popularExhibitions}
+          user={user}
+          bookmarks={bookmarks}
+          toggleBookmark={toggleBookmark}
+          isBookmarked={isBookmarked}
+        />
+      </div>
+
+      <Divider orientation="horizontal" className="w-[90%] my-4 bg-[#eee]" />
+      <div className="w-[90%] flex flex-col justify-center items-center mb-24">
+        <div className="w-full flex justify-between items-center">
+          <h1 className="text-[18px] font-bold">Top of Week</h1>
+          <div
+            onClick={() => router.push("/artstore")}
+            className="flex items-center gap-2 hover:cursor-pointer"
+          >
+            <p className="text-[14px] text-[#0961F5] font-bold">SEE ALL</p>
+            <FaChevronRight className="text-[#0961F5] text-sm font-bold" />
           </div>
+        </div>
 
-          {/* 가로 방향 캐러셀 추가 */}
-          <TopArts />
-          <div className="w-[90%] mt-4 mb-2 ">
-            <div className="flex justify-between items-center mb-1">
-              <h3 className="text-[18px] font-bold">아티스트</h3>
-              <div onClick={() => router.push("/artists")} className="flex items-center gap-2 hover:cursor-pointer">
-                <p className="text-[14px] text-[#0961F5] font-bold">SEE ALL</p>
-                <FaChevronRight className="text-[#0961F5] text-sm font-bold" />
-              </div>
-            </div>
-
-            <MiddleArtists
-              exhibitions={popularExhibitions}
-              user={user}
-              bookmarks={bookmarks}
-              toggleBookmark={toggleBookmark}
-              isBookmarked={isBookmarked}
-            />
-          </div>
-
-          
-
-          <Divider
-            orientation="horizontal"
-            className="w-[90%] my-4 bg-[#eee]"
-          />
-          <div className="w-[90%] flex flex-col justify-center items-center mb-24">
-            <div className="w-full flex justify-between items-center">
-              <h1 className="text-[18px] font-bold">Top of Week</h1>
-              <div onClick={() => router.push("/artstore")} className="flex items-center gap-2 hover:cursor-pointer">
-                <p className="text-[14px] text-[#0961F5] font-bold">SEE ALL</p>
-                <FaChevronRight className="text-[#0961F5] text-sm font-bold" />
-              </div>
-            </div>
-
-            <LowerCarousel />
-          </div>
-        </>
-      )}
+        <LowerCarousel />
+      </div>
     </div>
   );
 }

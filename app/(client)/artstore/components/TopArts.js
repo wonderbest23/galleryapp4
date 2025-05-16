@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa";
-
+import { Skeleton } from "@heroui/react";
+import { motion } from "framer-motion";
 // 북마크 아이콘을 위한 별도 컴포넌트
 const BookmarkIcon = ({ isBookmarked, onClick }) => {
   const handleClick = (e) => {
@@ -33,6 +34,13 @@ const BookmarkIcon = ({ isBookmarked, onClick }) => {
       )}
     </div>
   );
+};
+
+// 애니메이션 변수 정의
+const fadeIn = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  transition: { duration: 0.5 }
 };
 
 export default function TopArts() {
@@ -210,7 +218,7 @@ export default function TopArts() {
 
   return (
     <div className="flex flex-col justify-center items-center w-[90%] h-full ">
-      <div className="w-full h-full py-1 flex flex-wrap gap-y-2 gap-x-3">
+      <div className="w-full h-full grid grid-cols-3 grid-rows-2 gap-2 mt-4">
         {categories.map((category) => (
           <Button
             key={category.id}
@@ -227,33 +235,49 @@ export default function TopArts() {
           </Button>
         ))}
       </div>
-      <div className="w-full grid grid-cols-2 gap-6 mt-1 justify-items-center">
+      <div className="w-full grid grid-cols-2 gap-6 mt-4 justify-items-center">
         {loading ? (
-          <div className="col-span-2 flex justify-center items-center">
-            <Spinner variant="wave" color="primary" />
-          </div>
+          <>
+            <Skeleton className="h-[200px] w-full rounded-lg" />
+            <Skeleton className="h-[200px] w-full rounded-lg" />
+            <Skeleton className="h-[200px] w-full rounded-lg" />
+            <Skeleton className="h-[200px] w-full rounded-lg" />
+          </>
         ) : artItems.length > 0 ? (
-          artItems.map((item) => (
-            <Card key={item.id} className="rounded-lg overflow-hidden w-full cursor-pointer" shadow="none">
-              <div className="relative w-full aspect-[157/200]" onClick={() => navigateToProduct(item.id)}>
-                <Image
-                  src={item.image[0] || "/noimage.jpg"} 
-                  alt="image"
-                  className=" object-cover rounded-lg"
-                  fill
-                />
-                <BookmarkIcon 
-                  isBookmarked={!!bookmarks[item.id]} 
-                  onClick={(e) => handleBookmarkClick(e, item.id)} 
-                />
-              </div>
-              <CardBody className="p-0 mt-2" onClick={() => navigateToProduct(item.id)}>
-                <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">{item.title}</p>
-                <p className="text-[10px] text-[#606060]">{item.artist_id?.name || "알 수 없음"}</p>
-                <p className="text-[14px] text-black font-bold mt-1">₩{item.price?.toLocaleString()}</p>
-              </CardBody>
-            </Card>
-          ))
+          <motion.div 
+            className="w-full grid grid-cols-2 gap-6 col-span-2"
+            initial="initial"
+            animate="animate"
+          >
+            {artItems.map((item) => (
+              <motion.div key={item.id} variants={fadeIn}>
+                <Card className="rounded-lg overflow-hidden w-full cursor-pointer" shadow="none">
+                  <div className="relative w-full aspect-[157/200]" onClick={() => navigateToProduct(item.id)}>
+                    <Image
+                      src={item.image[0] || "/noimage.jpg"} 
+                      alt="image"
+                      className=" object-cover rounded-lg"
+                      fill
+                      quality={30}
+                      priority={false}
+                      placeholder="blur"
+                      blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNlMmU4ZjAiLz48L3N2Zz4="
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                    <BookmarkIcon 
+                      isBookmarked={!!bookmarks[item.id]} 
+                      onClick={(e) => handleBookmarkClick(e, item.id)} 
+                    />
+                  </div>
+                  <CardBody className="p-0 mt-2" onClick={() => navigateToProduct(item.id)}>
+                    <p className="text-[14px] font-medium line-clamp-1 text-[#606060]">{item.title}</p>
+                    <p className="text-[10px] text-[#606060]">{item.artist_id?.name || "알 수 없음"}</p>
+                    <p className="text-[14px] text-black font-bold mt-1">₩{item.price?.toLocaleString()}</p>
+                  </CardBody>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
         ) : (
           <p className="col-span-2 text-center">표시할 상품이 없습니다.</p>
         )}

@@ -26,14 +26,14 @@ import { motion, AnimatePresence } from "framer-motion";
 const SkeletonCard = ({ index }) => (
   <div
     key={`skeleton-${index}`}
-    className="w-full max-w-[600px] flex items-center gap-3 justify-center mx-auto mb-4"
+    className="w-full flex items-center gap-3 justify-center"
   >
-    <div>
+    <div className="w-12 h-12 rounded-full ">
       <Skeleton className="flex rounded-full w-12 h-10" />
     </div>
     <div className="w-full flex flex-col gap-2">
-      <Skeleton className="h-3 w-36 rounded-lg" />
-      <Skeleton className="h-3 w-24 rounded-lg" />
+      <Skeleton className="h-3 w-[80%] rounded-lg" />
+      <Skeleton className="h-3 w-[40%] rounded-lg" />
     </div>
   </div>
 );
@@ -334,7 +334,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
               // 스켈레톤 UI
               <div
                 key="skeletons"
-                className="w-full"
+                className="w-full flex flex-col gap-4 justify-center items-center"
               >
                 {Array(5).fill().map((_, index) => (
                   <SkeletonCard key={index} index={index} />

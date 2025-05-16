@@ -226,18 +226,7 @@ export default function GalleryCards({ selectedTab, user }) {
 
   // 로딩 상태에서 사용할 스켈레톤 UI 컴포넌트
   const SkeletonCard = ({ index }) => (
-    <motion.div
-      initial={{ opacity: 0.6, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ 
-        duration: 0.3,
-        delay: index * 0.05,
-        type: "spring",
-        stiffness: 100
-      }}
-      className="w-[200px] h-[300px] flex-shrink-0"
-    >
+    <div className="w-[200px] h-[300px] flex-shrink-0">
       <Card className="w-[200px] space-y-5 p-4" radius="lg" shadow="none">
         <Skeleton className="rounded-lg">
           <div className="h-24 rounded-lg bg-default-300" />
@@ -254,7 +243,7 @@ export default function GalleryCards({ selectedTab, user }) {
           </Skeleton>
         </div>
       </Card>
-    </motion.div>
+    </div>
   );
 
   // 갤러리 카드 컴포넌트 - 메모이제이션을 위해 내부 로직과 분리
@@ -262,13 +251,11 @@ export default function GalleryCards({ selectedTab, user }) {
     ({ gallery, index }) => (
       <motion.div
         layout
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ 
-          type: "spring", 
-          stiffness: 120, 
-          damping: 15,
-          delay: index * 0.05 // 각 아이템마다 살짝 딜레이를 줘서 순차적으로 나타나게 함
+          duration: 0.5,
+          delay: index * 0.05
         }}
         className="flex-shrink-0"
       >

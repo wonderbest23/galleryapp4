@@ -9,6 +9,8 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
+import { motion } from "framer-motion";
+
 export default function MagazineList() {
   const [magazines, setMagazines] = useState([]);
   const [visibleCount, setVisibleCount] = useState(5);
@@ -16,6 +18,19 @@ export default function MagazineList() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const supabase = createClient();
+
+  const fadeInVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.05,
+        duration: 0.4,
+        ease: "easeOut",
+      },
+    }),
+  };
 
   const getMagazines = async () => {
     const { data, error } = await supabase
@@ -59,7 +74,12 @@ export default function MagazineList() {
 
         </div>
       ) : (
-        <>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-full flex flex-col items-center"
+        >
           <div className="bg-white flex items-center w-[90%] justify-between">
             <Button
               isIconOnly
@@ -75,37 +95,55 @@ export default function MagazineList() {
           <div className="w-full flex flex-col gap-4 justify-center items-center">
             {magazines.slice(0, visibleCount).map((item, index) => (
               <React.Fragment key={item.id}>
-                <div className="w-[90%] hover:cursor-pointer" onClick={() => router.push(`/magazine/${item.id}`)}>
-                  <div
-                    className="w-full mt-6"
-                    
-                  >
-                    <div className="w-full flex gap-4 flex-row justify-between">
-                      <div className="flex flex-col space-y-2">
-                        <h3 className="text-[15px] text-default-500">
-                          {item.title}
-                        </h3>
-                        <p className="text-[15px] font-medium">{item.subtitle}</p>
-                        <p className="text-[10px] text-[#494949]">
-                          작성일 :{" "}
-                          {new Date(item.created_at).getFullYear()}년{" "}
-                          {new Date(item.created_at).getMonth() + 1}월{" "}
-                          {new Date(item.created_at).getDate()}일
-                        </p>
+                <motion.div
+                  className="w-[90%]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <div className="hover:cursor-pointer" onClick={() => router.push(`/magazine/${item.id}`)}>
+                    <div className="w-full mt-6">
+                      <div className="w-full flex gap-4 flex-row justify-between">
+                        <div className="flex flex-col space-y-2">
+                          <h3 className="text-[15px] text-default-500">
+                            {item.title}
+                          </h3>
+                          <p className="text-[15px] font-medium">{item.subtitle}</p>
+                          <p className="text-[10px] text-[#494949]">
+                            작성일 :{" "}
+                            {new Date(item.created_at).getFullYear()}년{" "}
+                            {new Date(item.created_at).getMonth() + 1}월{" "}
+                            {new Date(item.created_at).getDate()}일
+                          </p>
+                        </div>
+                        <Image
+                          alt="Card thumbnail"
+                          className="object-cover w-24 h-24 rounded-3xl"
+                          src={item.photo[0].url}
+                        />
                       </div>
-                      <Image
-                        alt="Card thumbnail"
-                        className="object-cover w-24 h-24 rounded-3xl"
-                        src={item.photo[0].url}
-                      />
                     </div>
                   </div>
-                </div>
-                {index < visibleCount - 1 && <Divider orientation="horizontal" className="w-[90%]" />}
+                </motion.div>
+                {index < visibleCount - 1 && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: index * 0.05 + 0.2 }}
+                    className="w-[90%]"
+                  >
+                    <Divider orientation="horizontal" />
+                  </motion.div>
+                )}
               </React.Fragment>
             ))}
           </div>
-          <div className="flex flex-col justify-center items-center mt-6 mb-24">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="flex flex-col justify-center items-center mt-6 mb-24"
+          >
             {!allLoaded ? (
               <FaPlusCircle
                 className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
@@ -116,8 +154,8 @@ export default function MagazineList() {
                 모든 매거진을 불러왔습니다
               </p>
             )}
-          </div>
-        </>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );
