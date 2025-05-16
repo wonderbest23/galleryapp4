@@ -246,11 +246,12 @@ export default function TopArts() {
         ) : artItems.length > 0 ? (
           <motion.div 
             className="w-full grid grid-cols-2 gap-6 col-span-2"
-            initial="initial"
-            animate="animate"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
           >
             {artItems.map((item) => (
-              <motion.div key={item.id} variants={fadeIn}>
+              <motion.div key={item.id}>
                 <Card className="rounded-lg overflow-hidden w-full cursor-pointer" shadow="none">
                   <div className="relative w-full aspect-[157/200]" onClick={() => navigateToProduct(item.id)}>
                     <Image
