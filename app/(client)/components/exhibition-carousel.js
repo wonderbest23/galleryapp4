@@ -81,36 +81,22 @@ export function ExhibitionCarousel() {
       <Card className="w-full" shadow="none">
         <CardBody className="p-0 w-full flex justify-center items-center">
           {loading ? (
-            <motion.div
-              variants={itemVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              <Card className="w-[300px] space-y-5 p-4" radius="lg" shadow="none" >
+            <div className="w-full space-y-5 p-4 flex justify-center items-center">
+              <Card className="w-[90%]" radius="lg" shadow="none" >
                 <Skeleton className="rounded-lg">
-                  <div className="h-48 rounded-lg bg-default-300" />
+                  <div className="h-[200px] rounded-lg bg-default-300" />
                 </Skeleton>
-                <div className="space-y-3">
-                  <Skeleton className="w-3/5 rounded-lg">
-                    <div className="h-3 w-3/5 rounded-lg bg-default-200" />
-                  </Skeleton>
-                  <Skeleton className="w-4/5 rounded-lg">
-                    <div className="h-3 w-4/5 rounded-lg bg-default-200" />
-                  </Skeleton>
-                  <Skeleton className="w-2/5 rounded-lg">
-                    <div className="h-3 w-2/5 rounded-lg bg-default-300" />
-                  </Skeleton>
-                </div>
+                
               </Card>
-            </motion.div>
+            </div>
           ) : (
             <motion.div
-              className="w-[90%] relative"
+              className="w-[90%] relative scrollbar-hide"
               variants={itemVariants}
             >
               <Slider {...settings}>
                 {banners.map((banner, index) => (
-                  <div key={index}>
+                  <div key={index} className="outline-none">
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -189,6 +175,27 @@ export function ExhibitionCarousel() {
           -webkit-tap-highlight-color: transparent;
           outline: none;
           user-select: none;
+        }
+        
+        /* 스크롤바 완전히 제거 */
+        ::-webkit-scrollbar {
+          display: none;
+        }
+        
+        /* Firefox 대응 */
+        * {
+          scrollbar-width: none;
+        }
+        
+        /* Slick 슬라이더 스크롤바 제거 */
+        .slick-slider {
+          overflow: hidden !important;
+        }
+        
+        /* 슬라이더 아이템 아웃라인 제거 */
+        .slick-slide, 
+        .slick-slide * {
+          outline: none !important;
         }
       `}</style>
     </motion.div>

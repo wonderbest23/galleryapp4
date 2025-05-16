@@ -14,6 +14,7 @@ import { FaArrowLeft } from "react-icons/fa6";
 import { FiPlusCircle } from "react-icons/fi";
 import { FaRegStar, FaStar } from "react-icons/fa";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 function GalleryListContent() {
   const router = useRouter();
@@ -35,6 +36,12 @@ function GalleryListContent() {
   const [highRatingGalleries, setHighRatingGalleries] = useState([]);
   const [tabLoading, setTabLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
+
+  // 애니메이션 설정
+  const fadeIn = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.5 } }
+  };
 
   useEffect(() => {
     if (isBookmarkParam) {
@@ -333,13 +340,31 @@ function GalleryListContent() {
         <div className="flex justify-between items-center mb-1">
           <h3 className="text-[18px] font-bold">인기 갤러리</h3>
         </div>
-        <GallerySlider 
-          galleries={featuredGalleries} 
-          loading={!initialized}
-          user={user}
-          toggleBookmark={toggleBookmark}
-          isBookmarked={isBookmarked}
-        />
+        <AnimatePresence>
+          {!initialized ? (
+            <div className="w-full overflow-x-auto flex space-x-4 pb-2 scrollbar-hide">
+              {Array(4).fill(null).map((_, index) => (
+                <div key={`skeleton-slider-${index}`} className="flex-shrink-0 w-[180px]">
+                  <Skeleton className="w-[180px] h-[240px] rounded-lg" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <motion.div 
+              initial="hidden"
+              animate="visible"
+              variants={fadeIn}
+            >
+              <GallerySlider 
+                galleries={featuredGalleries} 
+                loading={false}
+                user={user}
+                toggleBookmark={toggleBookmark}
+                isBookmarked={isBookmarked}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       
       {/* 커스텀 탭바 및 필터 영역 */}
@@ -417,13 +442,22 @@ function GalleryListContent() {
           </div>
         ) : (
           <>
-            <GalleryCards 
-              galleries={galleries} 
-              user={user} 
-              bookmarks={bookmarks}
-              toggleBookmark={toggleBookmark}
-              isBookmarked={isBookmarked}
-            />
+            <AnimatePresence>
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={fadeIn}
+                className="w-full"
+              >
+                <GalleryCards 
+                  galleries={galleries} 
+                  user={user} 
+                  bookmarks={bookmarks}
+                  toggleBookmark={toggleBookmark}
+                  isBookmarked={isBookmarked}
+                />
+              </motion.div>
+            </AnimatePresence>
             
             {hasMore ? (
               <div className="flex justify-center items-center mt-4">
@@ -459,46 +493,63 @@ function GalleryListContent() {
           <h1 className="text-[18px] font-bold">예술랭픽</h1>
         </div>
 
-        <div className="w-full grid grid-cols-3 gap-4 mt-6">
+        <AnimatePresence>
           {!initialized ? (
-            // 최소한의 스켈레톤만 표시
-            Array(3).fill(null).map((_, index) => (
-              <div key={index} className="space-y-2">
-                <Skeleton className="w-full h-[100px] rounded-lg" />
-                <Skeleton className="w-2/3 h-4 rounded-lg" />
-                <Skeleton className="w-1/2 h-3 rounded-lg" />
-              </div>
-            ))
-          ) : highRatingGalleries.length > 0 ? (
-            highRatingGalleries.map((gallery) => (
-              <div key={gallery.id}>
-                <Link href={`/galleries/${gallery.id}`}>
-                  <img
-                    src={gallery.thumbnail || "/placeholder-gallery.jpg"}
-                    alt={gallery.name}
-                    className="w-full h-[100px] aspect-square object-cover rounded-lg"
-                    loading="lazy"
-                  />
-                  <div className="text-[14px] font-bold line-clamp-1">
-                    {gallery.name || "이름 없음"}
-                  </div>
-                  <div className="text-[13px] text-gray-500 flex items-center justify-start gap-1">
-                    <span className="text-[#007AFF]">
-                      <FaStar />
-                    </span>
-                    <span>
-                      {gallery.visitor_rating || "0"} ({gallery.blog_review_count || "0"})
-                    </span>
-                  </div>
-                </Link>
-              </div>
-            ))
-          ) : (
-            <div className="col-span-3 flex justify-center items-center h-40">
-              <p className="text-gray-500">데이터가 없습니다</p>
+            <div className="w-full grid grid-cols-3 gap-4 mt-6">
+              {Array(3).fill(null).map((_, index) => (
+                <div key={`skeleton-rating-${index}`} className="space-y-2">
+                  <Skeleton className="w-full h-[100px] rounded-lg" />
+                  <Skeleton className="w-2/3 h-4 rounded-lg" />
+                  <Skeleton className="w-1/2 h-3 rounded-lg" />
+                </div>
+              ))}
             </div>
+          ) : (
+            <motion.div 
+              className="w-full"
+              initial="hidden"
+              animate="visible"
+              variants={fadeIn}
+            >
+              <div className="w-full grid grid-cols-3 gap-4 mt-6">
+                {highRatingGalleries.length > 0 ? (
+                  highRatingGalleries.map((gallery, index) => (
+                    <motion.div 
+                      key={gallery.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                    >
+                      <Link href={`/galleries/${gallery.id}`}>
+                        <img
+                          src={gallery.thumbnail || "/placeholder-gallery.jpg"}
+                          alt={gallery.name}
+                          className="w-full h-[100px] aspect-square object-cover rounded-lg"
+                          loading="lazy"
+                        />
+                        <div className="text-[14px] font-bold line-clamp-1">
+                          {gallery.name || "이름 없음"}
+                        </div>
+                        <div className="text-[13px] text-gray-500 flex items-center justify-start gap-1">
+                          <span className="text-[#007AFF]">
+                            <FaStar />
+                          </span>
+                          <span>
+                            {gallery.visitor_rating || "0"} ({gallery.blog_review_count || "0"})
+                          </span>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="col-span-3 flex justify-center items-center h-40">
+                    <p className="text-gray-500">데이터가 없습니다</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </div>
     </div>
   );

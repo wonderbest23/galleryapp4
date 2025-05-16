@@ -24,22 +24,18 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // 스켈레톤 컴포넌트
 const SkeletonCard = ({ index }) => (
-  <motion.div
+  <div
     key={`skeleton-${index}`}
-    initial={{ opacity: 0.6, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-    transition={{ duration: 0.3 }}
     className="w-full max-w-[600px] flex items-center gap-3 justify-center mx-auto mb-4"
   >
     <div>
-      <Skeleton className="flex rounded-full w-12 h-12" />
+      <Skeleton className="flex rounded-full w-12 h-10" />
     </div>
     <div className="w-full flex flex-col gap-2">
       <Skeleton className="h-3 w-36 rounded-lg" />
       <Skeleton className="h-3 w-24 rounded-lg" />
     </div>
-  </motion.div>
+  </div>
 );
 
 // 전시회 카드 컴포넌트
@@ -47,17 +43,15 @@ const ExhibitionCard = ({ exhibition, index, isBookmarked, toggleBookmark }) => 
   <motion.div
     layout
     key={`exhibition-${exhibition.id}`}
-    initial={{ opacity: 0, y: 20, scale: 0.9 }}
-    animate={{ opacity: 1, y: 0, scale: 1 }}
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
     transition={{ 
-      type: "spring", 
-      stiffness: 100, 
-      damping: 15,
+      duration: 0.5,
       delay: index * 0.05 // 각 아이템마다 살짝 딜레이를 줘서 순차적으로 나타나게 함
     }}
-    className="w-full mb-4"
+    className="w-full mb-4 outline-none"
   >
-    <Link href={`/exhibition/${exhibition.id}`} className="w-full">
+    <Link href={`/exhibition/${exhibition.id}`} className="w-full justify-center items-center">
       <Card
         classNames={{ body: "p-2 justify-center items-center" }}
         className="w-full max-w-[600px]"
@@ -331,24 +325,21 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="w-full"
+      className="w-full flex justify-center items-center"
     >
       <div className="flex flex-col items-center gap-4 w-[90%] justify-center">
         <div className="w-full flex flex-col justify-center items-center gap-y-4">
           <AnimatePresence mode="wait">
             {loading && page === 1 ? (
               // 스켈레톤 UI
-              <motion.div
+              <div
                 key="skeletons"
                 className="w-full"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
               >
                 {Array(5).fill().map((_, index) => (
                   <SkeletonCard key={index} index={index} />
                 ))}
-              </motion.div>
+              </div>
             ) : (
               // 실제 전시회 목록
               <motion.div
@@ -357,8 +348,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ 
-                  duration: 0.5,
-                  staggerChildren: 0.1 
+                  duration: 0.5
                 }}
               >
                 {exhibitions.map((exhibition, index) => (

@@ -3,6 +3,7 @@ import React, { useState, useRef, useCallback } from "react";
 import { Card, CardBody, Skeleton } from "@heroui/react";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 export function GallerySlider({ galleries, loading, user, toggleBookmark, isBookmarked }) {
   // 슬라이더 ref
@@ -11,6 +12,26 @@ export function GallerySlider({ galleries, loading, user, toggleBookmark, isBook
   const isDraggingRef = useRef(false);
   // 슬라이더 요소에서만 동작하도록 체크하는 ref
   const isSliderClickRef = useRef(false);
+
+  // 애니메이션 설정
+  const container = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, x: 20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.5 }
+    }
+  };
 
   // 마우스 이벤트 핸들러
   const handleMouseDown = useCallback((e) => {
@@ -116,11 +137,14 @@ export function GallerySlider({ galleries, loading, user, toggleBookmark, isBook
             ))}
         </div>
       ) : (
-        <div
+        <motion.div
           className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide"
           ref={sliderRef}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
+          variants={container}
+          initial="hidden"
+          animate="visible"
           style={{ 
             cursor: "grab", 
             scrollBehavior: "auto",
@@ -136,7 +160,7 @@ export function GallerySlider({ galleries, loading, user, toggleBookmark, isBook
             </div>
           ) : (
             galleries.map((gallery, index) => (
-              <div key={index} className="flex-shrink-0 w-[200px] pl-1">
+              <motion.div key={index} className="flex-shrink-0 w-[200px] pl-1" variants={item}>
                 <Card shadow="sm" className="w-[200px] h-[240px] overflow-hidden transition-shadow">
                   <Link 
                     href={`/galleries/${gallery.id}`}
@@ -173,10 +197,10 @@ export function GallerySlider({ galleries, loading, user, toggleBookmark, isBook
                     </CardBody>
                   </Link>
                 </Card>
-              </div>
+              </motion.div>
             ))
           )}
-        </div>
+        </motion.div>
       )}
     </div>
   );

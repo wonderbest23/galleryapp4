@@ -25,6 +25,30 @@ import { FaRegStar, FaStar } from "react-icons/fa";
 import { FiPlusCircle } from "react-icons/fi";
 import Image from "next/image";
 import { FaMap } from "react-icons/fa";
+import { motion } from "framer-motion";
+
+// 페이드인 애니메이션 설정
+const fadeInVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1, 
+    transition: { 
+      duration: 0.5,
+      ease: "easeInOut"
+    } 
+  }
+};
+
+// 아이템 목록 페이드인 애니메이션 설정
+const staggerContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 
 // useSearchParams를 사용하는 별도의 클라이언트 컴포넌트
 function ExhibitionListContent() {
@@ -390,13 +414,19 @@ function ExhibitionListContent() {
             ))}
           </div>
         ) : (
-          <ExhibitionCarousel
-            exhibitions={popularExhibitions}
-            user={user}
-            bookmarks={bookmarks}
-            toggleBookmark={toggleBookmark}
-            isBookmarked={isBookmarked}
-          />
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeInVariants}
+          >
+            <ExhibitionCarousel
+              exhibitions={popularExhibitions}
+              user={user}
+              bookmarks={bookmarks}
+              toggleBookmark={toggleBookmark}
+              isBookmarked={isBookmarked}
+            />
+          </motion.div>
         )}
       </div>
 
@@ -507,13 +537,19 @@ function ExhibitionListContent() {
             <Spinner variant="wave" size="lg" color="primary" />
           </div>
         ) : (
-          <ExhibitionCards
-            exhibitions={exhibitions}
-            user={user}
-            bookmarks={bookmarks}
-            toggleBookmark={toggleBookmark}
-            isBookmarked={isBookmarked}
-          />
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeInVariants}
+          >
+            <ExhibitionCards
+              exhibitions={exhibitions}
+              user={user}
+              bookmarks={bookmarks}
+              toggleBookmark={toggleBookmark}
+              isBookmarked={isBookmarked}
+            />
+          </motion.div>
         )}
 
         {!tabLoading && exhibitions.length > 0 && hasMore ? (
@@ -558,9 +594,17 @@ function ExhibitionListContent() {
             ))}
           </div>
         ) : (
-          <div className="w-full grid grid-cols-3 gap-4 mt-6">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainerVariants}
+            className="w-full grid grid-cols-3 gap-4 mt-6"
+          >
             {highRatingExhibitions.map((exhibition) => (
-              <div key={exhibition.id}>
+              <motion.div 
+                key={exhibition.id}
+                variants={fadeInVariants}
+              >
                 <Link href={`/exhibition/${exhibition.id}`}>
                   <div className="relative w-full h-[100px]">
                     <Image
@@ -583,9 +627,9 @@ function ExhibitionListContent() {
                     </span>
                   </div>
                 </Link>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
