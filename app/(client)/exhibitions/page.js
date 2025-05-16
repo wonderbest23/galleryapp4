@@ -428,6 +428,7 @@ function ExhibitionListContent() {
         )}
       </div>
 
+
       {/* 커스텀 탭바 및 필터 영역 */}
       <div className="w-[90%] flex flex-col mb-4">
         {/* 커스텀 탭바 - 전체 폭의 2/3 크기로 중앙 정렬 */}
