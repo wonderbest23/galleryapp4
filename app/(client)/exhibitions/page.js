@@ -407,9 +407,7 @@ function ExhibitionListContent() {
           <div className="flex overflow-x-auto gap-4 py-2 scrollbar-hide">
             {Array(3).fill(null).map((_, i) => (
               <div key={i} className="min-w-[180px] flex-shrink-0">
-                <Skeleton className="w-full h-[100px] rounded-lg" />
-                <Skeleton className="w-3/4 h-4 mt-2 rounded-lg" />
-                <Skeleton className="w-1/2 h-3 mt-1 rounded-lg" />
+                <Skeleton className="w-full h-[240px] rounded-2xl" />
               </div>
             ))}
           </div>
