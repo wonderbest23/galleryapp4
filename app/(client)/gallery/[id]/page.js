@@ -11,6 +11,7 @@ import { createClient } from "@/utils/supabase/client";
 import { FiMapPin } from "react-icons/fi";
 import { LuClock4 } from "react-icons/lu";
 import { IoMdInformationCircleOutline } from "react-icons/io";
+import { motion } from "framer-motion";
 
 
 export default function App() {
@@ -282,7 +283,14 @@ export default function App() {
 
   console.log('gallery:',gallery);
 
-
+  // 애니메이션 변수
+  const fadeIn = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { duration: 0.5 } 
+    }
+  };
   
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen">
@@ -292,7 +300,11 @@ export default function App() {
           <p className="mt-4 text-gray-600">갤러리 정보를 불러오고 있습니다...</p>
         </div>
       ) : (
-      <>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeIn}
+      >
       {/* 상단 네비게이션 바 */}
       
       <div className="bg-white flex items-center">
@@ -483,7 +495,7 @@ export default function App() {
           </Tab>
         </Tabs>
       </div>
-      </>
+      </motion.div>
       )}
     </div>
   );

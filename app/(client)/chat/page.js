@@ -1,12 +1,13 @@
 "use client";
-import React, { Suspense } from "react";
+import React from "react";
 import {
   Button,
   Skeleton,
   Input,
   Textarea,
   DatePicker,
-  Spinner,
+  addToast,
+  Spinner
 } from "@heroui/react";
 import { FaChevronLeft } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -28,24 +29,27 @@ function ChatPageContent() {
   const hostId = searchParams.get("hostId");
   const userId = searchParams.get("userId");
   const productId = searchParams.get("productId");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [chatData, setChatData] = useState(null);
 
   console.log("hostId:", hostId);
   console.log("userId:", userId);
   console.log("productId:", productId);
-
+  
   // 채팅 존재 확인 및 생성
   useEffect(() => {
     if (!hostId || !userId) {
       console.log("hostId 또는 userId가 없습니다");
-      // 필요에 따라 리다이렉트 처리
-      // router.push("/");
+      setLoading(false);
+      addToast({
+        title: "오류",
+        description: "채팅 연결에 필요한 정보가 누락되었습니다.",
+        color: "danger",
+      });
       return;
     }
 
-    
     const checkOrCreateChat = async () => {
       setLoading(true);
       setError(null);
@@ -69,11 +73,22 @@ function ChatPageContent() {
           throw new Error(data.error || "채팅 생성 중 오류가 발생했습니다.");
         }
 
+        console.log("받은 채팅 데이터:", data);
+        
+        if (!data.chat) {
+          throw new Error("채팅 데이터를 받아오지 못했습니다.");
+        }
+        
         setChatData(data.chat);
-        console.log("채팅 데이터:", data.chat);
+        console.log("채팅 데이터 설정됨:", data.chat);
       } catch (err) {
         console.log("채팅 확인/생성 중 오류:", err.message);
         setError(err.message);
+        addToast({
+          title: "채팅 연결 오류",
+          description: err.message,
+          color: "danger"
+        });
       } finally {
         setLoading(false);
       }
@@ -97,12 +112,19 @@ function ChatPageContent() {
         <div className="w-10"></div>
       </div>
 
-      <ChatComplete
-        hostId={hostId}
-        userId={userId}
-        productId={productId}
-        chatData={chatData}
-      />
+      {loading ? (
+        <div className="w-full h-[70vh] flex flex-col justify-center items-center">
+          <Spinner variant="wave" color="primary" size="lg" />
+          <p className="mt-4 text-gray-600">채팅방을 연결하고 있습니다...</p>
+        </div>
+      ) : chatData && (
+        <ChatComplete
+          hostId={hostId}
+          userId={userId}
+          productId={productId}
+          chatData={chatData}
+        />
+      )}
     </div>
   );
 }
@@ -110,8 +132,6 @@ function ChatPageContent() {
 // 메인 페이지 컴포넌트
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="p-4 text-center">로딩중...</div>}>
-      <ChatPageContent />
-    </Suspense>
+    <ChatPageContent />
   );
 }

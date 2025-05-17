@@ -8,12 +8,13 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 export async function GET(request, { params }) {
   try {
     const paramss=await params;
-    const id = await paramss.id;
+    const {id} = paramss;
+    const productId = id;
     
     const { data, error } = await supabase
       .from('product')
       .select('*')
-      .eq('id', id)
+      .eq('id', productId)
       .single();
       
     if (error) {

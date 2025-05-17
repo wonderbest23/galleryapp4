@@ -32,6 +32,7 @@ import { FaStar } from "react-icons/fa";
 import { FaMap } from "react-icons/fa";
 import { FaRegCalendar } from "react-icons/fa";
 import { FaMoneyBill } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 
 export default function App() {
@@ -52,6 +53,31 @@ export default function App() {
   const [userData, setUserData] = useState(null);
   const supabase = createClient();
   const clientKey = process.env.NEXT_PUBLIC_TOSSPAYMENTS_API_KEY;
+
+  // 애니메이션 변수 추가
+  const fadeInVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.3 }
+    }
+  };
 
   useEffect(() => {
     if (
@@ -394,9 +420,20 @@ export default function App() {
           className="w-full h-screen flex justify-center items-center"
         />
       ) : (
-        <div className="max-w-md mx-auto bg-white min-h-screen">
+        <motion.div 
+          className="max-w-md mx-auto bg-white min-h-screen"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
           {/* 상단 네비게이션 바 */}
-          <div className="w-full mx-auto bg-white flex items-center">
+          <motion.div 
+            className="w-full mx-auto bg-white flex items-center"
+            initial="hidden"
+            animate="visible"
+            variants={fadeInVariants}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
             <Button
               isIconOnly
               variant="light"
@@ -406,10 +443,16 @@ export default function App() {
               <FaArrowLeft className="text-xl" />
             </Button>
             <h2 className="text-lg font-medium"></h2>
-          </div>
+          </motion.div>
 
           {/* Hero Image Section */}
-          <div className="relative w-full h-64">
+          <motion.div 
+            className="relative w-full h-64"
+            initial="hidden"
+            animate="visible"
+            variants={fadeInVariants}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
             <img
               src={exhibition?.photo}
               alt="Restaurant"
@@ -432,10 +475,16 @@ export default function App() {
                 <LuSend className="text-lg text-white font-bold " />
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Restaurant Info */}
-          <div className="w-[90%] mx-auto mt-4">
+          <motion.div 
+            className="w-[90%] mx-auto mt-4"
+            initial="hidden"
+            animate="visible"
+            variants={fadeInVariants}
+            transition={{ duration: 0.4, delay: 0.3 }}
+          >
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-[10px] text-[#494949]">
@@ -498,7 +547,7 @@ export default function App() {
                 size="lg"
                 disabled={!exhibition?.isSale}
               >
-                {exhibition?.isSale ? '티켓구매' : '판매중지'}
+                {exhibition?.isSale ? '티켓구매' : '웹티켓구매 미지원'}
               </Button>
               <Button
                 target="_blank"
@@ -535,10 +584,16 @@ export default function App() {
               </div>
             </div>
             )}
-          </div>
+          </motion.div>
 
           {/* 커스텀 탭바 섹션 */}
-          <div className="mt-4 pb-16 flex flex-col items-center justify-start">
+          <motion.div 
+            className="mt-4 pb-16 flex flex-col items-center justify-start"
+            initial="hidden"
+            animate="visible"
+            variants={fadeInVariants}
+            transition={{ duration: 0.4, delay: 0.4 }}
+          >
             {/* 커스텀 탭바 - 전체 폭의 2/3 크기로 중앙 정렬 */}
             <div className="flex w-[90%] border-t border-gray-200 mb-2">
               <div className="w-1/6"></div>
@@ -568,40 +623,73 @@ export default function App() {
             {/* 탭 컨텐츠 */}
             <div className="px-2 w-full">
               {selected === "home" && (
-                <Card className="my-4 mx-2 p-2">
-                  <CardBody>
-                    <h3 className="text-lg font-bold mb-2">전시회 안내</h3>
-                    <p>{exhibition?.add_info}</p>
-                  </CardBody>
-                </Card>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  key="home-tab"
+                >
+                  <Card className="my-4 mx-2 p-2">
+                    <CardBody>
+                      <h3 className="text-lg font-bold mb-2">전시회 안내</h3>
+                      <p>{exhibition?.add_info}</p>
+                    </CardBody>
+                  </Card>
+                </motion.div>
               )}
 
               {selected === "gallery" && (
-                <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  key="gallery-tab"
+                >
                   {notice && notice.length > 0 ? (
-                    notice.slice(0, displayedNoticeCount).map((item, i) => (
-                      <Card key={item.id || i} className="my-4 mx-2">
-                        <CardBody>
-                          <h3 className="text-lg font-bold">
-                            {item.title || `공지사항 ${i + 1}`}
-                          </h3>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {new Date(item.created_at).toLocaleDateString()}
-                          </p>
-                          <p className="mt-2">
-                            {item.content ||
-                              "전시회 관람 시간 안내 및 주의사항입니다."}
-                          </p>
-                        </CardBody>
-                      </Card>
-                    ))
+                    <motion.div
+                      variants={containerVariants}
+                      initial="hidden"
+                      animate="visible"
+                    >
+                      {notice.slice(0, displayedNoticeCount).map((item, i) => (
+                        <motion.div
+                          key={item.id || i}
+                          variants={itemVariants}
+                        >
+                          <Card className="my-4 mx-2">
+                            <CardBody>
+                              <h3 className="text-lg font-bold">
+                                {item.title || `공지사항 ${i + 1}`}
+                              </h3>
+                              <p className="text-sm text-gray-500 mt-1">
+                                {new Date(item.created_at).toLocaleDateString()}
+                              </p>
+                              <p className="mt-2">
+                                {item.content ||
+                                  "전시회 관람 시간 안내 및 주의사항입니다."}
+                              </p>
+                            </CardBody>
+                          </Card>
+                        </motion.div>
+                      ))}
+                    </motion.div>
                   ) : (
-                    <div className="flex justify-center items-center text-gray-500 my-4">
+                    <motion.div 
+                      className="flex justify-center items-center text-gray-500 my-4"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                    >
                       전시회 공지가 없습니다.
-                    </div>
+                    </motion.div>
                   )}
                   {notice && notice.length > displayedNoticeCount && (
-                    <div className="flex justify-center items-center my-4">
+                    <motion.div 
+                      className="flex justify-center items-center my-4"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.3 }}
+                    >
                       <Button
                         isIconOnly
                         variant="light"
@@ -610,39 +698,60 @@ export default function App() {
                       >
                         <FaPlusCircle className="text-gray-500 text-2xl font-bold" />
                       </Button>
-                    </div>
+                    </motion.div>
                   )}
-                </>
+                </motion.div>
               )}
 
               {selected === "reviews" && (
-                <>
-                  <div className="flex flex-col items-center gap-2 mx-2">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  key="reviews-tab"
+                >
+                  <motion.div 
+                    className="flex flex-col items-center gap-2 mx-2"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
                     {reviews
                       .slice(0, displayedReviewCount)
                       .map((review, index) => (
-                        <CardReview
-                          review={review}
-                          key={index}
-                          content={review.description}
-                          createdAt={review.created_at}
-                          rating={review.rating}
-                          title={review.title}
-                          user={{
-                            name: review.name,
-                            avatar:
-                              "https://i.pravatar.cc/150?u=a04258114e29026708c",
-                          }}
-                        />
+                        <motion.div key={index} variants={itemVariants}>
+                          <CardReview
+                            review={review}
+                            content={review.description}
+                            createdAt={review.created_at}
+                            rating={review.rating}
+                            title={review.title}
+                            user={{
+                              name: review.name,
+                              avatar:
+                                "https://i.pravatar.cc/150?u=a04258114e29026708c",
+                            }}
+                          />
+                        </motion.div>
                       ))}
-                  </div>
+                  </motion.div>
                   {reviews.length === 0 && (
-                    <div className="flex justify-center items-center my-4">
+                    <motion.div 
+                      className="flex justify-center items-center my-4"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                    >
                       <p className="text-gray-500">리뷰가 없습니다.</p>
-                    </div>
+                    </motion.div>
                   )}
 
-                  <div className="flex justify-center items-center my-4">
+                  <motion.div 
+                    className="flex justify-center items-center my-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                  >
                     {reviews.length > displayedReviewCount ? (
                       <Button
                         isIconOnly
@@ -656,12 +765,12 @@ export default function App() {
                       reviews.length <= displayedReviewCount ? (
                       <p className="text-gray-500">더 이상 리뷰가 없습니다.</p>
                     ) : null}
-                  </div>
-                </>
+                  </motion.div>
+                </motion.div>
               )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </>
   );

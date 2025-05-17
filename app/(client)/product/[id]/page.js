@@ -28,6 +28,7 @@ import Image from "next/image";
 import { cn } from "@/utils/cn";
 import { LuWallet } from "react-icons/lu";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
+import { motion } from "framer-motion";
 
 // 리뷰 컴포넌트 추가
 
@@ -68,6 +69,18 @@ export default function App() {
 
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // 페이드인 애니메이션 설정
+  const fadeInVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1, 
+      transition: { 
+        duration: 0.5,
+        ease: "easeInOut"
+      } 
+    }
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -232,7 +245,12 @@ export default function App() {
           className="w-full h-screen flex justify-center items-center"
         />
       ) : (
-        <div className="flex flex-col items-center justify-center">
+        <motion.div 
+          className="flex flex-col items-center justify-center"
+          initial="hidden"
+          animate="visible"
+          variants={fadeInVariants}
+        >
           {/* 상단 네비게이션 바 */}
           <div className="bg-white flex items-center justify-between w-full">
             <Button
@@ -283,10 +301,30 @@ export default function App() {
               <div className="text-[18px] font-bold">{product?.name || '제품명 없음'}</div>
             </div>
             <div className="w-[90%] h-full mt-2">
-              <div className="text-[10px]">제작방식:{product?.make_method}</div>
-              <div className="text-[10px]">소재:{product?.make_material}</div>
+              <div className="text-[12px] flex flex-col gap-y-1">
+                <div className="flex items-center">
+                  <span className="font-medium mr-2 w-[70px]">사이즈:</span>
+                  <span>{product?.size || '정보 없음'}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-medium mr-2 w-[70px]">소재:</span>
+                  <span>{product?.make_material || '정보 없음'}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-medium mr-2 w-[70px]">제작방식:</span>
+                  <span>{product?.make_method || '정보 없음'}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-medium mr-2 w-[70px]">제작일:</span>
+                  <span>{product?.make_date !== 'null' ? product?.make_date : '정보 없음'}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-medium mr-2 w-[70px]">장르:</span>
+                  <span>{product?.genre !== 'null' ? product?.genre : '정보 없음'}</span>
+                </div>
+              </div>
             </div>
-            <div className="w-full h-full mt-2 flex flex-row justify-between items-center">
+            <div className="w-full h-full mt-3 flex flex-row justify-between items-center">
               
               <div className="text-[25px] font-bold">₩{product?.price?.toLocaleString()}</div>
               <div className="text-[10px] flex flex-row gap-x-2 items-center">
@@ -340,7 +378,7 @@ export default function App() {
             </Button>
           </div>
             
-        </div>
+        </motion.div>
       )}
     </div>
   );

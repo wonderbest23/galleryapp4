@@ -1,14 +1,21 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Card, CardBody, Image, Button, Spinner,addToast } from "@heroui/react";
+import { Card, CardBody, Image, Button, Spinner, addToast } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { FaPlusCircle } from "react-icons/fa";
+import { motion } from "framer-motion";
+import { PiNotePencil } from "react-icons/pi";
+import { FaEdit } from "react-icons/fa";
 
 export default function MyArtworks({ user, profile }) {
   const [artworks, setArtworks] = useState([]);
+  const [displayedArtworks, setDisplayedArtworks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [totalAvailable, setTotalAvailable] = useState(10); // 총 등록 가능 수
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const itemsPerPage = 8;
   const router = useRouter();
   const supabase = createClient();
 
@@ -21,6 +28,13 @@ export default function MyArtworks({ user, profile }) {
     }
   }, [user]);
 
+  useEffect(() => {
+    // 작품이 로드되면 첫 페이지 표시
+    if (artworks.length > 0) {
+      updateDisplayedArtworks();
+    }
+  }, [artworks]);
+
   const fetchUserArtworks = async () => {
     try {
       setIsLoading(true);
@@ -31,22 +45,39 @@ export default function MyArtworks({ user, profile }) {
         .eq('artist_id', user.id);
 
       if (error) {
-        console.error('Error fetching artworks:', error);
+        console.log('작품 불러오기 오류:', error);
         return;
       }
 
       // 데이터가 있으면 setArtworks로 설정
       setArtworks(data || []);
     } catch (error) {
-      console.error('Error:', error);
+      console.log('오류:', error);
     } finally {
       setIsLoading(false);
     }
   };
-  console.log("profile:", profile);
+
+  const updateDisplayedArtworks = () => {
+    const startIndex = 0;
+    const endIndex = page * itemsPerPage;
+    const itemsToShow = artworks.slice(startIndex, endIndex);
+    setDisplayedArtworks(itemsToShow);
+    setHasMore(endIndex < artworks.length);
+  };
+
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    
+    // setTimeout을 사용하여 상태 업데이트 후 실행되도록 보장
+    setTimeout(() => {
+      updateDisplayedArtworks();
+    }, 0);
+  };
 
   return (
-    <div className="grid grid-cols-4 gap-4 w-[90%]">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-[90%]">
       {isLoading ? (
         <div className="col-span-4 flex justify-center py-8">
           <Spinner variant="wave" color="primary" />
@@ -54,18 +85,37 @@ export default function MyArtworks({ user, profile }) {
       ) : (
         <>
           {artworks.length > 0 ? (
-            artworks.map((artwork) => (
-              <Card key={artwork.id} className="col-span-1" shadow="none">
-                <CardBody className="p-0">
-                  <Link href={`/product/${artwork.id}`}>
-                    <img
-                      src={artwork?.image?.[0] || "/noimage.jpg"}
-                      alt={artwork.title}
-                      className="object-cover w-full aspect-square"
-                    />
-                  </Link>
-                </CardBody>
-              </Card>
+            displayedArtworks.map((artwork) => (
+              <motion.div
+                key={artwork.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="col-span-1"
+              >
+                <Card shadow="none" className="relative">
+                  <CardBody className="p-0">
+                    <Link href={`/product/${artwork.id}`}>
+                      <img
+                        src={artwork?.image?.[0] || "/noimage.jpg"}
+                        alt={artwork.title}
+                        className="object-cover w-full aspect-square"
+                      />
+                    </Link>
+                    
+                    {/* 연필 아이콘 추가 */}
+                    <div
+                      className="absolute bg-white bottom-0 right-0 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        router.push(`/product/edit/${artwork.id}`);
+                      }}
+                    >
+                      <FaEdit className="text-gray-700 text-sm m-1" />
+                    </div>
+                  </CardBody>
+                </Card>
+              </motion.div>
             ))
           ) : (
             <div className="col-span-4 text-center py-8 text-gray-500">
@@ -75,6 +125,21 @@ export default function MyArtworks({ user, profile }) {
         </>
       )}
       
+      {!isLoading && artworks.length > 0 && (
+        <div className="col-span-4 flex justify-center my-4">
+          {hasMore ? (
+            <FaPlusCircle
+              className="text-gray-500 text-2xl font-bold hover:cursor-pointer hover:scale-110 transition-transform"
+              onClick={loadMore}
+            />
+          ) : (
+            <div className="text-gray-500 text-sm">
+              더 이상 작품이 없습니다
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="col-span-4 text-center text-[12px] text-gray-500 font-bold mt-4">
         현재등록 {artworks.length}건 / 신규등록 가능 수 {profile?.artist_credit}건
       </div>

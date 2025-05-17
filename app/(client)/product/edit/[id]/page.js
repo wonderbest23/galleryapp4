@@ -1,44 +1,36 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
-  Skeleton,
-  Input,
-  Textarea,
-  DatePicker,
   Spinner,
+  Input,
   addToast
 } from "@heroui/react";
-import { FaChevronLeft } from "react-icons/fa";
-import { useRouter } from "next/navigation";
-import { Card, CardBody, Divider, Image, CardFooter } from "@heroui/react";
-import { FaPlusCircle } from "react-icons/fa";
-import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
-import { useState, useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
-import { parseDate } from "@internationalized/date";
-import { CiImageOn } from "react-icons/ci";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import { IoMdCloseCircleOutline } from "react-icons/io";
-
-
-export default function MagazineList() {
-  const [magazines, setMagazines] = useState([]);
-  const [visibleCount, setVisibleCount] = useState(12);
-  const [allLoaded, setAllLoaded] = useState(false);
-  const [profileImage, setProfileImage] = useState("/noimage.jpg");
-  const [isUploading, setIsUploading] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState(null);
-  const [productImages, setProductImages] = useState([]);
-  const router = useRouter();
-  const supabase = createClient();
+import { CiImageOn } from "react-icons/ci";
+import { useParams } from "next/navigation";
+export default function EditProduct() {
+  const params = useParams();
+  const [artwork, setArtwork] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // 폼 필드 상태
   const [name, setName] = useState("");
   const [size, setSize] = useState("");
   const [makeMaterial, setMakeMaterial] = useState("");
   const [makeDate, setMakeDate] = useState("");
   const [genre, setGenre] = useState("현대미술");
   const [price, setPrice] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [productImages, setProductImages] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  const router = useRouter();
+  const supabase = createClient();
 
   const genres = [
     { id: 1, name: "현대미술" },
@@ -47,6 +39,60 @@ export default function MagazineList() {
     { id: 4, name: "사진/일러스트" },
     { id: 5, name: "기타" },
   ];
+
+  useEffect(() => {
+    const fetchProductData = async () => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('product')
+          .select('*')
+          .eq('id', params.id)
+          .single();
+
+        if (error) {
+          console.log('작품 불러오기 오류:', error);
+          addToast({
+            title: "데이터 로드 실패",
+            description: "작품 정보를 불러오는데 실패했습니다.",
+            color: "danger"
+          });
+          router.push('/mypage/success');
+          return;
+        }
+
+        // 현재 로그인한 사용자 확인
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || user.id !== data.artist_id) {
+          addToast({
+            title: "접근 권한 없음",
+            description: "이 작품을 수정할 권한이 없습니다.",
+            color: "danger"
+          });
+          router.push('/mypage/success');
+          return;
+        }
+
+        setArtwork(data);
+        // 폼 필드 초기화
+        setName(data.name || "");
+        setSize(data.size || "");
+        setMakeMaterial(data.make_material || "");
+        setMakeDate(data.make_date || "");
+        setGenre(data.genre || "현대미술");
+        setPrice(data.price ? data.price.toString() : "");
+        setProductImages(data.image || []);
+      } catch (error) {
+        console.log('오류:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (params?.id) {
+      fetchProductData();
+    }
+  }, [params.id, router, supabase]);
 
   const handleImageUpload = async (e) => {
     try {
@@ -81,7 +127,8 @@ export default function MagazineList() {
       console.log("Error uploading image:", error);
       addToast({
         title: "이미지 업로드 실패",
-        description: "이미지 업로드 중 오류가 발생했습니다."
+        description: "이미지 업로드 중 오류가 발생했습니다.",
+        color: "danger"
       });
     } finally {
       setIsUploading(false);
@@ -188,7 +235,7 @@ export default function MagazineList() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleUpdate = async () => {
     // 입력 유효성 검증
     if (!validateInputs()) {
       return;
@@ -197,99 +244,96 @@ export default function MagazineList() {
     try {
       setIsSubmitting(true);
       
-      // 현재 로그인한 사용자 정보 가져오기
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        addToast({
-          title: "인증 오류",
-          description: "로그인이 필요합니다.",
-          color: "danger",
-        });
-        return;
-      }
-
-      // 프로필 정보 가져오기
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('artist_credit')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError) {
-        addToast({
-          title: "프로필 오류",
-          description: "프로필 정보를 불러올 수 없습니다.",
-          color: "danger",
-        });
-        return;
-      }
-      
-      if (profile.artist_credit < 1) {
-        addToast({
-          title: "크레딧 부족",
-          description: "작가 크레딧이 부족합니다.",
-          color: "danger",
-        });
-        return;
-      }
-
-      // 작품 정보 저장
-      const { error: productError } = await supabase
+      // 작품 정보 업데이트
+      const { error } = await supabase
         .from('product')
-        .insert([
-          {
-            name,
-            size,
-            make_material: makeMaterial,
-            make_date: makeDate,
-            genre,
-            price: parseInt(price),
-            image: productImages,
-            artist_id: user.id
-          }
-        ]);
+        .update({
+          name,
+          size,
+          make_material: makeMaterial,
+          make_date: makeDate,
+          genre,
+          price: parseInt(price),
+          image: productImages
+        })
+        .eq('id', params.id);
 
-      if (productError) {
+      if (error) {
         addToast({
-          title: "작품 등록 실패",
+          title: "작품 수정 실패",
           description: "작품 정보 저장 중 오류가 발생했습니다.",
           color: "danger",
         });
         return;
       }
 
-      // 작가 크레딧 차감
-      const { error: creditError } = await supabase
-        .from('profiles')
-        .update({ artist_credit: profile.artist_credit - 1 })
-        .eq('id', user.id);
-
-      if (creditError) {
-        addToast({
-          title: "크레딧 차감 실패",
-          description: "크레딧 차감 중 오류가 발생했습니다.",
-          color: "danger",
-        });
-        return;
-      }
-
       addToast({
-        title: "작품 등록 성공",
-        description: "작품이 성공적으로 등록되었습니다.",
+        title: "작품 수정 성공",
+        description: "작품이 성공적으로 수정되었습니다.",
         color: "success",
       });
+      
       router.push('/mypage/success');
     } catch (error) {
-      console.log('Error submitting product:', error);
+      console.log('Error updating product:', error);
       addToast({
-        title: "작품 등록 실패",
-        description: error.message || "작품 등록 중 오류가 발생했습니다.",
+        title: "작품 수정 실패",
+        description: error.message || "작품 수정 중 오류가 발생했습니다.",
         color: "danger",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleDelete = async () => {
+    if (!confirm("정말로 작품을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+      return;
+    }
+    
+    try {
+      setIsDeleting(true);
+      
+      const { error } = await supabase
+        .from('product')
+        .delete()
+        .eq('id', params.id);
+
+      if (error) {
+        addToast({
+          title: "작품 삭제 실패",
+          description: "작품 삭제 중 오류가 발생했습니다.",
+          color: "danger",
+        });
+        return;
+      }
+
+      addToast({
+        title: "작품 삭제 성공",
+        description: "작품이 성공적으로 삭제되었습니다.",
+        color: "success",
+      });
+      
+      router.push('/mypage/success');
+    } catch (error) {
+      console.log('Error deleting product:', error);
+      addToast({
+        title: "작품 삭제 실패",
+        description: error.message || "작품 삭제 중 오류가 발생했습니다.",
+        color: "danger",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner variant="wave" color="primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center mx-2">
@@ -303,11 +347,12 @@ export default function MagazineList() {
           <FaArrowLeft className="text-xl" />
         </Button>
         <h2 className="text-lg font-bold text-center flex-grow">
-          신규작품 등록하기
+          작품 수정하기
         </h2>
         <div className="w-10"></div>
       </div>
-      <div className="w-[90%] flex flex-col gap-y-4 mt-6">
+      
+      <div className="w-[90%] space-y-6 mt-4 mb-24">
         <div className="flex flex-col gap-y-2">
           <label className="text-sm text-[#747474] font-medium">
             작품 이미지 <span className="text-red-500">*</span>
@@ -319,7 +364,6 @@ export default function MagazineList() {
                   src={image}
                   alt={`작품 이미지 ${index + 1}`}
                   className="w-full h-full object-cover rounded-lg"
-                  style={{ objectFit: "cover", backgroundRepeat: "repeat" }}
                 />
                 <button
                   onClick={() => {
@@ -333,6 +377,7 @@ export default function MagazineList() {
                 </button>
               </div>
             ))}
+            
             <div className="relative w-24 h-24">
               <div className="w-full h-full border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
                 <input
@@ -442,16 +487,28 @@ export default function MagazineList() {
           />
         </div>
 
-        <Button
-          color="primary"
-          className="w-full mt-6 mb-24 bg-black text-white"
-          size="lg"
-          onPress={handleSubmit}
-          isLoading={isSubmitting}
-        >
-          신규 작품 등록하기
-        </Button>
+        <div className="flex flex-col gap-4">
+          <Button
+            color="primary"
+            className="w-full mt-6 bg-black text-white"
+            size="lg"
+            onPress={handleUpdate}
+            isLoading={isSubmitting}
+          >
+            상품 수정
+          </Button>
+          
+          <Button
+            variant="bordered"
+            className="w-full border-black text-black"
+            size="lg"
+            onPress={handleDelete}
+            isLoading={isDeleting}
+          >
+            상품 삭제
+          </Button>
+        </div>
       </div>
     </div>
   );
-}
+} 

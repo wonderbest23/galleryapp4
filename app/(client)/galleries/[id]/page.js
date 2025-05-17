@@ -26,6 +26,16 @@ import { LuSend } from "react-icons/lu";
 import { Divider } from "@heroui/react";
 import Image from "next/image";
 import { cn } from "@/utils/cn";
+import { motion } from "framer-motion";
+
+// 페이드인 애니메이션 변수
+const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    transition: { duration: 0.6 }
+  }
+};
 
 // 리뷰 컴포넌트 추가
 const Review = React.forwardRef(
@@ -344,7 +354,11 @@ export default function App() {
 
       if (!user || !user.user) {
         // 로그인이 필요한 경우 처리
-        alert("북마크를 위해 로그인이 필요합니다.");
+        addToast({
+          title: "로그인 필요",
+          description: "북마크를 위해 로그인이 필요합니다.",
+          color: "warning",
+        });
         return;
       }
 
@@ -408,7 +422,11 @@ export default function App() {
       } else {
         // Web Share API를 지원하지 않는 경우 클립보드에 복사
         await navigator.clipboard.writeText(window.location.href);
-        alert('링크가 클립보드에 복사되었습니다.');
+        addToast({
+          title: "링크 복사",
+          description: "링크가 클립보드에 복사되었습니다.",
+          color: "success",
+        });
       }
     } catch (error) {
       console.error('공유하기 실패:', error);
@@ -426,9 +444,12 @@ export default function App() {
           className="w-full h-screen flex justify-center items-center"
         />
       ) : (
-        <>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeIn}
+        >
           {/* 상단 네비게이션 바 */}
-
           <div className="bg-white flex items-center">
             <Button
               isIconOnly
@@ -451,7 +472,7 @@ export default function App() {
             <div className="absolute bottom-4 right-4 flex gap-2">
               <div
                 className="bg-white/80 rounded-lg hover:cursor-pointer w-7 h-7 flex items-center justify-center"
-                onPress={toggleBookmark}
+                onClick={toggleBookmark}
               >
                 <Icon
                   icon={isBookmarked ? "mdi:bookmark" : "mdi:bookmark-outline"}
@@ -546,16 +567,26 @@ export default function App() {
             {/* 선택된 탭에 따른 컨텐츠 표시 */}
             <div className="px-2 w-full">
               {selected === "home" && (
-                <Card className="my-4 mx-2">
-                  <CardBody>
-                    <h3 className="text-lg font-bold mb-2">시설 안내</h3>
-                    <p>{gallery?.add_info}</p>
-                  </CardBody>
-                </Card>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card className="my-4 mx-2">
+                    <CardBody>
+                      <h3 className="text-lg font-bold mb-2">시설 안내</h3>
+                      <p>{gallery?.add_info}</p>
+                    </CardBody>
+                  </Card>
+                </motion.div>
               )}
 
               {selected === "gallery" && (
-                <>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
                   {notifications.length > 0 ? (
                     notifications.map((notification) => (
                       <Card key={notification.id} className="my-4 mx-2">
@@ -586,11 +617,15 @@ export default function App() {
                       />
                     </div>
                   )}
-                </>
+                </motion.div>
               )}
 
               {selected === "reviews" && (
-                <>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
                   <div className="flex flex-col gap-2 mx-2">
                     {reviews.length > 0 ? (
                       reviews.map((review) => (
@@ -620,11 +655,11 @@ export default function App() {
                       )}
                     </div>
                   )}
-                </>
+                </motion.div>
               )}
             </div>
           </div>
-        </>
+        </motion.div>
       )}
     </div>
   );

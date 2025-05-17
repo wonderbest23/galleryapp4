@@ -6,6 +6,7 @@ import data from "@emoji-mart/data";
 import Picker from '@emoji-mart/react';
 import Link from "next/link";
 import { Spinner } from '@heroui/spinner';
+import { useRouter } from "next/navigation";
 
 import {
   Chat,
@@ -36,18 +37,21 @@ const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY || "YOUR_API_KEY"; // 실�
 console.log("apiKey:", apiKey);
 
 export default function Home({hostId, userId, productId, chatData}) {
+  const router = useRouter();
   const [token, setToken] = useState(null);
   const [activeChannel, setActiveChannel] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isChannelDeleted, setIsChannelDeleted] = useState(false);
   
   // Supabase 채팅 데이터 확인
   useEffect(() => {
     if (chatData) {
       console.log("Supabase 채팅 데이터 로드됨:", chatData);
-      // chatData를 활용한 추가 로직이 필요하면 여기에 구현
+    } else {
+      console.log("Supabase 채팅 데이터가 없습니다. hostId:", hostId, "userId:", userId, "productId:", productId);
     }
-  }, [chatData]);
+  }, [chatData, hostId, userId, productId]);
   
   // 토큰 제공자 콜백 함수
   const tokenProvider = useCallback(async () => {
@@ -84,7 +88,7 @@ export default function Home({hostId, userId, productId, chatData}) {
     
     try {
       setIsLoading(true);
-      console.log("채팅방 초기화 시작: hostId:", hostId, "userId:", userId);
+      console.log("채팅방 초기화 시작: hostId:", hostId, "userId:", userId, "chatData:", chatData?.id || 'null');
       
       // 기존 채널 검색 - 필터 수정
       const filters = {
@@ -108,16 +112,20 @@ export default function Home({hostId, userId, productId, chatData}) {
         // 새 채널 생성
         console.log("새 채팅방 생성 시작");
         
-        // 채팅 ID가 있다면 Supabase 채팅 데이터의 ID를 활용
-        const chatId = chatData?.id || '';
+        // Supabase에서 채팅 ID가 있으면 사용
+        const chatId = chatData ? chatData.id.toString() : null;
         
-        // 두 ID의 조합에서 더 짧은 고유 ID 생성
-        // 길이 제한(64자)을 넘지 않도록 해시 함수 사용
-        const channelId = chatId 
-          ? `chat_${chatId}` 
-          : `chat_${userId.substring(0, 10)}_${hostId.substring(0, 10)}_${Date.now().toString(36)}`;
+        // 채널 ID 생성
+        let channelId;
         
-        console.log("생성할 채널 ID:", channelId);
+        if (chatId) {
+          channelId = `chat_${chatId}`;
+          console.log("Supabase 채팅 ID로 채널 생성:", channelId);
+        } else {
+          // 고유한 ID 생성 - 타임스탬프 추가
+          channelId = `chat_${hostId.substring(0, 8)}_${userId.substring(0, 8)}_${Date.now().toString(36)}`;
+          console.log("새로운 채널 ID 생성:", channelId);
+        }
         
         const channelData = {
           members: [hostId, userId],
@@ -149,8 +157,51 @@ export default function Home({hostId, userId, productId, chatData}) {
   useEffect(() => {
     if (chatClient) {
       initializeDirectChannel();
+
+      // 채널 삭제 이벤트 리스너 추가
+      const handleChannelDeleted = (event) => {
+        console.log("채널 삭제 이벤트:", event);
+        if (activeChannel && event.channel.cid === activeChannel.cid) {
+          console.log("현재 활성화된 채널이 삭제됨");
+          setIsChannelDeleted(true);
+          setActiveChannel(null);
+          router.push('/chat');
+        }
+      };
+
+      // 채널 상태 변경 리스너
+      chatClient.on('channel.deleted', handleChannelDeleted);
+
+      return () => {
+        chatClient.off('channel.deleted', handleChannelDeleted);
+      };
     }
-  }, [chatClient, initializeDirectChannel]);
+  }, [chatClient, initializeDirectChannel, activeChannel, router]);
+
+  // 채널 상태 감시
+  useEffect(() => {
+    if (activeChannel) {
+      // 채널 비활성화 감지
+      const checkChannelStatus = () => {
+        try {
+          // 채널이 유효한지 확인하는 간단한 방법
+          const isChannelValid = activeChannel.cid && !activeChannel.disconnected;
+          
+          if (!isChannelValid) {
+            console.log("채널이 더 이상 유효하지 않음");
+            setActiveChannel(null);
+            setIsChannelDeleted(true);
+          }
+        } catch (error) {
+          console.log("채널 상태 확인 중 오류:", error);
+          setActiveChannel(null);
+          setIsChannelDeleted(true);
+        }
+      };
+
+      checkChannelStatus();
+    }
+  }, [activeChannel]);
 
   if (!chatClient || isLoading) {
     return (
@@ -173,7 +224,20 @@ export default function Home({hostId, userId, productId, chatData}) {
       </div>
     );
   }
-  
+
+  if (isChannelDeleted) {
+    return (
+      <div className="w-full flex flex-col items-center justify-center h-screen">
+        <p className="text-xl">채팅방이 삭제되었습니다.</p>
+        <button 
+          onClick={() => router.push('/chat')}
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+        >
+          채팅 목록으로 돌아가기
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-[calc(100vh-160px)] flex flex-col">
@@ -189,7 +253,13 @@ export default function Home({hostId, userId, productId, chatData}) {
                   Message={CustomMessage}
                 >
                   <Window>
-                    <ChatHeader productId={productId} chatData={chatData} />
+                    <ChatHeader 
+                      productId={productId} 
+                      chatData={chatData} 
+                      userId={userId} 
+                      hostId={hostId} 
+                      channel={activeChannel}
+                    />
                     <MessageList />
                     <MessageInput Input={CustomInput} />
                   </Window>
