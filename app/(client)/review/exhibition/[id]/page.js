@@ -35,7 +35,7 @@ export default function page() {
     const { data, error } = await supabase.auth.getUser();
     console.log("data:", data);
     if (!data.user) {
-      router.push("/mypage?returnUrl=/review/exhibition/" + id);
+      router.push("/mypage?redirect_to=/review/exhibition/" + id);
     }
     if (error) {
       console.error("Error fetching user:", error);
@@ -124,7 +124,7 @@ export default function page() {
   // }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-y-4 w-full max-w-[375px] px-4 ">
+    <div className="flex flex-col items-center justify-center gap-y-4 w-full px-4 ">
       {user && (
         <>
           <div className="bg-white flex items-center w-full justify-between">
