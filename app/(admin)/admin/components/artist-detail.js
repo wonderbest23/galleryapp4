@@ -380,6 +380,8 @@ export function ArtistDetail({
           selectedKeys={[editedArtist.artist_genre] || []}
           onChange={handleGenreChange}
         >
+
+          
           <SelectItem key="현대미술">현대미술</SelectItem>
           <SelectItem key="추상화">추상화</SelectItem>
           <SelectItem key="명화/동양화">명화/동양화</SelectItem>
