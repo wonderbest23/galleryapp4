@@ -322,11 +322,14 @@ export default function App() {
           <Divider orientation="horizontal" className="w-[90%] my-2" />
           {/* Restaurant Info */}
           <div className="w-[90%] flex flex-row justify-start items-center my-2 gap-x-4">
-            <div className="">
-              <img
+            <div className="relative w-[52px] h-[52px]">
+              <Image
                 src={product?.artist_id?.avatar_url}
                 alt="아티스트 이미지"
-                className="w-[52px] aspect-square rounded-full"
+                className=" rounded-full object-cover"
+                fill
+                priority
+                unoptimized
               />
             </div>
             <div className="flex flex-col">
@@ -338,7 +341,7 @@ export default function App() {
           </div>
           <div className="w-[90%] flex flex-col gap-y-2">
             <div className="flex flex-col justify-center text-[14px] mt-2">
-              <p>{product?.artist_id?.artist_proof}</p>
+              <p>{product?.artist_id?.artist_intro}</p>
             </div>
           </div>
           <div className="w-[90%] flex flex-row justify-between items-center gap-x-4 my-4 h-14 mb-20">
