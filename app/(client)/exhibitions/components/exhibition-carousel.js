@@ -17,7 +17,7 @@ export default function ExhibitionCarousel({ exhibitions, user, bookmarks, toggl
   // 로딩 상태에서 사용할 스켈레톤 UI 컴포넌트
   const SkeletonCard = () => (
     <div className="w-[200px] h-[300px] ">
-      <Card className="w-[200px] space-y-5 p-4" radius="lg" shadow="none">
+      <Card className="w-[200px] space-y-5 p-4" radius="lg" shadow="none" >
         <Skeleton className="rounded-lg">
           <div className="h-24 rounded-lg bg-default-300" />
         </Skeleton>

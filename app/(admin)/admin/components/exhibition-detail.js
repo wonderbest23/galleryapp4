@@ -182,6 +182,7 @@ export function ExhibitionDetail({
             naver_gallery_url: naver_gallery_url,
             price: editedExhibition.price,
             isSale: editedExhibition.isSale,
+            pick: editedExhibition.pick,
           })
           .eq("id", editedExhibition.id);
 
@@ -359,6 +360,7 @@ export function ExhibitionDetail({
               naver_gallery_url: naver_gallery_url_value,
               price: editedExhibition.price,
               isSale: editedExhibition.isSale,
+              pick: editedExhibition.pick,
             },
           ])
           .select();
@@ -393,6 +395,7 @@ export function ExhibitionDetail({
             naver_gallery_url: editedExhibition.naver_gallery_url,
             price: editedExhibition.price,
             isSale: editedExhibition.isSale,
+            pick: editedExhibition.pick,
           })
           .eq("id", editedExhibition.id);
 
@@ -423,7 +426,8 @@ export function ExhibitionDetail({
         review_average: 0,
         naver_gallery_url:"",
         price:0,
-        isSale: false
+        isSale: false,
+        pick: false
       });
       // 목록 새로고침 실행
       try {
@@ -491,7 +495,8 @@ export function ExhibitionDetail({
       review_average: 0,
       naver_gallery_url:"",
       price:0,
-      isSale: false
+      isSale: false,
+      pick: false
     });
     setSelectedExhibition(null);
   };
@@ -849,6 +854,15 @@ export function ExhibitionDetail({
               }
             >
               티켓판매로 표시
+            </Checkbox>
+            <Checkbox
+              id="pick"
+              isSelected={editedExhibition.pick || false}
+              onValueChange={(value) =>
+                setEditedExhibition({ ...editedExhibition, pick: value })
+              }
+            >
+              예술랭픽
             </Checkbox>
           </div>
         </div>

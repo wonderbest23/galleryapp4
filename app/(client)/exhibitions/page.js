@@ -97,7 +97,7 @@ function ExhibitionListContent() {
             .select("*,gallery:naver_gallery_url(*)")
             .eq("isRecommended", true)
             .gte("end_date", new Date().toISOString())
-            .limit(5);
+            .limit(10);
 
         if (popularExhibitionsError) {
           console.log("인기 전시회 데이터 로드 오류:", popularExhibitionsError);
@@ -116,6 +116,7 @@ function ExhibitionListContent() {
           .not("gallery", "is", null)
           .order("review_average", { ascending: false })
           .gte("end_date", new Date().toISOString())
+          .eq('pick', true)
           .limit(9);
           
         if (highRatingExhibitionsError) {

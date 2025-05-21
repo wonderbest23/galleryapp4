@@ -11,7 +11,13 @@ import {
   addToast,
   ToastProvider,
   Divider,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "@heroui/react";
+
 import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -61,6 +67,8 @@ export default function App() {
   });
 
   const [isBookmarked, setIsBookmarked] = useState(false);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -167,21 +175,27 @@ export default function App() {
 
           {/* Artist Info */}
           <div className="w-[90%] flex flex-row justify-start my-4 gap-x-6">
-            <div className="">
-              <img
+            
+            <div className="relative w-[52px] h-[52px]">
+              <Image
                 src={profiles?.avatar_url || "/noimage.jpg"}
                 alt="아티스트 이미지"
-                className="w-[52px] aspect-square rounded-full"
+                className="object-cover rounded-full"
+                fill
               />
             </div>
             <div className="flex flex-col">
               <p>{profiles?.artist_name}</p>
               <p>{profiles?.artist_birth}</p>
             </div>
+            
           </div>
           <Divider orientation="horizontal" className="w-[90%] my-2" />
           <div className="flex flex-col w-[90%]">
-            <p>{profiles?.artist_proof}</p>
+            <div className="flex flex-col gap-y-2">
+              <h3 className="font-medium">작가 소개</h3>
+              <p className="whitespace-pre-line">{profiles?.artist_intro}</p>
+            </div>
           </div>
           <div className="w-[90%] flex flex-col gap-y-2">
             <div className="flex flex-col justify-center">
@@ -189,8 +203,14 @@ export default function App() {
             </div>
 
             {/* 작품 리스트 */}
-            <div className="mt-4">
-              <h3 className="font-medium mb-2">작품 목록</h3>
+            <div className="mt-4 ">
+              <div className="flex flex-row justify-between">
+              <div className="font-medium mb-2">작품 목록</div>
+              <div className="text-gray-500 text-sm underline hover:cursor-pointer" onClick={() => setIsModalOpen(true)}>
+                *활동검증자료
+              </div>
+              </div>
+              
               <div className="grid grid-cols-4 gap-4">
                 {displayedProducts.length > 0 ? (
                   displayedProducts.map((product) => (
@@ -219,7 +239,7 @@ export default function App() {
               </div>
             </div>
           </div>
-          <div className="flex flex-col items-center justify-center my-4">
+          <div className="flex flex-col items-center justify-center my-4 mb-24">
             {hasMoreProducts ? (
               <FaPlusCircle
                 onClick={handleLoadMore}
@@ -235,6 +255,21 @@ export default function App() {
           </div>
         </div>
       )}
+      <Modal isOpen={isModalOpen} onOpenChange={setIsModalOpen}>
+        <ModalContent>
+          <ModalHeader>
+            <h2>활동 검증 자료</h2>
+          </ModalHeader>
+          <ModalBody>
+            <div className="whitespace-pre-line">
+              {profiles?.artist_proof || "활동 검증 자료가 없습니다."}
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="primary" onPress={() => setIsModalOpen(false)}>닫기</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
       <style jsx global>{`
         /* 이미지 클릭 시 하이라이트 제거 */
         img {

@@ -92,6 +92,7 @@ function GalleryListContent() {
             .from("gallery")
             .select("*")
             .order("visitor_rating", { ascending: false })
+            .eq('pick', true)
             .limit(9)
         ]);
         

@@ -33,6 +33,8 @@ import { FaMap } from "react-icons/fa";
 import { FaRegCalendar } from "react-icons/fa";
 import { FaMoneyBill } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { TbClockHour8Filled } from "react-icons/tb";
+import { BsFillDoorClosedFill } from "react-icons/bs";
 
 
 export default function App() {
@@ -514,6 +516,7 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <FaCalendar className="w-3 h-3 text-[#007AFF]" />
                 <span>
+                  기간 :{" "}
                   {exhibition?.start_date?.replace(
                     /(\d{4})(\d{2})(\d{2})/,
                     "$1년$2월$3일"
@@ -528,15 +531,28 @@ export default function App() {
               <div className="flex items-center gap-2">
                 
                 <FaMap className="w-3 h-3 text-[#007AFF]" />
-                <span>{exhibition?.gallery?.address}</span>
+                <span>위치 :{" "}{exhibition?.gallery?.address}</span>
               </div>
               <div className="flex items-center gap-2">
                 <FaMoneyBill className="w-3 h-3 text-[#007AFF]" />
                 <span>
+                  금액 :{" "}
                   {exhibition?.price
                     ?.toString()
                     .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                   원
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TbClockHour8Filled className="w-3 h-3 text-[#007AFF]" />
+                <span>
+                  운영시간 :{" "}{exhibition?.working_hour}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <BsFillDoorClosedFill className="w-3 h-3 text-[#007AFF]" />
+                <span>
+                  휴관일 :{" "}{exhibition?.off_date}
                 </span>
               </div>
             </div>

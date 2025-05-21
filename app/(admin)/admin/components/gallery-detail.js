@@ -289,6 +289,7 @@ export function GalleryDetail({
               isNew: editedGallery.isNew,
               isRecommended: editedGallery.isRecommend,
               isNow: editedGallery.isNow,
+              pick: editedGallery.pick,
             },
           ])
           .select();
@@ -320,6 +321,7 @@ export function GalleryDetail({
             isNew: editedGallery.isNew,
             isRecommended: editedGallery.isRecommend,
             isNow: editedGallery.isNow,
+            pick: editedGallery.pick,
           })
           .eq("id", editedGallery.id);
 
@@ -349,6 +351,7 @@ export function GalleryDetail({
         isNew: false,
         isRecommended: false,
         isNow: false,
+        pick: false,
       });
       // 목록 새로고침 실행
       try {
@@ -423,6 +426,7 @@ export function GalleryDetail({
         isNew: false,
         isRecommended: false,
         isNow: false,
+        pick: false,
       });
       setSelectedGallery(null);
     } catch (error) {
@@ -829,6 +833,22 @@ export function GalleryDetail({
             >
               <div className="flex items-center gap-2">
                 <span>현재 진행 중</span>
+              </div>
+            </Checkbox>
+            <Checkbox
+              id="pick"
+              isSelected={editedGallery.pick || false}
+              onValueChange={(isSelected) =>
+                setEditedGallery({
+                  ...editedGallery,
+                  pick: isSelected,
+                })
+              }
+              size="md"
+              radius="sm"
+            >
+              <div className="flex items-center gap-2">
+                <span>예술랭픽</span>
               </div>
             </Checkbox>
           </div>

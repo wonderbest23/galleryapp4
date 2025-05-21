@@ -187,7 +187,7 @@ export function GallerySlider({ galleries, loading, user, toggleBookmark, isBook
                         {user && isBookmarked && isBookmarked(gallery.id) ? (
                           <FaBookmark className="text-red-500 text-lg" />
                         ) : (
-                          <FaRegBookmark className="text-gray-600 text-lg" />
+                          <FaRegBookmark className="text-gray-300 text-md text-white p-0.5" />
                         )}
                       </div>
                     </div>

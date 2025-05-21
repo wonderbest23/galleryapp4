@@ -32,7 +32,6 @@ import { motion } from "framer-motion";
 
 // 리뷰 컴포넌트 추가
 
-
 export default function App() {
   const [selected, setSelected] = useState("home");
   const [isLoading, setIsLoading] = useState(true);
@@ -73,13 +72,13 @@ export default function App() {
   // 페이드인 애니메이션 설정
   const fadeInVariants = {
     hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1, 
-      transition: { 
+    visible: {
+      opacity: 1,
+      transition: {
         duration: 0.5,
-        ease: "easeInOut"
-      } 
-    }
+        ease: "easeInOut",
+      },
+    },
   };
 
   useEffect(() => {
@@ -115,8 +114,7 @@ export default function App() {
     fetchProduct();
   }, [id]);
 
-
-  console.log('setIsBookmarked',isBookmarked)
+  console.log("setIsBookmarked", isBookmarked);
   useEffect(() => {
     const fetchBookmarkStatus = async () => {
       try {
@@ -146,18 +144,14 @@ export default function App() {
 
   // 모든 데이터가 로드되었는지 확인하는 useEffect
   useEffect(() => {
-    if (
-      dataLoaded.product &&
-      dataLoaded.bookmark 
-    ) {
+    if (dataLoaded.product && dataLoaded.bookmark) {
       setIsLoading(false);
     }
   }, [dataLoaded]);
 
   // 제품 이미지 없는 경우 기본 이미지 설정
-  const productImages = product?.image?.length > 0 
-    ? product.image 
-    : ['/noimage.jpg'];
+  const productImages =
+    product?.image?.length > 0 ? product.image : ["/noimage.jpg"];
 
   // 다음 이미지로 이동
   const nextImage = () => {
@@ -184,7 +178,7 @@ export default function App() {
           description: "북마크 기능을 위해 로그인해주세요",
           variant: "warning",
         });
-        router.push('/mypage?redirect_to=/product/' + id);
+        router.push("/mypage?redirect_to=/product/" + id);
         return;
       }
 
@@ -245,7 +239,7 @@ export default function App() {
           className="w-full h-screen flex justify-center items-center"
         />
       ) : (
-        <motion.div 
+        <motion.div
           className="flex flex-col items-center justify-center"
           initial="hidden"
           animate="visible"
@@ -265,68 +259,60 @@ export default function App() {
           </div>
 
           {/* 이미지 슬라이더 - 커스텀 구현 */}
-          <div className="w-full aspect-square relative">
-            <div className="relative w-full h-full">
-              <Image 
-                src={productImages[currentImageIndex]} 
-                alt={`제품 이미지 ${currentImageIndex + 1}`}
-                className="object-cover rounded-bl-3xl"
-                fill
-                priority
-                unoptimized
-              />
-              
-              {/* 네비게이션 화살표 */}
 
-              
+          <div className="relative w-full h-[40vh] mx-auto">
+            <Image
+              src={productImages[currentImageIndex]}
+              alt={`제품 이미지 ${currentImageIndex + 1}`}
+              className="object-contain rounded-bl-3xl"
+              fill
+              priority
+              unoptimized
+            />
 
-              
-              {/* 이미지 인디케이터 */}
-              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-                {productImages.map((_, index) => (
-                  <div 
-                    key={index}
-                    className={`w-2 h-2 rounded-full ${
-                      index === currentImageIndex ? 'bg-[#007AFF]' : 'bg-white opacity-70'
-                    }`}
-                    onClick={() => setCurrentImageIndex(index)}
-                  />
-                ))}
-              </div>
-            </div>
+            {/* 네비게이션 화살표 */}
           </div>
 
           <div className="w-[90%] h-full mt-4">
             <div className="w-full h-full">
-              <div className="text-[18px] font-bold">{product?.name || '제품명 없음'}</div>
+              <div className="text-[18px] font-bold">
+                {product?.name || "제품명 없음"}
+              </div>
             </div>
             <div className="w-[90%] h-full mt-2">
               <div className="text-[12px] flex flex-col gap-y-1">
                 <div className="flex items-center">
                   <span className="font-medium mr-2 w-[70px]">사이즈:</span>
-                  <span>{product?.size || '정보 없음'}</span>
+                  <span>{product?.size || "정보 없음"}</span>
                 </div>
                 <div className="flex items-center">
                   <span className="font-medium mr-2 w-[70px]">소재:</span>
-                  <span>{product?.make_material || '정보 없음'}</span>
+                  <span>{product?.make_material || "정보 없음"}</span>
                 </div>
                 <div className="flex items-center">
                   <span className="font-medium mr-2 w-[70px]">제작방식:</span>
-                  <span>{product?.make_method || '정보 없음'}</span>
+                  <span>{product?.make_method || "정보 없음"}</span>
                 </div>
                 <div className="flex items-center">
                   <span className="font-medium mr-2 w-[70px]">제작일:</span>
-                  <span>{product?.make_date !== 'null' ? product?.make_date : '정보 없음'}</span>
+                  <span>
+                    {product?.make_date !== "null"
+                      ? product?.make_date
+                      : "정보 없음"}
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <span className="font-medium mr-2 w-[70px]">장르:</span>
-                  <span>{product?.genre !== 'null' ? product?.genre : '정보 없음'}</span>
+                  <span>
+                    {product?.genre !== "null" ? product?.genre : "정보 없음"}
+                  </span>
                 </div>
               </div>
             </div>
             <div className="w-full h-full mt-3 flex flex-row justify-between items-center">
-              
-              <div className="text-[25px] font-bold">₩{product?.price?.toLocaleString()}</div>
+              <div className="text-[25px] font-bold">
+                ₩{product?.price?.toLocaleString()}
+              </div>
               <div className="text-[10px] flex flex-row gap-x-2 items-center">
                 <LuWallet className="text-black text-lg" />
                 <p>진위성 인증서</p>
@@ -344,7 +330,9 @@ export default function App() {
               />
             </div>
             <div className="flex flex-col">
-              <p className="text-[15px] font-bold">{product?.artist_id?.artist_name}</p>
+              <p className="text-[15px] font-bold">
+                {product?.artist_id?.artist_name}
+              </p>
               <p className="text-[10px]">{product?.artist_id?.artist_birth}</p>
             </div>
           </div>
@@ -352,20 +340,28 @@ export default function App() {
             <div className="flex flex-col justify-center text-[14px] mt-2">
               <p>{product?.artist_id?.artist_proof}</p>
             </div>
-            
-            
           </div>
           <div className="w-[90%] flex flex-row justify-between items-center gap-x-4 my-4 h-14 mb-20">
-            <Button isIconOnly className="bg-gray-200 w-[20%] h-full text-[20px] font-bold" onPress={toggleBookmark}>
-              {isBookmarked ? <FaBookmark className="text-red-500" /> : <FaRegBookmark />}
+            <Button
+              isIconOnly
+              className="bg-gray-200 w-[20%] h-full text-[20px] font-bold"
+              onPress={toggleBookmark}
+            >
+              {isBookmarked ? (
+                <FaBookmark className="text-red-500" />
+              ) : (
+                <FaRegBookmark />
+              )}
             </Button>
-            <Button 
+            <Button
               className="bg-[#007AFF] text-white w-[80%] h-full text-[16px] font-bold"
               onPress={() => {
                 if (userId) {
-                  router.push(`/chat?hostId=${hostId}&userId=${userId}&productId=${id}`);
+                  router.push(
+                    `/chat?hostId=${hostId}&userId=${userId}&productId=${id}`
+                  );
                 } else {
-                  router.push('/mypage?redirect_to=/product/' + id);
+                  router.push("/mypage?redirect_to=/product/" + id);
                   addToast({
                     title: "로그인이 필요합니다",
                     description: "구매 연결을 위해 로그인해주세요",
@@ -377,7 +373,6 @@ export default function App() {
               구매연결
             </Button>
           </div>
-            
         </motion.div>
       )}
     </div>

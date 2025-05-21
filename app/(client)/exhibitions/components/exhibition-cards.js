@@ -68,7 +68,7 @@ export function ExhibitionCards({
               variants={cardVariants}
               className="w-full"
             >
-              <Card classNames={{body: 'px-2 py-1'}} shadow="sm">
+              <Card classNames={{body: 'px-2 py-1 '}} shadow="sm">
                 <Link href={`/exhibition/${exhibition.id}`}>
                   <CardBody className="grid grid-cols-7 items-center justify-center gap-x-3">
                     <div className="col-span-2">
@@ -127,6 +127,9 @@ export function ExhibitionCards({
                           
                           {exhibition.review_average === 0 ? "1.0" : exhibition.review_average?.toFixed(1) || "1.0"} (
                           {exhibition.review_count || 0})
+                        </div>
+                        <div className="flex flex-row gap-1 text-[10px]">
+                          <span className="font-bold">예술랭픽:</span> {exhibition.isPick ? 'True' : 'False'}
                         </div>
                       </div>
                     </div>

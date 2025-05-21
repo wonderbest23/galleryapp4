@@ -371,6 +371,8 @@ export default function ExhibitionLayout({ exhibitions, user, bookmarks, toggleB
                 classNames={{base: 'm-1'}} 
                 shadow="sm" 
                 radius="lg"
+                isPressable
+                onPress={() => router.push(`/artist/${artist.id}`)}
               >
                 <CardBody className="p-0 relative w-full aspect-square">
                   <Image 
