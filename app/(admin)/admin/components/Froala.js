@@ -203,8 +203,8 @@ const FroalaEditorComponent = ({
       ['undo', 'redo']
     ],
     fontSizeSelection: true,
-    fontSizeDefaultSelection: '12',
-    fontSize: ['12', '14'],
+    fontSizeDefaultSelection: '16',
+    fontSize: ['16', '20'],
     pastePlain: true,
     // 이미지 업로드 설정
     imageUploadURL: null, // 기본 업로드 URL 비활성화
