@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { ExhibitionList } from "../components/exhibition-list";
 import { ExhibitionDetail } from "../components/exhibition-detail";
-import { Button, Input, Pagination, Switch, Textarea } from "@heroui/react";
+import { Button, Input, Pagination, Switch, Textarea,Spinner} from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { createClient } from "@/utils/supabase/client";
 import { addToast } from "@heroui/react";
 import useUserInfoStore from "../store/userInfo";
+
 import dynamic from "next/dynamic";
 
 import { v4 as uuidv4 } from "uuid";
@@ -15,7 +16,7 @@ const FroalaEditor = dynamic(
   () => import("@/app/(admin)/admin/components/Froala"),
   {
     ssr: false,
-    loading: () => <p>에디터 로딩 중...</p>,
+    loading: () => <Spinner color='primary' variant='wave' />,
   }
 );
 
@@ -722,9 +723,7 @@ export default function Exhibition() {
                     rows={3}
                   /> */}
                   <div className="md:col-span-2">
-                    <label className="text-small font-medium block mb-2">
-                      추가 정보
-                    </label>
+                    
 
                       <FroalaEditor
                         value={selectedExhibition.add_info || ""}

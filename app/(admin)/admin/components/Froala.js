@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { createClient } from '@/utils/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
+import { Spinner } from '@heroui/react';
 
 // Supabase 클라이언트 설정
 const supabase = createClient();
@@ -42,7 +43,7 @@ const getFroalaEditor = (setFroalaError) =>
     },
     {
       ssr: false,
-      loading: () => <p>에디터 로딩 중...</p>
+      loading: () => <Spinner color='primary' variant='wave' />
     }
   );
 
