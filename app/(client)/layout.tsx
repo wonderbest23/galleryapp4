@@ -73,9 +73,9 @@ export default function RootLayout({
               </div>
 
               {/* 모바일 앱 내용 - 우측 1/3 지점에 위치 */}
-              <div className="absolute right-[33%] transform translate-x-1/2 h-screen w-full max-w-md bg-white overflow-hidden shadow-2xl">
+              <div className="absolute right-[33%] transform translate-x-1/2 h-screen w-full w-[390px] bg-white overflow-hidden shadow-2xl">
                 {/* 앱 내용 */}
-                <div className=" overflow-y-auto h-full w-full max-w-md scrollbar-hide">
+                <div className=" overflow-y-auto h-full w-full scrollbar-hide">
                   <main className="w-full h-full pb-16">
                     <Navbar />
                     
