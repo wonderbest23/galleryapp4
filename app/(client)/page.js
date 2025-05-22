@@ -522,7 +522,7 @@ export default function Home() {
               <div className="mb-3">
                 <h3 className="font-semibold mb-1">1. 환불 가능 기간</h3>
                 <ul className="list-disc pl-5 space-y-1">
-                  <li>관람 1일 전까지 취소 시: 전액 환불 가능</li>
+                  <li>관람 3일 전까지 취소 시: 전액 환불 가능</li>
                   <li>관람 당일 취소: 환불 불가</li>
                 </ul>
               </div>
@@ -531,7 +531,7 @@ export default function Home() {
                 <h3 className="font-semibold mb-1">2. 환불 수수료</h3>
                 <ul className="list-disc pl-5 space-y-1">
                   <li>관람 3일 전까지: 100% 환불</li>
-                  <li>관람 2일 전 ~ 1일 전: 취소 수수료 10% 차감 후 환불</li>
+                  <li>관람 2일 전 ~ 1일 전: 환불 불가</li>
                   <li>관람 당일 및 이후: 환불 불가</li>
                 </ul>
               </div>
@@ -540,7 +540,7 @@ export default function Home() {
                 <h3 className="font-semibold mb-1">3. 교환/변경</h3>
                 <ul className="list-disc pl-5 space-y-1">
                   <li>
-                    날짜 및 시간 변경은 관람 2일 전까지 1회에 한하여 가능합니다.
+                    날짜 및 시간 변경은 관람 7일 전까지 1회에 한하여 가능합니다.
                   </li>
                   <li>
                     예매자 본인의 요청에 한해 처리되며, 타인 명의로 변경은
@@ -594,7 +594,7 @@ export default function Home() {
                 </li>
                 <li>티켓은 1인 1매 기준이며, 중복 사용이 불가능합니다.</li>
                 <li>
-                  전시 관람 시, 티켓과 함께 신분증(또는 QR코드)을 제시하셔야
+                  전시 관람 시, 마이페이지의 티켓과 함께 신분증(또는 QR코드)을 제시하셔야
                   입장 가능합니다.
                 </li>
                 <li>
