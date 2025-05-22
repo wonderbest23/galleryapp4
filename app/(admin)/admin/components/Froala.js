@@ -211,7 +211,7 @@ const FroalaEditorComponent = ({
     ],
     fontSizeSelection: true,
     fontSizeDefaultSelection: '12',
-    fontSize: ['8', '10', '12', '14', '16', '18', '20', '24', '30', '36', '48', '60', '72', '96'],
+    fontSize: ['12', '14'],
     // 이미지 업로드 설정
     imageUploadURL: null, // 기본 업로드 URL 비활성화
     imageUploadToS3: false, // S3 업로드 비활성화
