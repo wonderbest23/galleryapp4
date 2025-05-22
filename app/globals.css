@@ -64,15 +64,13 @@
 .slick-slide > div {
   height: 100%;
 }
-/* ↓ 기존 파일 끝까지 온 뒤, 바로 아래에 추가하세요 */
-
+/* 텍스트편집기 작성화면이 실제화면과 동일하게 커스터마이징 */
 .froala-editor-container {
-  /* iPhone 너비 고정 */
-  width: 375px !important;
-  margin: 0 auto !important; /* 가로 중앙 정렬 */
+  width: 100%       !important; /* 화면 폭 꽉 채우되 */
+  max-width: 390px !important; /* 390px 이하로 제한 */
+  margin: 0 auto   !important; /* 중앙 정렬 */
 }
 
 .fr-element {
-  /* 컨테이너 폭 가득 채우기 */
-  width: 100% !important;
+  width: 100%      !important; /* 본문 내용도 컨테이너 폭에 맞추기 */
 }
