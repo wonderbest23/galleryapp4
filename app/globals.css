@@ -64,3 +64,15 @@
 .slick-slide > div {
   height: 100%;
 }
+/* ↓ 기존 파일 끝까지 온 뒤, 바로 아래에 추가하세요 */
+
+.froala-editor-container {
+  /* iPhone 너비 고정 */
+  width: 375px !important;
+  margin: 0 auto !important; /* 가로 중앙 정렬 */
+}
+
+.fr-element {
+  /* 컨테이너 폭 가득 채우기 */
+  width: 100% !important;
+}
