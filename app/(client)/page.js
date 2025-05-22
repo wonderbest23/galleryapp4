@@ -552,6 +552,7 @@ export default function Home() {
               <div className="mb-3">
                 <h3 className="font-semibold mb-1">4. 환불 방법</h3>
                 <ul className="list-disc pl-5 space-y-1">
+                  <li>마이페이지-고객센터 혹은 카카오채널 '아트앤브릿지' 를 통해 환불신청 가능합니다.</li>
                   <li>결제 수단에 따라 영업일 기준 3~7일 내 환불됩니다.</li>
                   <li>
                     신용카드 결제 시, 카드사 사정에 따라 환불 일자가 상이할 수
