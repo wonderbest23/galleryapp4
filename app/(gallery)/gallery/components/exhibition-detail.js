@@ -223,7 +223,7 @@ export function ExhibitionDetail({
         <Input
           label="전시회명"
           value={editedExhibition.contents || ""}
-          onValueChange={(value) => handleFieldChange("name", value)}
+          onValueChange={(value) => handleFieldChange("contents", value)}
           isReadOnly={isReadOnly}
         />
 
