@@ -4,6 +4,16 @@ import React, { useState, useEffect } from "react";
 import { Input, Button, Textarea, Checkbox, addToast } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { createClient } from "@/utils/supabase/client";
+import dynamic from "next/dynamic";
+
+// Froala 에디터를 동적으로 임포트
+const FroalaEditor = dynamic(
+  () => import("@/app/(admin)/admin/components/Froala"),
+  {
+    ssr: false,
+    loading: () => <p>에디터 로딩 중...</p>
+  }
+);
 
 export function ExhibitionDetail({
   galleryInfo,
@@ -122,7 +132,7 @@ export function ExhibitionDetail({
         }
       }
     } catch (error) {
-      // console.error("전시회 저장 중 오류 발생:", error);
+      console.log("전시회 저장 중 오류 발생:", error);
       addToast({
         title: "전시회 저장 중 오류 발생",
         description: "전시회 정보 저장 중 오류가 발생했습니다.",
@@ -374,14 +384,19 @@ export function ExhibitionDetail({
           </div>
         </div>
 
-        <Textarea
-          label="추가 정보"
-          value={editedExhibition.add_info || ""}
-          onValueChange={(value) => handleFieldChange("add_info", value)}
-          isReadOnly={isReadOnly}
-          className="md:col-span-2"
-          placeholder="전시회에 대한 상세 정보를 입력하세요."
-        />
+        <div className="md:col-span-2">
+          <label className="text-small font-medium block mb-2">추가 정보</label>
+          {isReadOnly ? (
+            <div className="froala-content" dangerouslySetInnerHTML={{ __html: editedExhibition.add_info || "" }} />
+          ) : (
+            <FroalaEditor 
+              value={editedExhibition.add_info || ""} 
+              onChange={(content) => handleFieldChange("add_info", content)}
+              placeholder="전시회에 대한 상세 정보를 입력하세요."
+              height={300}
+            />
+          )}
+        </div>
       </div>
 
       {!isNew && (

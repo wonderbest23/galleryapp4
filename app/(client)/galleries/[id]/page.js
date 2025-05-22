@@ -572,10 +572,10 @@ export default function App() {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Card className="my-4 mx-2">
+                  <Card className="my-4 mx-2 p-2">
                     <CardBody>
                       <h3 className="text-lg font-bold mb-2">시설 안내</h3>
-                      <p>{gallery?.add_info}</p>
+                      <p className="whitespace-pre-line">{gallery?.add_info}</p>
                     </CardBody>
                   </Card>
                 </motion.div>

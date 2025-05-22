@@ -3,6 +3,7 @@ import React from "react";
 import { Input, Button, Textarea, Checkbox, addToast } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { QRCodeSVG } from "qrcode.react";
+import Froala from "./Froala";
 
 import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
@@ -609,7 +610,7 @@ export function GalleryDetail({
               onValueChange={(value) =>
                 setEditedGallery({ ...editedGallery, account_email: value })
               }
-              isDisabled={true}
+              isReadOnly={true}
             />
             <div className="flex flex-col justify-center items-center col-span-2 md:col-span-1">
               <Button
@@ -780,14 +781,15 @@ export function GalleryDetail({
           }
           
         />
-        <Textarea
-          className="col-span-2 md:col-span-1"
+        <h1>추가 정보</h1>
+        <Froala
           label="추가 정보"
           value={editedGallery.add_info}
-          onValueChange={(value) =>
-            setEditedGallery({ ...editedGallery, add_info: value })
-          }
-          
+          onValueChange={(value) => {
+            console.log("Froala 값 변경됨:", value);
+            setEditedGallery({ ...editedGallery, add_info: value });
+          }}
+          className="col-span-2 w-full"
         />
 
         <div className="flex flex-col gap-4 md:col-span-2 mt-2">

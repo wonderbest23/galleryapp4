@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { QRCodeSVG } from "qrcode.react";
-
+import Froala from "./Froala";
 export function ExhibitionDetail({
   exhibition,
   onUpdate,
@@ -36,9 +36,12 @@ export function ExhibitionDetail({
   const qrRef = useRef(null);
 
   useEffect(() => {
-    // 전시회 ID 또는 사진이 변경된 경우 실행
-    setEditedExhibition(exhibition);
-    setPreviewUrl(exhibition.photo || '');
+    // exhibition.id가 바뀔 때만 초기화 (동일 id면 유지)
+    if (prevExhibitionIdRef.current !== exhibition.id) {
+      setEditedExhibition(exhibition);
+      setPreviewUrl(exhibition.photo || '');
+      prevExhibitionIdRef.current = exhibition.id;
+    }
 
     // 새 전시회이거나 다른 전시회로 전환된 경우에만 편집 모드 설정
     if (!exhibition.id) {
@@ -58,6 +61,11 @@ export function ExhibitionDetail({
       setQrValue(`${origin}/review/exhibition/${exhibition.id}`);
     }
   }, [exhibition, exhibition.photo]);
+
+  // add_info 값 변경 감지
+  useEffect(() => {
+    console.log("editedExhibition.add_info 값 변경됨:", editedExhibition.add_info);
+  }, [editedExhibition.add_info]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -136,6 +144,7 @@ export function ExhibitionDetail({
   const handleSave = async () => {
     // 편집 모드가 아닌 경우에는 바로 저장 진행
     if (!isEditing && !isNewExhibition) {
+      console.log("전시회 저장 시작 - 추가 정보:", editedExhibition.add_info);
       // 이미지가 선택되었다면 업로드부터 진행
       let photoUrl = editedExhibition.photo;
       if (imageFile) {
@@ -596,6 +605,7 @@ export function ExhibitionDetail({
     image.src = svgURL;
   };
 
+  console.log("editedExhibition", editedExhibition);
   return (
     <div className="space-y-6 ">
       <div className="flex items-center justify-between">
@@ -815,13 +825,15 @@ export function ExhibitionDetail({
           }
           className="col-span-2 md:col-span-1"
         />
-        <Textarea
+        <h1>추가 정보</h1>
+        <Froala
           label="추가 정보"
           value={editedExhibition.add_info}
-          onValueChange={(value) =>
-            setEditedExhibition({ ...editedExhibition, add_info: value })
-          }
-          className="col-span-2 md:col-span-1"
+          onChange={(value) => {
+            console.log("Froala 값 변경됨:", value);
+            setEditedExhibition({ ...editedExhibition, add_info: value });
+          }}
+          className="col-span-2 w-full"
         />
 
         <div className="flex flex-col gap-4 md:col-span-2 mt-2">

@@ -8,7 +8,16 @@ import { Icon } from "@iconify/react";
 import { createClient } from "@/utils/supabase/client";
 import { addToast } from "@heroui/react";
 import useUserInfoStore from "../store/userInfo";
-import { v4 as uuidv4 } from 'uuid';
+import dynamic from "next/dynamic";
+
+import { v4 as uuidv4 } from "uuid";
+const FroalaEditor = dynamic(
+  () => import("@/app/(admin)/admin/components/Froala"),
+  {
+    ssr: false,
+    loading: () => <p>에디터 로딩 중...</p>,
+  }
+);
 
 // 날짜 범위를 포맷팅하는 함수
 const formatDateRange = (startDate, endDate) => {
@@ -25,8 +34,8 @@ const formatDateRange = (startDate, endDate) => {
     // YYYY.MM.DD 형식으로 포맷팅
     const formatDate = (date) => {
       const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
       return `${year}.${month}.${day}`;
     };
 
@@ -61,15 +70,15 @@ export default function Exhibition() {
         const { data, error } = await supabase
           .from("gallery")
           .select("*")
-          .eq("url", userInfo?.url) 
+          .eq("url", userInfo?.url)
           .single();
 
-      if (error) {
-        console.log("갤러리 정보를 가져오는 중 오류 발생:", error);
-      } else {
-        setGalleryInfo(data);
-      }
-    };
+        if (error) {
+          console.log("갤러리 정보를 가져오는 중 오류 발생:", error);
+        } else {
+          setGalleryInfo(data);
+        }
+      };
 
       fetchGalleryInfo();
     }
@@ -136,19 +145,19 @@ export default function Exhibition() {
       setIsCreatingNew(false);
     }
   };
-  console.log('userInfo',userInfo)
+  console.log("userInfo", userInfo);
   // 신규 전시회 저장 핸들러
   const handleSaveNew = async (newExhibition) => {
     try {
       // 날짜 값 처리 - 반드시 end_date도 포함되도록 확인
       const startDate = newExhibition.start_date || null;
       const endDate = newExhibition.end_date || null;
-      
+
       console.log("신규 Supabase로 전송할 날짜 데이터:", {
         start_date: startDate,
-        end_date: endDate
+        end_date: endDate,
       });
-      
+
       // Supabase에 새 전시회 데이터 저장 - end_date 확인
       const { data, error } = await supabase
         .from("exhibition")
@@ -221,11 +230,12 @@ export default function Exhibition() {
       }
 
       // 파일 형식 제한
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
       if (!validTypes.includes(file.type)) {
         addToast({
           title: "업로드 오류",
-          description: "JPG, PNG, GIF, WEBP 형식의 이미지만 업로드할 수 있습니다.",
+          description:
+            "JPG, PNG, GIF, WEBP 형식의 이미지만 업로드할 수 있습니다.",
           color: "danger",
         });
         return;
@@ -235,16 +245,16 @@ export default function Exhibition() {
       setIsLoading(true);
 
       // 파일 이름은 고유하게 생성 (UUID + 원본 파일명)
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${uuidv4()}.${fileExt}`;
       const filePath = `exhibition/${fileName}`;
-      
+
       // Supabase storage에 이미지 업로드
       const { data, error } = await supabase.storage
-        .from('exhibition')
+        .from("exhibition")
         .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
+          cacheControl: "3600",
+          upsert: false,
         });
 
       if (error) {
@@ -253,11 +263,11 @@ export default function Exhibition() {
 
       // 업로드된 이미지의 공개 URL 생성
       const { data: publicUrlData } = supabase.storage
-        .from('exhibition')
+        .from("exhibition")
         .getPublicUrl(filePath);
 
       // 이미지 URL을 전시회 정보에 저장
-      handleFieldChange('photo', publicUrlData.publicUrl);
+      handleFieldChange("photo", publicUrlData.publicUrl);
 
       addToast({
         title: "업로드 성공",
@@ -285,18 +295,18 @@ export default function Exhibition() {
       // 날짜 값 처리 - 반드시 end_date도 포함되도록 확인
       const startDate = selectedExhibition.start_date || null;
       const endDate = selectedExhibition.end_date || null;
-      
+
       // 디버깅을 위한 로그 추가
       console.log("Supabase로 전송할 날짜 데이터:", {
         start_date: startDate,
-        end_date: endDate
+        end_date: endDate,
       });
-      
+
       // DB 업데이트 전 end_date가 있는지 확인
       if (!endDate) {
         console.warn("end_date가 비어 있습니다. 업데이트 계속 진행합니다.");
       }
-      
+
       // Supabase에 업데이트 데이터 저장
       const { error } = await supabase
         .from("exhibition")
@@ -400,9 +410,8 @@ export default function Exhibition() {
     }
   };
 
-  console.log('userInfo:',userInfo)
-  console.log("selectedExhibition:",selectedExhibition)
-  
+  console.log("userInfo:", userInfo);
+  console.log("selectedExhibition:", selectedExhibition);
 
   return (
     <div className="w-full h-full flex flex-col gap-4 py-20">
@@ -474,8 +483,11 @@ export default function Exhibition() {
                         </div>
                       </td>
                       <td className="p-3 ">
-                        {exhibition.start_date && exhibition.end_date 
-                          ? formatDateRange(exhibition.start_date, exhibition.end_date)
+                        {exhibition.start_date && exhibition.end_date
+                          ? formatDateRange(
+                              exhibition.start_date,
+                              exhibition.end_date
+                            )
                           : "날짜 미설정"}
                       </td>
                     </tr>
@@ -532,7 +544,6 @@ export default function Exhibition() {
               {/* 직접 편집 가능한 폼 영역 */}
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       전시회명
@@ -573,8 +584,13 @@ export default function Exhibition() {
                         </div>
                       ) : (
                         <>
-                          <Icon icon="lucide:image" className="text-4xl text-gray-400 mb-2" />
-                          <p className="text-sm text-gray-500">이미지 미리보기</p>
+                          <Icon
+                            icon="lucide:image"
+                            className="text-4xl text-gray-400 mb-2"
+                          />
+                          <p className="text-sm text-gray-500">
+                            이미지 미리보기
+                          </p>
                         </>
                       )}
                     </div>
@@ -587,9 +603,17 @@ export default function Exhibition() {
                         className="hidden"
                       />
                       <label htmlFor="photo-upload">
-                        <Button as="span" color="primary" variant="flat" size="sm" className="flex items-center">
+                        <Button
+                          as="span"
+                          color="primary"
+                          variant="flat"
+                          size="sm"
+                          className="flex items-center"
+                        >
                           <Icon icon="lucide:upload" className="mr-1" />
-                          {selectedExhibition.photo ? '이미지 변경' : '이미지 업로드'}
+                          {selectedExhibition.photo
+                            ? "이미지 변경"
+                            : "이미지 업로드"}
                         </Button>
                       </label>
                     </div>
@@ -621,8 +645,14 @@ export default function Exhibition() {
                       }
                       className="w-full"
                       placeholder="YYYYmmdd 형식 (예: 20240630)"
-                      color={!selectedExhibition.end_date ? "danger" : "default"}
-                      helperText={!selectedExhibition.end_date ? "종료일은 필수 입력 항목입니다" : ""}
+                      color={
+                        !selectedExhibition.end_date ? "danger" : "default"
+                      }
+                      helperText={
+                        !selectedExhibition.end_date
+                          ? "종료일은 필수 입력 항목입니다"
+                          : ""
+                      }
                     />
                   </div>
                 </div>
@@ -683,14 +713,28 @@ export default function Exhibition() {
                   <label className="block text-sm font-medium mb-1">
                     추가 정보
                   </label>
-                  <Textarea
+                  {/* <Textarea
                     value={selectedExhibition.add_info || ""}
                     onChange={(e) =>
                       handleFieldChange("add_info", e.target.value)
                     }
                     className="w-full"
                     rows={3}
-                  />
+                  /> */}
+                  <div className="md:col-span-2">
+                    <label className="text-small font-medium block mb-2">
+                      추가 정보
+                    </label>
+
+                      <FroalaEditor
+                        value={selectedExhibition.add_info || ""}
+                        onChange={(content) =>
+                          handleFieldChange("add_info", content)
+                        }
+                        placeholder="전시회에 대한 상세 정보를 입력하세요."
+                        height={300}
+                      />
+                  </div>
                 </div>
 
                 <div>

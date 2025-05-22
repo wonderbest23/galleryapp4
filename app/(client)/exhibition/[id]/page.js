@@ -648,7 +648,7 @@ export default function App() {
                   <Card className="my-4 mx-2 p-2">
                     <CardBody>
                       <h3 className="text-lg font-bold mb-2">전시회 안내</h3>
-                      <p>{exhibition?.add_info}</p>
+                      <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: exhibition?.add_info }}></div>
                     </CardBody>
                   </Card>
                 </motion.div>
