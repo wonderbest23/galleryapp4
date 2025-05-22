@@ -82,13 +82,6 @@ const FroalaEditorComponent = ({
     }
   }, [editorRef.current]);
 
-  useEffect(() => {
-    if (editorRef.current && editorRef.current.editor) {
-      // value가 바뀔 때 에디터 내용 직접 갱신
-      editorRef.current.editor.html.set(value || '');
-    }
-  }, [value]);
-
   const handleModelChange = (model) => {
     console.log("Froala 에디터 내용 변경됨:", model);
     setEditorContent(model);
