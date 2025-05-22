@@ -236,7 +236,7 @@ export function ExhibitionDetail({
             handleFieldChange("start_date", numericValue);
           }}
           isReadOnly={isReadOnly}
-          placeholder="예시)2025년05월01일 -> 20250501 (공백없이숫자만입력)"
+          placeholder="2025년05월01일 -> 20250501"
           description="예시)2025년05월01일 -> 20250501 (공백없이숫자만입력)"
         />
 
@@ -249,8 +249,8 @@ export function ExhibitionDetail({
             handleFieldChange("end_date", numericValue);
           }}
           isReadOnly={isReadOnly}
-          placeholder="YYYYmmdd 형식으로 입력 (예: 20240131)"
-          description="8자리 숫자로 입력 (YYYYMMDD)"
+          placeholder="2025년05월01일 -> 20250501"
+          description="예시)2025년05월01일 -> 20250501 (공백없이숫자만입력)"
         />
 
         <Input
