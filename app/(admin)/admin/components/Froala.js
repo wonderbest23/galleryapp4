@@ -143,7 +143,10 @@ const FroalaEditorComponent = ({
               
               if (imageUrl) {
                 // 업로드된 이미지 URL을 에디터에 삽입
-                editor.image.insert(imageUrl, null, null, editor.image.get());
+                editor.html.insert(
+                  `<img src="${imageUrl}" alt="업로드된 이미지" style="max-width:100%;" /><p></p>`,
+                  true
+                );
               }
             }
           } catch (error) {
