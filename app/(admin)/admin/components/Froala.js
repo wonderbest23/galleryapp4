@@ -143,7 +143,7 @@ const FroalaEditorComponent = ({
               
               if (imageUrl) {
                 // 업로드된 이미지 URL을 에디터에 삽입
-                editor.image.insert(imageUrl, null, null, editor.image.get());
+                editor.image.insert(imageUrl, true, null, editor.image.get());
               }
             }
           } catch (error) {
