@@ -294,7 +294,7 @@ const FroalaEditorComponent = ({
   };
 
   return (
-    <div className="froala-editor-container col-span-2">
+    <div className="froala-editor-container col-span-2 w-full max-w-[390px] mx-auto">
       {froalaError ? (
         <p>에디터를 불러오는 데 실패했습니다. 새로고침 해주세요.</p>
       ) : editorReady && FroalaEditor && typeof FroalaEditor === 'function' ? (
