@@ -76,7 +76,6 @@ export default function AdminLayout({ children }) {
           <main className="lg:pl-64">
             <div className="w-full mx-auto md:max-w-[90%] max-w-[95%] h-full">
               <Providers>{children}</Providers>
-             <div className="min-w-[390px] mx-auto h-full">
             </div>
           </main>
         </div>
