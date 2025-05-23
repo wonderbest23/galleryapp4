@@ -190,7 +190,7 @@ export default function Exhibition() {
       setSelectedKey(new Set([savedExhibition.id.toString()]));
 
       // 데이터 새로고침
-      loadExhibitions();
+      window.location.reload(); 
     } catch (error) {
       console.error("전시회 저장 중 오류 발생:", error);
     }
