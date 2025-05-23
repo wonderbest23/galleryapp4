@@ -637,7 +637,7 @@ export default function App() {
             </div>
 
             {/* 탭 컨텐츠 */}
-            <div className="px-2 w-full">
+            <div className="px-2 w-full flex justify-center">
               {selected === "home" && (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -645,7 +645,7 @@ export default function App() {
                   transition={{ duration: 0.3 }}
                   key="home-tab"
                 >
-                  <Card className="my-4 mx-2 p-2">
+                  <Card className="my-4 p-2 w-full max-w-[390px]">
                     <CardBody>
                       <h3 className="text-lg font-bold mb-2">전시회 안내</h3>
                       <div className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: exhibition?.add_info }}></div>
