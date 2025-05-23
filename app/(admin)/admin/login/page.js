@@ -26,7 +26,7 @@ export default function App({searchParams}) {
         <h1 className="text-2xl font-bold text-center">관리자 로그인</h1>
         <div className="text-center">
             <p>이용문의 : rena35200@gmail.com </p>
-            <p>카카오톡 dkfks33</p>
+            <p>경고(!):사이트관리자 페이지입니다. 좌측상단메뉴를 클릭후 갤러리페이지로 로그인하세요.</p>
         </div>
         <Input
           isRequired
