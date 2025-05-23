@@ -384,7 +384,7 @@ export function ExhibitionDetail({
           </div>
         </div>
 
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 w-full max-w-[390px] mx-auto">
           <label className="text-small font-medium block mb-2">추가 정보</label>
           {isReadOnly ? (
             <div className="froala-content" dangerouslySetInnerHTML={{ __html: editedExhibition.add_info || "" }} />
