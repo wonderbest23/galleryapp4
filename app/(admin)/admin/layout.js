@@ -73,12 +73,10 @@ export default function AdminLayout({ children }) {
           </div>
 
           {/* 메인 콘텐츠 */}
-          {/* ① 가로 스크롤 허용 */}
-          <div className="w-full overflow-x-auto">
-            {/* ② 최소 너비 390px 고정 */}
+          <main className="lg:pl-64">
+            <div className="w-full mx-auto md:max-w-[90%] max-w-[95%] h-full">
+              <Providers>{children}</Providers>
              <div className="min-w-[390px] mx-auto h-full">
-               <Providers>{children}</Providers>
-              </div>
             </div>
           </main>
         </div>
