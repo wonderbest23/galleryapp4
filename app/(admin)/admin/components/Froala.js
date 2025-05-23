@@ -297,7 +297,7 @@ const FroalaEditorComponent = ({
     <div className="froala-editor-container col-span-2
      w-[390px]    
      sm:w-full
-     mx-auto">
+     mx-auto
       {froalaError ? (
         <p>에디터를 불러오는 데 실패했습니다. 새로고침 해주세요.</p>
       ) : editorReady && FroalaEditor && typeof FroalaEditor === 'function' ? (
