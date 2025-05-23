@@ -25,8 +25,17 @@ export default function App({searchParams}) {
       <div className="flex flex-col gap-4 md:max-w-[30%] w-full max-w-[80%]">
         <h1 className="text-2xl font-bold text-center">관리자 로그인</h1>
         <div className="text-center">
-            <p>이용문의 : rena35200@gmail.com </p>
-            <p>경고(!):사이트관리자 페이지입니다. 좌측상단메뉴를 클릭후 갤러리페이지로 로그인하세요.</p>
+            <p>(!)경고 해당사이트에 접근하지마세요. </p>
+            <p>
+              <a 
+                href="https://www.artandbridge.com/gallery/login"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-red-600 underline cursor-pointer"
+               >
+                갤러리페이지로 이동하기(클릭)
+             </a>
+           </p>
         </div>
         <Input
           isRequired
