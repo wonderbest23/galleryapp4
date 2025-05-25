@@ -116,11 +116,13 @@ export default function MagazineList() {
                             {new Date(item.created_at).getDate()}일
                           </p>
                         </div>
-                        <Image
-                          alt="Card thumbnail"
-                          className="object-cover w-24 h-24 rounded-3xl"
-                          src={item.photo[0].url}
-                        />
+                        {item.photo?.[0]?.url && (
+                          <Image
+                            alt="Card thumbnail"
+                            className="object-cover w-24 h-24 rounded-3xl"
+                            src={item.photo[0].url}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>

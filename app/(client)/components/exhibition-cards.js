@@ -42,7 +42,7 @@ const SkeletonCard = ({ index }) => (
 const ExhibitionCard = ({ exhibition, index, isBookmarked, toggleBookmark }) => (
   <motion.div
     layout
-    key={`exhibition-${exhibition.id}`}
+    key={`${exhibition.id}-${index}`}
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ 
@@ -57,7 +57,7 @@ const ExhibitionCard = ({ exhibition, index, isBookmarked, toggleBookmark }) => 
         className="w-full h-full"
         shadow="sm"
       >
-        <CardBody classNames={{ body: "p-0" }} className="flex gap-4 flex-row w-full h-full justify-center items-center ">
+        <CardBody className="p-0 flex gap-4 flex-row w-full h-full justify-center items-center ">
           <div className="flex aspect-square h-20 rounded justify-center items-center relative">
             <Image
               src={exhibition.photo || "/images/noimage.jpg"}
@@ -293,7 +293,13 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
 
         // 데이터 설정 (추가 또는 덮어쓰기)
         if (append) {
-          setExhibitions((prev) => [...prev, ...(data || [])]);
+          setExhibitions((prev) => {
+            const merged = [...prev, ...(data || [])];
+            const uniq = Array.from(
+              merged.reduce((m, ex) => m.set(ex.id, ex), new Map()).values()
+            );
+            return uniq;
+          });
         } else {
           setExhibitions(data || []);
         }
@@ -352,7 +358,7 @@ export function ExhibitionCards({ exhibitionCategory, user }) {
               >
                 {exhibitions.map((exhibition, index) => (
                   <ExhibitionCard
-                    key={exhibition.id}
+                    key={`${exhibition.id}-${index}`}
                     exhibition={exhibition}
                     index={index}
                     isBookmarked={isBookmarked}

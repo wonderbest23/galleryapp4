@@ -56,6 +56,7 @@ export function ExhibitionDetail({
   );
   const [isSaving, setIsSaving] = useState(false);
   const supabase = createClient();
+  const [step, setStep] = useState(1);
 
   // selectedKey나 exhibition이 변경될 때 필요한 데이터 로드
   useEffect(() => {
@@ -198,10 +199,12 @@ export function ExhibitionDetail({
         </h2>
         {!isReadOnly && (
           <div className="flex gap-2">
-            <Button color="primary" onPress={handleSave} isLoading={isSaving}>
-              <Icon icon="lucide:save" className="text-lg mr-1" />
-              {isNew ? "추가" : "저장"}
-            </Button>
+            {(!isNew || step === 2) && (
+              <Button color="primary" onPress={handleSave} isLoading={isSaving}>
+                <Icon icon="lucide:save" className="text-lg mr-1" />
+                {isNew ? "추가" : "저장"}
+              </Button>
+            )}
             {!isNew && (
               <Button color="danger" variant="flat" onPress={handleDelete}>
                 <Icon icon="lucide:trash" className="mr-1" />
@@ -214,246 +217,480 @@ export function ExhibitionDetail({
           </div>
         )}
       </div>
-
-      <div className="grid grid-cols-1 gap-4">
-        <Input
-          label="갤러리명"
-          value={galleryInfo?.name || ""}
-          onValueChange={(value) => handleFieldChange("name", value)}
-          isDisabled
-        />
-
-        <Input
-          label="전시회명"
-          value={editedExhibition.contents || ""}
-          onValueChange={(value) => handleFieldChange("contents", value)}
-          isReadOnly={isReadOnly}
-        />
-
-        <div className="relative">
-          <label className="text-small font-medium block mb-2">전시시작 *</label>
-          <div className="relative">
-            <DatePicker
-              selected={
-                editedExhibition.start_date
-                  ? new Date(
-                      editedExhibition.start_date.slice(0, 4),
-                      parseInt(editedExhibition.start_date.slice(4, 6)) - 1,
-                      parseInt(editedExhibition.start_date.slice(6, 8))
-                    )
-                  : null
-              }
-              onChange={(date) => {
-                if (date) {
-                  const year = date.getFullYear();
-                  const month = String(date.getMonth() + 1).padStart(2, "0");
-                  const day = String(date.getDate()).padStart(2, "0");
-                  handleFieldChange("start_date", `${year}${month}${day}`);
-                }
-              }}
-              locale={ko}
-              dateFormat="yyyy.MM.dd"
-              customInput={
+      {isNew ? (
+        step === 1 ? (
+          <>
+            <div className="grid grid-cols-1 gap-4">
+              <Input
+                label="갤러리명"
+                value={galleryInfo?.name || ""}
+                onValueChange={(value) => handleFieldChange("name", value)}
+                isDisabled
+              />
+              <Input
+                label="전시회명"
+                value={editedExhibition.contents || ""}
+                onValueChange={(value) => handleFieldChange("contents", value)}
+                isReadOnly={isReadOnly}
+              />
+              <div className="relative">
+                <label className="text-small font-medium block mb-2">전시시작 *</label>
                 <div className="relative">
-                  <input
-                    className="w-full pl-3 pr-10 py-2 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none cursor-pointer text-lg"
-                    value={
+                  <DatePicker
+                    selected={
                       editedExhibition.start_date
-                        ? `${editedExhibition.start_date.slice(0,4)}.${editedExhibition.start_date.slice(4,6)}.${editedExhibition.start_date.slice(6,8)}`
-                        : ""
+                        ? new Date(
+                            editedExhibition.start_date.slice(0, 4),
+                            parseInt(editedExhibition.start_date.slice(4, 6)) - 1,
+                            parseInt(editedExhibition.start_date.slice(6, 8))
+                          )
+                        : null
                     }
-                    readOnly
-                  />
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    <Icon icon="lucide:calendar" className="text-gray-500 text-xl" />
-                  </div>
-                </div>
-              }
-              popperClassName="react-datepicker-popper"
-            />
-          </div>
-        </div>
-
-        <div className="relative">
-          <label className="text-small font-medium block mb-2">전시종료 *</label>
-          <div className="relative">
-            <DatePicker
-              selected={
-                editedExhibition.end_date
-                  ? new Date(
-                      editedExhibition.end_date.slice(0, 4),
-                      parseInt(editedExhibition.end_date.slice(4, 6)) - 1,
-                      parseInt(editedExhibition.end_date.slice(6, 8))
-                    )
-                  : null
-              }
-              onChange={(date) => {
-                if (date) {
-                  const year = date.getFullYear();
-                  const month = String(date.getMonth() + 1).padStart(2, "0");
-                  const day = String(date.getDate()).padStart(2, "0");
-                  handleFieldChange("end_date", `${year}${month}${day}`);
-                }
-              }}
-              locale={ko}
-              dateFormat="yyyy.MM.dd"
-              customInput={
-                <div className="relative">
-                  <input
-                    className="w-full pl-3 pr-10 py-2 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none cursor-pointer text-lg"
-                    value={
-                      editedExhibition.end_date
-                        ? `${editedExhibition.end_date.slice(0,4)}.${editedExhibition.end_date.slice(4,6)}.${editedExhibition.end_date.slice(6,8)}`
-                        : ""
-                    }
-                    readOnly
-                  />
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    <Icon icon="lucide:calendar" className="text-gray-500 text-xl" />
-                  </div>
-                </div>
-              }
-              popperClassName="react-datepicker-popper"
-            />
-          </div>
-        </div>
-
-        <Input
-          label="운영 시간"
-          value={editedExhibition.working_hour || ""}
-          onValueChange={(value) => handleFieldChange("working_hour", value)}
-          isReadOnly={isReadOnly}
-          placeholder="예: 10:00 - 18:00"
-        />
-
-        <Input
-          label="휴관일"
-          value={editedExhibition.off_date || ""}
-          onValueChange={(value) => handleFieldChange("off_date", value)}
-          isReadOnly={isReadOnly}
-          placeholder="예: 매주 월요일"
-        />
-
-        <Input
-          label="네이버 갤러리 URL"
-          value={galleryInfo?.url || ""}
-          onValueChange={(value) =>
-            handleFieldChange("naver_gallery_url", value)
-          }
-          isReadOnly={isReadOnly}
-          isDisabled
-        />
-
-        <Input
-          label="홈페이지 URL"
-          value={editedExhibition.homepage_url || ""}
-          onValueChange={(value) => handleFieldChange("homepage_url", value)}
-          isReadOnly={isReadOnly}
-        />
-
-        <Input
-          type="number"
-          label="가격 (원)"
-          value={editedExhibition.price || 0}
-          onValueChange={(value) => handleFieldChange("price", value)}
-          isReadOnly={isReadOnly}
-        />
-
-        <div className="flex flex-col gap-2">
-          <span className="text-small font-medium">옵션</span>
-          <div className="flex flex-col gap-2">
-            <Checkbox
-              isSelected={editedExhibition.isFree || false}
-              onValueChange={(value) => handleFieldChange("isFree", value)}
-              isDisabled={isReadOnly}
-            >
-              무료 전시회
-            </Checkbox>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-small font-medium">전시회 이미지</label>
-            <Button 
-              color="primary" 
-              variant="flat" 
-              size="sm"
-              as="a" 
-              href="/sample/guide.jpg"
-              download
-            >
-              <Icon icon="lucide:info" />
-              가이드 라인
-            </Button>
-          </div>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center">
-            {imagePreview ? (
-              <div className="relative w-full">
-                <img
-                  src={imagePreview}
-                  alt="전시회 이미지"
-                  className="w-full h-48 object-cover rounded-md"
-                />
-                {!isReadOnly && (
-                  <Button
-                    isIconOnly
-                    color="danger"
-                    variant="flat"
-                    size="sm"
-                    className="absolute top-2 right-2"
-                    onPress={() => {
-                      setImagePreview(null);
-                      handleFieldChange("photo", "");
+                    onChange={(date) => {
+                      if (date) {
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, "0");
+                        const day = String(date.getDate()).padStart(2, "0");
+                        handleFieldChange("start_date", `${year}${month}${day}`);
+                      }
                     }}
-                  >
-                    <Icon icon="lucide:x" />
-                  </Button>
-                )}
+                    locale={ko}
+                    dateFormat="yyyy.MM.dd"
+                    customInput={
+                      <div className="relative">
+                        <input
+                          className="w-full pl-3 pr-10 py-2 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none cursor-pointer text-lg"
+                          value={
+                            editedExhibition.start_date
+                              ? `${editedExhibition.start_date.slice(0,4)}.${editedExhibition.start_date.slice(4,6)}.${editedExhibition.start_date.slice(6,8)}`
+                              : ""
+                          }
+                          readOnly
+                        />
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                          <Icon icon="lucide:calendar" className="text-gray-500 text-xl" />
+                        </div>
+                      </div>
+                    }
+                    popperClassName="react-datepicker-popper"
+                  />
+                </div>
               </div>
-            ) : (
-              <>
-                <Icon
-                  icon="lucide:image"
-                  className="text-4xl text-gray-400 mb-2"
-                />
-                <p className="text-sm text-gray-500">이미지 미리보기</p>
-              </>
-            )}
-            {!isReadOnly && (
-              <div className="mt-4">
-                <input
-                  type="file"
-                  id="photo-upload"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-                <label htmlFor="photo-upload">
-                  <Button as="span" color="primary" variant="flat" size="sm">
-                    <Icon icon="lucide:upload" className="mr-1" />
-                    이미지 {imagePreview ? "변경" : "업로드"}
-                  </Button>
-                </label>
-              </div>
-            )}
-          </div>
-        </div>
 
-        <div className="w-full">
-          <label className="text-small font-medium block mb-2">추가 정보</label>
-          {isReadOnly ? (
-            <div className="froala-content" dangerouslySetInnerHTML={{ __html: editedExhibition.add_info || "" }} />
-          ) : (
-            <FroalaEditor 
-              value={editedExhibition.add_info || ""} 
+              <div className="relative">
+                <label className="text-small font-medium block mb-2">전시종료 *</label>
+                <div className="relative">
+                  <DatePicker
+                    selected={
+                      editedExhibition.end_date
+                        ? new Date(
+                            editedExhibition.end_date.slice(0, 4),
+                            parseInt(editedExhibition.end_date.slice(4, 6)) - 1,
+                            parseInt(editedExhibition.end_date.slice(6, 8))
+                          )
+                        : null
+                    }
+                    onChange={(date) => {
+                      if (date) {
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, "0");
+                        const day = String(date.getDate()).padStart(2, "0");
+                        handleFieldChange("end_date", `${year}${month}${day}`);
+                      }
+                    }}
+                    locale={ko}
+                    dateFormat="yyyy.MM.dd"
+                    customInput={
+                      <div className="relative">
+                        <input
+                          className="w-full pl-3 pr-10 py-2 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none cursor-pointer text-lg"
+                          value={
+                            editedExhibition.end_date
+                              ? `${editedExhibition.end_date.slice(0,4)}.${editedExhibition.end_date.slice(4,6)}.${editedExhibition.end_date.slice(6,8)}`
+                              : ""
+                          }
+                          readOnly
+                        />
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                          <Icon icon="lucide:calendar" className="text-gray-500 text-xl" />
+                        </div>
+                      </div>
+                    }
+                    popperClassName="react-datepicker-popper"
+                  />
+                </div>
+              </div>
+
+              <Input
+                label="운영 시간"
+                value={editedExhibition.working_hour || ""}
+                onValueChange={(value) => handleFieldChange("working_hour", value)}
+                isReadOnly={isReadOnly}
+                placeholder="예: 10:00 - 18:00"
+              />
+
+              <Input
+                label="휴관일"
+                value={editedExhibition.off_date || ""}
+                onValueChange={(value) => handleFieldChange("off_date", value)}
+                isReadOnly={isReadOnly}
+                placeholder="예: 매주 월요일"
+              />
+
+              <Input
+                label="네이버 갤러리 URL"
+                value={galleryInfo?.url || ""}
+                onValueChange={(value) =>
+                  handleFieldChange("naver_gallery_url", value)
+                }
+                isReadOnly={isReadOnly}
+                isDisabled
+              />
+
+              <Input
+                label="홈페이지 URL"
+                value={editedExhibition.homepage_url || ""}
+                onValueChange={(value) => handleFieldChange("homepage_url", value)}
+                isReadOnly={isReadOnly}
+              />
+
+              <Input
+                type="number"
+                label="가격 (원)"
+                value={editedExhibition.price || 0}
+                onValueChange={(value) => handleFieldChange("price", value)}
+                isReadOnly={isReadOnly}
+              />
+
+              <div className="flex flex-col gap-2">
+                <span className="text-small font-medium">옵션</span>
+                <div className="flex flex-col gap-2">
+                  <Checkbox
+                    isSelected={editedExhibition.isFree || false}
+                    onValueChange={(value) => handleFieldChange("isFree", value)}
+                    isDisabled={isReadOnly}
+                  >
+                    무료 전시회
+                  </Checkbox>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-small font-medium">전시회 이미지</label>
+                  <Button 
+                    color="primary" 
+                    variant="flat" 
+                    size="sm"
+                    as="a" 
+                    href="/sample/guide.jpg"
+                    download
+                  >
+                    <Icon icon="lucide:info" />
+                    가이드 라인
+                  </Button>
+                </div>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center">
+                  {imagePreview ? (
+                    <div className="relative w-full">
+                      <img
+                        src={imagePreview}
+                        alt="전시회 이미지"
+                        className="w-full h-48 object-cover rounded-md"
+                      />
+                      {!isReadOnly && (
+                        <Button
+                          isIconOnly
+                          color="danger"
+                          variant="flat"
+                          size="sm"
+                          className="absolute top-2 right-2"
+                          onPress={() => {
+                            setImagePreview(null);
+                            handleFieldChange("photo", "");
+                          }}
+                        >
+                          <Icon icon="lucide:x" />
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <Icon
+                        icon="lucide:image"
+                        className="text-4xl text-gray-400 mb-2"
+                      />
+                      <p className="text-sm text-gray-500">이미지 미리보기</p>
+                    </>
+                  )}
+                  {!isReadOnly && (
+                    <div className="mt-4">
+                      <input
+                        type="file"
+                        id="photo-upload"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                      <label htmlFor="photo-upload">
+                        <Button as="span" color="primary" variant="flat" size="sm">
+                          <Icon icon="lucide:upload" className="mr-1" />
+                          이미지 {imagePreview ? "변경" : "업로드"}
+                        </Button>
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 mt-4">
+                <Button onClick={onCancel} variant="light">취소</Button>
+                <Button color="primary" onClick={() => setStep(2)}>다음</Button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="w-full">
+            <label className="text-small font-medium block mb-2">추가 정보</label>
+            <FroalaEditor
+              value={editedExhibition.add_info || ""}
               onChange={(content) => handleFieldChange("add_info", content)}
               placeholder="전시회에 대한 상세 정보를 입력하세요."
               height={300}
             />
-          )}
+            <div className="flex justify-end gap-2 mt-4">
+              <Button onClick={() => setStep(1)} variant="outline">이전</Button>
+              <Button color="primary" onClick={handleSave} isLoading={isSaving}>저장</Button>
+            </div>
+          </div>
+        )
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          <Input
+            label="갤러리명"
+            value={galleryInfo?.name || ""}
+            onValueChange={(value) => handleFieldChange("name", value)}
+            isDisabled
+          />
+
+          <Input
+            label="전시회명"
+            value={editedExhibition.contents || ""}
+            onValueChange={(value) => handleFieldChange("contents", value)}
+            isReadOnly={isReadOnly}
+          />
+
+          <div className="relative">
+            <label className="text-small font-medium block mb-2">전시시작 *</label>
+            <div className="relative">
+              <DatePicker
+                selected={
+                  editedExhibition.start_date
+                    ? new Date(
+                        editedExhibition.start_date.slice(0, 4),
+                        parseInt(editedExhibition.start_date.slice(4, 6)) - 1,
+                        parseInt(editedExhibition.start_date.slice(6, 8))
+                      )
+                    : null
+                }
+                onChange={(date) => {
+                  if (date) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+                    handleFieldChange("start_date", `${year}${month}${day}`);
+                  }
+                }}
+                locale={ko}
+                dateFormat="yyyy.MM.dd"
+                customInput={
+                  <div className="relative">
+                    <input
+                      className="w-full pl-3 pr-10 py-2 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none cursor-pointer text-lg"
+                      value={
+                        editedExhibition.start_date
+                          ? `${editedExhibition.start_date.slice(0,4)}.${editedExhibition.start_date.slice(4,6)}.${editedExhibition.start_date.slice(6,8)}`
+                          : ""
+                      }
+                      readOnly
+                    />
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                      <Icon icon="lucide:calendar" className="text-gray-500 text-xl" />
+                    </div>
+                  </div>
+                }
+                popperClassName="react-datepicker-popper"
+              />
+            </div>
+          </div>
+
+          <div className="relative">
+            <label className="text-small font-medium block mb-2">전시종료 *</label>
+            <div className="relative">
+              <DatePicker
+                selected={
+                  editedExhibition.end_date
+                    ? new Date(
+                        editedExhibition.end_date.slice(0, 4),
+                        parseInt(editedExhibition.end_date.slice(4, 6)) - 1,
+                        parseInt(editedExhibition.end_date.slice(6, 8))
+                      )
+                    : null
+                }
+                onChange={(date) => {
+                  if (date) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+                    handleFieldChange("end_date", `${year}${month}${day}`);
+                  }
+                }}
+                locale={ko}
+                dateFormat="yyyy.MM.dd"
+                customInput={
+                  <div className="relative">
+                    <input
+                      className="w-full pl-3 pr-10 py-2 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none cursor-pointer text-lg"
+                      value={
+                        editedExhibition.end_date
+                          ? `${editedExhibition.end_date.slice(0,4)}.${editedExhibition.end_date.slice(4,6)}.${editedExhibition.end_date.slice(6,8)}`
+                          : ""
+                      }
+                      readOnly
+                    />
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                      <Icon icon="lucide:calendar" className="text-gray-500 text-xl" />
+                    </div>
+                  </div>
+                }
+                popperClassName="react-datepicker-popper"
+              />
+            </div>
+          </div>
+
+          <Input
+            label="운영 시간"
+            value={editedExhibition.working_hour || ""}
+            onValueChange={(value) => handleFieldChange("working_hour", value)}
+            isReadOnly={isReadOnly}
+            placeholder="예: 10:00 - 18:00"
+          />
+
+          <Input
+            label="휴관일"
+            value={editedExhibition.off_date || ""}
+            onValueChange={(value) => handleFieldChange("off_date", value)}
+            isReadOnly={isReadOnly}
+            placeholder="예: 매주 월요일"
+          />
+
+          <Input
+            label="네이버 갤러리 URL"
+            value={galleryInfo?.url || ""}
+            onValueChange={(value) =>
+              handleFieldChange("naver_gallery_url", value)
+            }
+            isReadOnly={isReadOnly}
+            isDisabled
+          />
+
+          <Input
+            label="홈페이지 URL"
+            value={editedExhibition.homepage_url || ""}
+            onValueChange={(value) => handleFieldChange("homepage_url", value)}
+            isReadOnly={isReadOnly}
+          />
+
+          <Input
+            type="number"
+            label="가격 (원)"
+            value={editedExhibition.price || 0}
+            onValueChange={(value) => handleFieldChange("price", value)}
+            isReadOnly={isReadOnly}
+          />
+
+          <div className="flex flex-col gap-2">
+            <span className="text-small font-medium">옵션</span>
+            <div className="flex flex-col gap-2">
+              <Checkbox
+                isSelected={editedExhibition.isFree || false}
+                onValueChange={(value) => handleFieldChange("isFree", value)}
+                isDisabled={isReadOnly}
+              >
+                무료 전시회
+              </Checkbox>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-small font-medium">전시회 이미지</label>
+              <Button 
+                color="primary" 
+                variant="flat" 
+                size="sm"
+                as="a" 
+                href="/sample/guide.jpg"
+                download
+              >
+                <Icon icon="lucide:info" />
+                가이드 라인
+              </Button>
+            </div>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center">
+              {imagePreview ? (
+                <div className="relative w-full">
+                  <img
+                    src={imagePreview}
+                    alt="전시회 이미지"
+                    className="w-full h-48 object-cover rounded-md"
+                  />
+                  {!isReadOnly && (
+                    <Button
+                      isIconOnly
+                      color="danger"
+                      variant="flat"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onPress={() => {
+                        setImagePreview(null);
+                        handleFieldChange("photo", "");
+                      }}
+                    >
+                      <Icon icon="lucide:x" />
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <Icon
+                    icon="lucide:image"
+                    className="text-4xl text-gray-400 mb-2"
+                  />
+                  <p className="text-sm text-gray-500">이미지 미리보기</p>
+                </>
+              )}
+              {!isReadOnly && (
+                <div className="mt-4">
+                  <input
+                    type="file"
+                    id="photo-upload"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                  <label htmlFor="photo-upload">
+                    <Button as="span" color="primary" variant="flat" size="sm">
+                      <Icon icon="lucide:upload" className="mr-1" />
+                      이미지 {imagePreview ? "변경" : "업로드"}
+                    </Button>
+                  </label>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {!isNew && (
         <div className="border-t pt-4 mt-6">
