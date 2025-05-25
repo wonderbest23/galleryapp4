@@ -1,0 +1,393 @@
+"use client";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Card,
+  CardBody,
+  Divider,
+  Skeleton,
+  Spinner,
+  addToast,
+} from "@heroui/react";
+import { FaRegCalendar } from "react-icons/fa";
+import { IoMdPin } from "react-icons/io";
+import { FaRegStar } from "react-icons/fa";
+import { FaRegBookmark, FaBookmark } from "react-icons/fa6";
+import Link from "next/link";
+import { FaPlusCircle } from "react-icons/fa";
+import { createClient } from "@/utils/supabase/client";
+import useBookmarkStore from "./bookmarkStore";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { FaCalendar } from "react-icons/fa6";
+import { FaMoneyBillWaveAlt } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+
+// 스켈레톤 컴포넌트
+const SkeletonCard = ({ index }) => (
+  <div
+    key={`skeleton-${index}`}
+    className="w-full flex items-center gap-3 justify-center"
+  >
+    <div className="w-12 h-12 rounded-full ">
+      <Skeleton className="flex rounded-full w-12 h-10" />
+    </div>
+    <div className="w-full flex flex-col gap-2">
+      <Skeleton className="h-3 w-[80%] rounded-lg" />
+      <Skeleton className="h-3 w-[40%] rounded-lg" />
+    </div>
+  </div>
+);
+
+// 전시회 카드 컴포넌트
+const ExhibitionCard = ({ exhibition, index, isBookmarked, toggleBookmark }) => (
+  <motion.div
+    layout
+    key={`exhibition-${exhibition.id}`}
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ 
+      duration: 0.5,
+      delay: index * 0.05 // 각 아이템마다 살짝 딜레이를 줘서 순차적으로 나타나게 함
+    }}
+    className="w-full mb-4 outline-none"
+  >
+    <Link href={`/exhibition/${exhibition.id}`} className="w-full justify-center items-center">
+      <Card
+        classNames={{ body: "p-2 justify-center items-center" }}
+        className="w-full h-full"
+        shadow="sm"
+      >
+        <CardBody classNames={{ body: "p-0" }} className="flex gap-4 flex-row w-full h-full justify-center items-center ">
+          <div className="flex aspect-square h-20 rounded justify-center items-center relative">
+            <Image
+              src={exhibition.photo || "/images/noimage.jpg"}
+              alt={exhibition.name}
+              fill
+              className="object-cover rounded"
+            />
+          </div>
+          <div className="flex flex-col w-full justify-center items-center h-full">
+            <div className="flex flex-row justify-between items-start w-full">
+              <div className="flex flex-col">
+                <div className="text-[10px] ">
+                  {exhibition.naver_gallery_url?.name || "없음"}
+                </div>
+                <div className="text-[12px] font-bold">
+                  {exhibition.contents}
+                </div>
+              </div>
+            </div>
+
+            <Divider
+              orientation="horizontal"
+              className=" bg-gray-300 mt-2"
+            />
+            <div className="text-xs flex flex-col my-2 w-full">
+              <div className="flex flex-row gap-1 items-center">
+                <FaCalendar className="w-3 h-3 text-[#007AFF]" />
+                <span className="text-[10px]">
+                  {exhibition.start_date?.replace(
+                    /(\d{4})(\d{2})(\d{2})/,
+                    "$1년$2월$3일"
+                  )}{" "}
+                  ~{" "}
+                  {exhibition.end_date?.replace(
+                    /(\d{4})(\d{2})(\d{2})/,
+                    "$1년$2월$3일"
+                  )}
+                </span>
+              </div>
+              <div className="flex flex-row gap-1 items-center">
+                <FaMoneyBillWaveAlt className="w-3 h-3 text-[#007AFF]" />
+                <span className="text-[10px]">
+                  {exhibition.price
+                    ?.toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                  원
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 북마크 아이콘을 카드 우측 하단으로 이동 */}
+          <div className="absolute top-2 right-2">
+            <div
+              className="bg-[#eee] rounded-3xl p-1"
+              onClick={(e) => toggleBookmark(e, exhibition)}
+            >
+              {isBookmarked(exhibition.id) ? (
+                <FaBookmark className="text-red-500 text-xs cursor-pointer font-bold" />
+              ) : (
+                <FaRegBookmark className="text-white text-xs cursor-pointer font-bold" />
+              )}
+            </div>
+          </div>
+        </CardBody>
+      </Card>
+    </Link>
+  </motion.div>
+);
+
+export function ExhibitionCards({ exhibitionCategory, user }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [exhibitions, setExhibitions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingBookmarks, setLoadingBookmarks] = useState(false);
+  const router = useRouter();
+  const PAGE_SIZE = 5;
+
+  const supabase = createClient();
+
+  // Zustand 북마크 스토어에서 상태와 함수 가져오기
+  const { bookmarks, setBookmarks } = useBookmarkStore();
+
+  // 북마크 상태 확인하는 함수
+  const isBookmarked = (exhibitionId) => {
+    return bookmarks.some(
+      (bookmark) => bookmark.exhibition_id === exhibitionId
+    );
+  };
+
+  // 북마크 토글 함수
+  const toggleBookmark = async (e, exhibition) => {
+    e.preventDefault(); // 링크 이벤트 방지
+    e.stopPropagation(); // 이벤트 버블링 방지
+
+    if (!user) {
+      // 사용자가 로그인하지 않은 경우 처리
+      addToast({
+        title: "로그인 필요",
+        description: "북마크를 추가하려면 로그인이 필요합니다.",
+        color: "warning",
+      });
+      return;
+    }
+
+    const isCurrentlyBookmarked = isBookmarked(exhibition.id);
+
+    try {
+      if (isCurrentlyBookmarked) {
+        // 북마크 삭제
+        const { error } = await supabase
+          .from("bookmark")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("exhibition_id", exhibition.id);
+
+        if (error) throw error;
+
+        // Zustand 스토어에서 북마크 제거
+        setBookmarks(
+          bookmarks.filter(
+            (bookmark) => bookmark.exhibition_id !== exhibition.id
+          )
+        );
+
+        // 북마크 삭제 토스트 표시
+        addToast({
+          title: "북마크 삭제",
+          description: `${exhibition.name} 북마크가 삭제되었습니다.`,
+          color: "danger",
+        });
+      } else {
+        // 북마크 추가
+        const { data, error } = await supabase
+          .from("bookmark")
+          .insert({
+            user_id: user.id,
+            exhibition_id: exhibition.id,
+            created_at: new Date().toISOString(),
+          })
+          .select();
+
+        if (error) throw error;
+
+        // Zustand 스토어에 북마크 추가
+        setBookmarks([...bookmarks, data[0]]);
+
+        // 북마크 추가 토스트 표시
+        addToast({
+          title: "북마크 추가",
+          description: `${exhibition.name} 북마크에 추가되었습니다.`,
+          color: "success",
+        });
+      }
+    } catch (error) {
+      console.log("북마크 토글 에러:", error);
+
+      // 에러 토스트 표시
+      addToast({
+        title: "오류 발생",
+        description: "북마크 처리 중 오류가 발생했습니다.",
+        color: "danger",
+        variant: "solid",
+        timeout: 3000,
+      });
+    }
+  };
+
+  // 사용자의 북마크 목록 가져오기
+  const fetchBookmarks = async () => {
+    if (!user) return;
+
+    try {
+      setLoadingBookmarks(true);
+
+      const { data, error } = await supabase
+        .from("bookmark")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      // 북마크 데이터를 Zustand 스토어에 저장
+      setBookmarks(data || []);
+    } catch (error) {
+      console.log("북마크 로드 에러:", error);
+    } finally {
+      setLoadingBookmarks(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 북마크 로드
+  useEffect(() => {
+    fetchBookmarks();
+  }, [user]);
+
+  const getExhibitions = useCallback(
+    async (pageNum = 1, append = false) => {
+      try {
+        setLoading(true);
+
+        // 페이지네이션을 위한 범위 계산
+        const from = (pageNum - 1) * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+
+        // 기본 쿼리 시작
+        let query = supabase
+          .from("exhibition")
+          .select("*,naver_gallery_url(*)", { count: "exact" })
+          .gte("end_date", new Date().toISOString())
+          .order("review_count", { ascending: false });
+
+        // exhibitionCategory에 따라 필터 적용
+        if (exhibitionCategory === "free") {
+          query = query.eq("isFree", true);
+        } else if (exhibitionCategory === "recommended") {
+          query = query.eq("isRecommended", true);
+        }
+        // 'all'인 경우는 추가 필터 없음
+
+        // 페이지네이션 적용
+        const { data, error, count } = await query.range(from, to);
+
+        if (error) {
+          console.log("Error fetching exhibitions:", error);
+          return;
+        }
+
+        // 더 불러올 데이터가 있는지 확인
+        setHasMore(count > from + data.length);
+
+        // 데이터 설정 (추가 또는 덮어쓰기)
+        if (append) {
+          setExhibitions((prev) => [...prev, ...(data || [])]);
+        } else {
+          setExhibitions(data || []);
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [exhibitionCategory, supabase, PAGE_SIZE]
+  );
+
+  // 더 많은 데이터 로드하는 함수
+  const loadMore = useCallback(() => {
+    if (loading || !hasMore) return;
+
+    const nextPage = page + 1;
+    setPage(nextPage);
+    getExhibitions(nextPage, true);
+  }, [loading, hasMore, page, getExhibitions]);
+
+  useEffect(() => {
+    // 카테고리가 변경되면 페이지를 1로 리셋하고 데이터를 다시 불러옵니다
+    setPage(1);
+    getExhibitions(1);
+  }, [getExhibitions]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+      className="w-full flex justify-center items-center"
+    >
+      <div className="flex flex-col items-center gap-4 w-[90%] justify-center">
+        <div className="w-full flex flex-col justify-center items-center gap-y-4">
+          <AnimatePresence mode="wait">
+            {loading && page === 1 ? (
+              // 스켈레톤 UI
+              <div
+                key="skeletons"
+                className="w-full flex flex-col gap-4 justify-center items-center"
+              >
+                {Array(5).fill().map((_, index) => (
+                  <SkeletonCard key={index} index={index} />
+                ))}
+              </div>
+            ) : (
+              // 실제 전시회 목록
+              <motion.div
+                key="exhibitions"
+                className="w-full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ 
+                  duration: 0.5
+                }}
+              >
+                {exhibitions.map((exhibition, index) => (
+                  <ExhibitionCard
+                    key={exhibition.id}
+                    exhibition={exhibition}
+                    index={index}
+                    isBookmarked={isBookmarked}
+                    toggleBookmark={toggleBookmark}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* 추가 데이터 로딩 중 표시 */}
+          {loading && page > 1 && (
+            <div className="flex justify-center w-full py-4">
+              <Spinner variant="wave" size="lg" color="primary" />
+            </div>
+          )}
+        </div>
+        
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          {hasMore && !loading ? (
+            <FaPlusCircle
+              className="text-gray-500 text-2xl font-bold hover:cursor-pointer mb-4 hover:scale-110 transition-transform"
+              onClick={loadMore}
+            />
+          ) : (
+            <div className="text-gray-500 text-sm mb-8">
+              모든 전시회를 불러왔습니다
+            </div>
+          )}
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}

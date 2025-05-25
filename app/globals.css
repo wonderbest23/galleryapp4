@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+*{
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 모바일 앱 프레임을 위한 스타일 */
+.mobile-frame {
+  position: relative;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  border-radius: 30px;
+  z-index: 10;
+}
+
+/* 스크롤바 스타일 커스터마이징 */
+.mobile-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mobile-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.mobile-content::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+.mobile-content::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+/* 스크롤바 숨기기 유틸리티 */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* React-Slick 슬라이더 스타일 커스터마이징 */
+.slider-container {
+  padding: 4px 0;
+}
+
+.slick-track {
+  display: flex !important;
+  gap: 16px;
+  margin-left: 0 !important;
+}
+
+.slick-slide {
+  height: inherit !important;
+}
+
+.slick-slide > div {
+  height: 100%;
+}
+/* 텍스트편집기 작성화면이 실제화면과 동일하게 커스터마이징 */
+.froala-editor-container {
+  width: 100%       !important; /* 화면 폭 꽉 채우되 */
+  max-width: 390px !important; /* 390px 이하로 제한 */
+  margin: 0 auto   !important; /* 중앙 정렬 */
+}
+
+.fr-element {
+  width: 100%      !important; /* 본문 내용도 컨테이너 폭에 맞추기 */
+}
