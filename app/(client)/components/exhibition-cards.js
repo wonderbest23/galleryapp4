@@ -57,69 +57,44 @@ const ExhibitionCard = ({ exhibition, index, isBookmarked, toggleBookmark }) => 
         className="w-full h-full"
         shadow="sm"
       >
-        <CardBody className="p-0 flex gap-4 flex-row w-full h-full justify-center items-center ">
-          <div className="flex aspect-square h-20 rounded justify-center items-center relative">
+        <CardBody className="grid grid-cols-7 items-center justify-center gap-x-3">
+          <div className="col-span-2">
             <Image
               src={exhibition.photo || "/images/noimage.jpg"}
               alt={exhibition.name}
-              fill
-              className="object-cover rounded"
+              width={80}
+              height={80}
+              className="w-20 h-20 object-cover rounded"
             />
           </div>
-          <div className="flex flex-col w-full justify-center items-center h-full">
-            <div className="flex flex-row justify-between items-start w-full">
+          <div className="flex flex-col col-span-5">
+            <div className="flex flex-row justify-between items-start">
               <div className="flex flex-col">
-                <div className="text-[10px] ">
-                  {exhibition.naver_gallery_url?.name || "없음"}
-                </div>
-                <div className="text-[12px] font-bold">
-                  {exhibition.contents}
-                </div>
+                <div className="text-[10px]">{exhibition.naver_gallery_url?.name || '없음'}</div>
+                <div className="text-[12px] font-bold">{exhibition.contents}</div>
+              </div>
+              <div onClick={(e) => toggleBookmark(e, exhibition)}>
+                {isBookmarked(exhibition.id) ? (
+                  <FaBookmark className="text-red-500 text-lg bg-gray-300 rounded-full p-1 cursor-pointer font-bold" />
+                ) : (
+                  <FaRegBookmark className="text-white font-bold text-lg bg-gray-300 rounded-full p-1 cursor-pointer" />
+                )}
               </div>
             </div>
-
-            <Divider
-              orientation="horizontal"
-              className=" bg-gray-300 mt-2"
-            />
-            <div className="text-xs flex flex-col my-2 w-full">
-              <div className="flex flex-row gap-1 items-center">
+            <Divider orientation="horizontal" className="bg-gray-300" />
+            <div className="text-xs flex flex-col mt-2">
+              <div className="flex flex-row gap-1 text-[10px]">
                 <FaCalendar className="w-3 h-3 text-[#007AFF]" />
-                <span className="text-[10px]">
-                  {exhibition.start_date?.replace(
-                    /(\d{4})(\d{2})(\d{2})/,
-                    "$1년$2월$3일"
-                  )}{" "}
-                  ~{" "}
-                  {exhibition.end_date?.replace(
-                    /(\d{4})(\d{2})(\d{2})/,
-                    "$1년$2월$3일"
-                  )}
-                </span>
+                {exhibition.start_date?.replace(/(\d{4})(\d{2})(\d{2})/, "$1년$2월$3일")} ~ {exhibition.end_date?.replace(/(\d{4})(\d{2})(\d{2})/, "$1년$2월$3일")}
               </div>
-              <div className="flex flex-row gap-1 items-center">
+              <div className="flex flex-row gap-1 text-[10px]">
                 <FaMoneyBillWaveAlt className="w-3 h-3 text-[#007AFF]" />
-                <span className="text-[10px]">
-                  {exhibition.price
-                    ?.toString()
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                  원
-                </span>
+                {exhibition.price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} 원
               </div>
-            </div>
-          </div>
-
-          {/* 북마크 아이콘을 카드 우측 하단으로 이동 */}
-          <div className="absolute top-2 right-2">
-            <div
-              className="bg-[#eee] rounded-3xl p-1"
-              onClick={(e) => toggleBookmark(e, exhibition)}
-            >
-              {isBookmarked(exhibition.id) ? (
-                <FaBookmark className="text-red-500 text-xs cursor-pointer font-bold" />
-              ) : (
-                <FaRegBookmark className="text-white text-xs cursor-pointer font-bold" />
-              )}
+              <div className="flex flex-row gap-1 text-[10px]">
+                <FaRegStar className="w-3 h-3 text-[#007AFF]" />
+                {exhibition.review_average === 0 ? "1.0" : exhibition.review_average?.toFixed(1) || "1.0"} ({exhibition.review_count || 0})
+              </div>
             </div>
           </div>
         </CardBody>
