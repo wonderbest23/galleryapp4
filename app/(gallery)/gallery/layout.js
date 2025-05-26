@@ -39,7 +39,7 @@ export default function AdminLayout({ children }) {
   return (
     <html lang="ko">
       <body>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
           {/* 모바일 메뉴 버튼 - 작은 화면에서만 표시 */}
           <div className="lg:hidden fixed top-4 left-4 z-50">
             <button
