@@ -452,6 +452,14 @@ export default function Exhibition() {
     }
   };
 
+  const handleRefresh = () => {
+    setCurrentPage(1);
+    setSearchTerm("");
+    setTimeout(() => {
+      loadExhibitions();
+    }, 0);
+  };
+
   console.log("userInfo:", userInfo);
   console.log("selectedExhibition:", selectedExhibition);
 
@@ -489,7 +497,19 @@ export default function Exhibition() {
             <table className="w-full border-collapse border-spacing-0 min-w-[600px]">
               <thead className="bg-default-100">
                 <tr>
-                  <th className="p-3 text-left border-b ">등록된전시(새로고침)</th>
+                  <th className="p-3 text-left border-b ">
+                    <div className="flex items-center gap-2">
+                      <span>등록된전시(새로고침)</span>
+                      <button
+                        onClick={handleRefresh}
+                        className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shadow hover:bg-blue-200 active:bg-blue-300 transition-colors border border-blue-200"
+                        aria-label="새로고침"
+                        type="button"
+                      >
+                        <Icon icon="lucide:refresh-ccw" className="text-xl text-blue-600" />
+                      </button>
+                    </div>
+                  </th>
                   <th className="p-3 text-left border-b ">전시날짜</th>
                 </tr>
               </thead>
