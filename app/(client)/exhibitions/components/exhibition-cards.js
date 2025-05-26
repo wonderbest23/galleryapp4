@@ -87,7 +87,11 @@ export function ExhibitionCards({
                             {exhibition.contents}
                           </div>
                         </div>
-                        <div onClick={(e) => toggleBookmark(e, exhibition)}>
+                        <div onClick={(e) => toggleBookmark(e, exhibition)}
+                             aria-label={isBookmarked(exhibition.id) ? "북마크 삭제" : "북마크 추가"}
+                             role="button"
+                             tabIndex={0}
+                        >
                           {isBookmarked(exhibition.id) ? (
                             <FaBookmark className="text-red-500 text-lg bg-gray-300 rounded-full p-1 cursor-pointer font-bold" />
                           ) : (

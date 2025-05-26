@@ -42,6 +42,7 @@ export default function App({searchParams}) {
           name="email"
           placeholder="이메일을 입력해주세요"
           type="email"
+          autocomplete="email"
         />
 
         <Input
@@ -51,6 +52,7 @@ export default function App({searchParams}) {
           name="password"
           placeholder="비밀번호를 입력해주세요"
           type="password"
+          autocomplete="current-password"
         />
 
         <div className="flex gap-4">

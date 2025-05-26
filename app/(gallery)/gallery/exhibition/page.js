@@ -77,6 +77,7 @@ export default function Exhibition() {
   const itemsPerPage = 5;
 
   useEffect(() => {
+    setGalleryInfo(null); // userInfo가 바뀌면 galleryInfo 초기화
     if (userInfo?.url) {
       const fetchGalleryInfo = async () => {
         const { data, error } = await supabase
@@ -91,7 +92,6 @@ export default function Exhibition() {
           setGalleryInfo(data);
         }
       };
-
       fetchGalleryInfo();
     }
   }, [userInfo?.url]);
@@ -146,7 +146,33 @@ export default function Exhibition() {
 
   // 신규 전시회 생성 핸들러
   const handleNewExhibition = () => {
-    setSelectedExhibition(null);
+    const galleryUrl = userInfo?.url || galleryInfo?.url || "";
+    const galleryName = userInfo?.name || galleryInfo?.name || "";
+
+    if (!galleryUrl || !galleryName) {
+      addToast({
+        title: "갤러리 정보 로딩 중",
+        description: "잠시 후 다시 시도해 주세요.",
+        color: "warning",
+      });
+      return;
+    }
+    setSelectedExhibition({
+      name: "",
+      contents: "",
+      photo: "",
+      start_date: "",
+      end_date: "",
+      working_hour: "",
+      off_date: "",
+      add_info: "",
+      homepage_url: "",
+      isFree: false,
+      isRecommended: false,
+      naver_gallery_url: galleryUrl,
+      gallery_name: galleryName,
+      price: 0,
+    });
     setIsCreatingNew(true);
     setSelectedKey(new Set([]));
   };
@@ -201,7 +227,9 @@ export default function Exhibition() {
       setSelectedKey(new Set([savedExhibition.id.toString()]));
 
       // 데이터 새로고침
-      await loadExhibitions(); 
+      setTimeout(() => {
+        loadExhibitions();
+      }, 300);
     } catch (error) {
       console.error("전시회 저장 중 오류 발생:", error);
     }
@@ -352,7 +380,9 @@ export default function Exhibition() {
       });
 
       // 데이터 새로고침
-      loadExhibitions();
+      setTimeout(() => {
+        loadExhibitions();
+      }, 300);
     } catch (error) {
       console.error("전시회 업데이트 중 오류 발생:", error);
       addToast({
@@ -384,7 +414,9 @@ export default function Exhibition() {
         setSelectedKey(new Set([]));
 
         // 데이터 새로고침
-        loadExhibitions();
+        setTimeout(() => {
+          loadExhibitions();
+        }, 300);
       } catch (error) {
         addToast({
           title: "삭제 실패",
@@ -444,7 +476,7 @@ export default function Exhibition() {
           <Button
             onClick={handleNewExhibition}
             className="bg-primary text-white"
-            disabled={isCreatingNew}
+            disabled={isCreatingNew || !galleryInfo}
           >
             <Icon icon="lucide:plus" className="text-lg mr-1" />
             신규 전시 등록

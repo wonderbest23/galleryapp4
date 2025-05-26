@@ -392,6 +392,7 @@ function ExhibitionListContent() {
           variant="light"
           className="mr-2"
           onPress={() => router.push("/")}
+          aria-label="홈으로 이동"
         >
           <FaArrowLeft className="text-xl" />
         </Button>
@@ -461,6 +462,7 @@ function ExhibitionListContent() {
         {/* 필터 영역 */}
         <div className="flex justify-between items-center w-full bg-white mb-4">
           <Select
+            aria-label="지역 선택"
             selectedKeys={selectedRegion ? [selectedRegion] : []}
             onChange={(e) => setSelectedRegion(e.target.value)}
             className="w-1/4"
@@ -557,6 +559,7 @@ function ExhibitionListContent() {
             <FiPlusCircle
               className="text-gray-500 text-2xl font-bold hover:cursor-pointer"
               onClick={loadMore}
+              aria-label="더 보기"
             />
           </div>
         ) : !tabLoading && exhibitions.length > 0 && (
@@ -613,6 +616,7 @@ function ExhibitionListContent() {
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"
                       className="object-cover rounded-lg"
+                      priority
                     />
                   </div>
                   <div className="text-[14px] font-bold line-clamp-1">

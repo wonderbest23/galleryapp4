@@ -399,6 +399,7 @@ function GalleryListContent() {
         {/* 필터 영역 */}
         <div className="flex justify-between items-center w-full bg-white mb-4">
           <Select
+            aria-label="지역 선택"
             selectedKeys={selectedRegion ? [selectedRegion] : []}
             onChange={(e)=>setSelectedRegion(e.target.value)}
             className="w-1/4"
