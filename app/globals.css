@@ -4,7 +4,12 @@
 @tailwind components;
 @tailwind utilities;
 
-
+/* 모바일 가로 스크롤 방지 */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
 
 *{
     font-family: 'Noto Sans KR', sans-serif;
