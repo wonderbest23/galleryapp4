@@ -44,9 +44,10 @@ export default function AdminLayout({ children }) {
           <div className="lg:hidden fixed top-4 left-4 z-50">
             <button
               onClick={() => setIsOpen(true)}
-              className="p-2 rounded-md bg-white/80 backdrop-blur-lg shadow-sm"
+              className="flex items-center p-2 rounded border-2 border-red-500 shadow-sm bg-white"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-6 h-6" />
+              <span className="ml-2 text-gray-800">메뉴</span>
             </button>
           </div>
 
