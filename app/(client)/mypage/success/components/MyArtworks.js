@@ -161,12 +161,15 @@ export default function MyArtworks({ user, profile }) {
           >
             신규작품 등록하기
           </Button>
-          <Button
-            onPress={() => router.push("/payment")}
-            className="col-span-4 bg-[#007AFF] text-white text-[16px] h-12"
+          {/*
+          <button
+            type="button"
+            tabIndex="0"
+            className="z-0 group relative inline-flex items-center justify-center box-border appearance-none select-none whitespace-nowrap font-normal subpixel-antialiased overflow-hidden tap-highlight-transparent data-[pressed=true]:scale-[0.97] outline-none data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-focus data-[focus-visible=true]:outline-offset-2 px-4 min-w-20 gap-2 rounded-medium [&>svg]:max-w-[theme(spacing.8)] transition-transform-colors-opacity motion-reduce:transition-none data-[hover=true]:opacity-hover col-span-4 bg-[#007AFF] text-white text-[16px] h-12"
           >
             결제하기
-          </Button>
+          </button>
+          */}
         </>
       )}
     </div>
